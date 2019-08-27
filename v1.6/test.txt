@@ -1,0 +1,36 @@
+[
+  203, 303, 401, 207, 404, 205,
+  106, 405, 304, 101, 102, 301,
+  107, 305, 202, 206, 302, 103,
+  306, 105, 403, 406, 402, 201,
+  407, 307, 104, 204
+]
+pos:  -1
+roll:  6
+pos:  3
+roll:  5
+pos:  5
+roll:  6
+pos:  6
+roll:  6
+pos:  12
+roll:  4
+pos:  13
+roll:  3
+pos:  15
+roll:  2
+pos:  16
+roll:  5
+pos:  18
+roll:  3
+pos:  19
+roll:  3
+pos:  20
+roll:  4
+pos:  21
+roll:  5
+pos:  24
+roll:  2
+pos:  25
+roll:  6
+pos:  27
