@@ -1,17 +1,15 @@
 function game(){
   let deck = [], hand = [];
-
   let player1, player2;
-
   const rollDie = ((numSides = 6) => Math.floor(Math.random() * numSides) + 1);
 
   initializeGame("Tom", "Jackie");
-
-console.log(hand);
+  runGame();
 
   function initializeGame(player_1, player_2){
     deck = createDeck(28);
     hand = generateHand();
+    console.log(hand);
 
     class Player {
       position = -1;
@@ -23,15 +21,17 @@ console.log(hand);
     player2 = new Player(player_2);
   }
 
-while(player1.position < hand.length - 1 && player2.position < hand.length - 1) {
-  player1.position = movePlayer(player1);
-  console.log(player1.name + 's\'', 'position: ', player1.position);
-  player2.position = player1.position !== hand.length - 1 ? movePlayer(player2) : player2.position;
-  console.log(player2.name + 's\'', 'position: ', player2.position);
-  player2.position === hand.length -1 ? console.log(player1.name + 's\'', 'position: ', player1.position) : null;
+function runGame() {
+  while(player1.position < hand.length - 1 && player2.position < hand.length - 1) {
+    player1.position = movePlayer(player1);
+    console.log(player1.name + 's\'', 'position: ', player1.position);
+    player2.position = player1.position !== hand.length - 1 ? movePlayer(player2) : player2.position;
+    console.log(player2.name + 's\'', 'position: ', player2.position);
+    player2.position === hand.length -1 ? console.log(player1.name + 's\'', 'position: ', player1.position) : null;
+  }
+    let winner = player1.position == hand.length -1 ? player1.name + " is the winner!" : player2.name + " is the winner!";
+    console.log('\n' + winner);
 }
-  let winner = player1.position == hand.length -1 ? "Tom is the winner!" : "Jackie is the winner!";
-  console.log('\n' + winner);
 
   function createDeck(deckSize) {
     for (let i = 1; deck.length < deckSize; i++) {
