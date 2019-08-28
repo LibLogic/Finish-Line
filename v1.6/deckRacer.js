@@ -3,13 +3,12 @@ function game(){
   let player1, player2;
   const rollDie = ((numSides = 6) => Math.floor(Math.random() * numSides) + 1);
 
-  initializeGame("Tom", "Jackie");
-  runGame();
+  runGame("Tom", "Jackie", logging = false);
 
   function initializeGame(player_1, player_2){
     deck = createDeck(28);
     hand = generateHand();
-    console.log(hand);
+    logging ? console.log(hand) : null;
 
     class Player {
       position = -1;
@@ -21,13 +20,17 @@ function game(){
     player2 = new Player(player_2);
   }
 
-function runGame() {
+function runGame(player_1, player_2) {
+  initializeGame(player_1, player_2);
+
   while(player1.position < hand.length - 1 && player2.position < hand.length - 1) {
     player1.position = movePlayer(player1);
-    console.log(player1.name + 's\'', 'position: ', player1.position);
+    logging ? console.log(player1.name + 's\'', 'position: ', player1.position) : null;
     player2.position = player1.position !== hand.length - 1 ? movePlayer(player2) : player2.position;
-    console.log(player2.name + 's\'', 'position: ', player2.position);
-    player2.position === hand.length -1 ? console.log(player1.name + 's\'', 'position: ', player1.position) : null;
+    if (logging) {
+      console.log(player2.name + 's\'', 'position: ', player2.position);
+      player2.position === hand.length -1 ? console.log(player1.name + 's\'', 'position: ', player1.position) : null;
+    }
   }
     let winner = player1.position == hand.length -1 ? player1.name + " is the winner!" : player2.name + " is the winner!";
     console.log('\n' + winner);
@@ -71,7 +74,7 @@ function runGame() {
 
   function movePlayer(player){
     let dieRoll = rollDie();
-    console.log('\n' + player.name, 'rolls: ', dieRoll);
+    logging ?console.log('\n' + player.name, 'rolls: ', dieRoll) : null;
     for (let i = player.position + 1; i < hand.length; i++) {
       if(hand[i] % 100 < dieRoll) {
         player.position++;
