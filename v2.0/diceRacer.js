@@ -1,14 +1,27 @@
-function game(){
+function game(player_1, player_2, logging){
   let deck = [], hand = [];
   let player1, player2;
   const rollDie = ((numSides = 6) => Math.floor(Math.random() * numSides) + 1);
 
-  runGame("Tom", "Jackie", logging = true);
+  runGame(player_1, player_2, logging);
 
   function initializeGame(player_1, player_2){
-    deck = createDeck(28);
+
+    // The createDeck function works with multiples of 4
+    // so create a deck of 56 cards then pop off the last 2 jokers
+    // to arrive at a deck size of 54
+    deck = createDeck(56);
+    deck.pop();
+    deck.pop();
+
+ //   console.log(deck);
+
     hand = generateHand();
-    logging ? console.log(hand) : null;
+
+
+
+    console.log(hand);
+ //   logging ? console.log(hand) : null;
 
     class Player {
       position = -1;
@@ -55,21 +68,21 @@ function runGame(player_1, player_2) {
     return card;
   }
 
-  // Generate a "track" **Do not allow ace, two, six or seven in either
-  // first 2 or last 2 positions.
+  // Generate a "track" **Do not allow jack, queen, king, ace, or joker in either
+  // first 3 or last 3 positions.
   function generateHand(){
     let handCenter = [];
     // lets generate the two ends first then
     // insert the remaining cards into the middle
-    for (let i = 0; i < 4; i++) {
-      hand.push(drawCard(8, 9));
+    for (let i = 0; i < 6; i++) {
+      hand.push(drawCard(4, 15));
     }
     // Generate and insert middle
     let deckSize = deck.length;
     for (let i = 0; i < deckSize; i++) {
       handCenter.push(drawCard());
     }
-    hand.splice(2, 0, ...handCenter);
+    hand.splice(3, 0, ...handCenter);
     return hand;
   }
 
@@ -88,4 +101,4 @@ function runGame(player_1, player_2) {
   }
 }
 
-game();
+game("Tom", "Jackie", logging = false);
