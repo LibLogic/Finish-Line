@@ -15,9 +15,9 @@ function game(player_1, player_2, logging){
   function runGame(player_1, player_2) {
     initializeGame(player_1, player_2);
     promptPlayer(players[0]);
-    // let i = 0;
+    let i = 0;
     function promptPlayer(currentPlayer){
-      let dieChoice, markerChoice, i = 0;
+      let dieChoice, markerChoice;
       let dRoll = diceRoll();
       console.log(`\n${currentPlayer.name}s' Roll: \nBlack rolls: ${dRoll[0]}`);
       console.log(`Red rolls: ${dRoll[1]}\n`);
