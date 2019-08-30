@@ -1,4 +1,3 @@
-
 function game(player_1, player_2, logging){
   const players = [];
 
@@ -10,19 +9,18 @@ function game(player_1, player_2, logging){
   });
 
   let deck = [], hand = [];
-  let player1, player2;
   const rollDie = ((numSides = 6) => Math.floor(Math.random() * numSides) + 1);
 
   runGame();
-
   function runGame(player_1, player_2) {
     initializeGame(player_1, player_2);
-    let i = 0;
+    promptPlayer(players[0]);
+    // let i = 0;
     function promptPlayer(currentPlayer){
-      let dieChoice, markerChoice;
+      let dieChoice, markerChoice, i = 0;
       let dRoll = diceRoll();
-      console.log(`\n${currentPlayer.name}'s black die rolled a: ${dRoll[0]}`);
-      console.log(`and the red die rolled a: ${dRoll[1]}\n`);
+      console.log(`\n${currentPlayer.name}s' Roll: \nBlack rolls: ${dRoll[0]}`);
+      console.log(`Red rolls: ${dRoll[1]}\n`);
       rl.question("Enter your die choice:\n'b' for black, 'r' for red, or 'enter' for both:\n", (userInput) => {
         switch (userInput){
           case 'b':
@@ -34,7 +32,9 @@ function game(player_1, player_2, logging){
           default:
             dieChoice = dRoll[0] + dRoll[1];
         }
-        rl.question("Which marker do you want to move?\n'a', 'b', or 'c'\n", (userInput) => {
+        console.clear();
+        console.log(hand, '\n');
+        rl.question("Which marker would you like to move?\n'a', 'b', or 'c'\n", (userInput) => {
           switch(userInput) {
             case 'a':
               markerChoice = "markerAPos";
@@ -49,25 +49,20 @@ function game(player_1, player_2, logging){
               markerChoice = "markerAPos";
           }
         currentPlayer[markerChoice] = movePlayer(currentPlayer, dieChoice, markerChoice);
+        console.clear();
+        console.log(hand, '\n');
         logGameStats(currentPlayer, userInput, markerChoice);
-        promptPlayer(players[++i % 2]);
+        promptPlayer(players[++i % players.length]);
         });
       });
     }
-    promptPlayer(player1);
   }
 
-  function logGameStats(currentPlayer, userInput, markerChoice){
+  function logGameStats(currentPlayer, userInput, markerChoice) {
     players.forEach((player)=>{
-    console.log(player.name + 's\'', 'position for marker a  is: ', player.markerAPos + 1);
-    console.log(player.name + 's\'', 'position for marker b  is: ', player.markerBPos + 1);
-    console.log(player.name + 's\'', 'position for marker c  is: ', player.markerCPos + 1);
-//    console.log('\n');
+    console.log(`${player.name}s' marker positions are:\tA:${player.markerAPos + 1}\tB:${player.markerBPos + 1}\tC:${player.markerCPos + 1}`);
   });
-
-//   logging ? console.log(currentPlayer.name + 's\'', 'position for marker ' + userInput.toUpperCase() + ' is: ', currentPlayer[markerChoice] + 1) : null;
-//   console.log(players);
-  }
+ }
 
   function initializeGame(){
     // The createDeck function works with multiples of 4
@@ -90,8 +85,14 @@ function game(player_1, player_2, logging){
         players.push(this);
       }
     }
-    player1 = new Player(player_1);
-    player2 = new Player(player_2);
+
+    // createPlayers from arguments list
+    (function() {
+      for (let i = 0; i < game.arguments.length - 1; i++) {
+        let username = 'player' + (i + 1);
+        username = new Player(game.arguments[i]);
+      }
+    })();
   }
 
   function createDeck(deckSize) {
@@ -150,4 +151,4 @@ function game(player_1, player_2, logging){
   }
 }
 
-game("Tom", "Jackie", logging = true);
+game("Tom", "Jackie", "Rashalia", logging = true);
