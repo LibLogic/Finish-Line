@@ -3,11 +3,23 @@ function game(player_1, player_2, logging){
   let player1, player2;
   const rollDie = ((numSides = 6) => Math.floor(Math.random() * numSides) + 1);
 
-  const blackDie = rollDie(6);
-  const redDie = rollDie(6);
+  runGame();
 
+  function runGame(player_1, player_2) {
+    initializeGame(player_1, player_2);
 
-  runGame(player_1, player_2, logging);
+    while(player1.position < hand.length - 1 && player2.position < hand.length - 1) {
+      player1.position = movePlayer(player1);
+      logging ? console.log(player1.name + 's\'', 'position: ', player1.position + 1) : null;
+      player2.position = player1.position !== hand.length - 1 ? movePlayer(player2) : player2.position;
+      if (logging) {
+        console.log(player2.name + 's\'', 'position: ', player2.position + 1);
+        player2.position === hand.length -1 ? console.log(player1.name + 's\'', 'position: ', player1.position + 1) : null;
+      }
+    }
+      let winner = player1.position == hand.length -1 ? player1.name + " is the winner!" : player2.name + " is the winner!";
+      console.log('\n' + winner);
+  }
 
   function initializeGame(){
 
@@ -20,10 +32,13 @@ function game(player_1, player_2, logging){
 
     hand = generateHand();
 
-   logging ? console.log(hand) : null;
+    logging ? console.log(hand) : null;
 
     class Player {
       position = -1;
+      markerAPos = -1;
+      markerBPos = -1;
+      markerCPos = -1;
       constructor(name) {
         this.name = name;
       }
@@ -31,22 +46,6 @@ function game(player_1, player_2, logging){
     player1 = new Player(player_1);
     player2 = new Player(player_2);
   }
-
-function runGame(player_1, player_2) {
-  initializeGame(player_1, player_2);
-
-  while(player1.position < hand.length - 1 && player2.position < hand.length - 1) {
-    player1.position = movePlayer(player1);
-    logging ? console.log(player1.name + 's\'', 'position: ', player1.position) : null;
-    player2.position = player1.position !== hand.length - 1 ? movePlayer(player2) : player2.position;
-    if (logging) {
-      console.log(player2.name + 's\'', 'position: ', player2.position);
-      player2.position === hand.length -1 ? console.log(player1.name + 's\'', 'position: ', player1.position) : null;
-    }
-  }
-    let winner = player1.position == hand.length -1 ? player1.name + " is the winner!" : player2.name + " is the winner!";
-    console.log('\n' + winner);
-}
 
   function createDeck(deckSize) {
     for (let i = 1; deck.length < deckSize; i++) {
@@ -86,7 +85,10 @@ function runGame(player_1, player_2) {
   }
 
   function movePlayer(player){
-    let dieRoll = rollDie();
+    let blackDie = rollDie(6);
+    let redDie = rollDie(6);
+    let dieRoll = blackDie + redDie;
+
     logging ?console.log('\n' + player.name, 'rolls: ', dieRoll) : null;
     for (let i = player.position + 1; i < hand.length; i++) {
       if(hand[i] % 100 < dieRoll) {
@@ -100,4 +102,4 @@ function runGame(player_1, player_2) {
   }
 }
 
-game("Tom", "Jackie", logging = false);
+game("Tom", "Jackie", logging = true);
