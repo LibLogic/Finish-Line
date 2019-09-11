@@ -29,7 +29,7 @@ function game() {
 
     function dieQuestion(diceTotal, dRoll, currentPlayer) {
       const rl = makeInterface();
-      let dieChoice, markerToMove;
+      let dieChoice, chosenMarkerPosition;
       rl.question("Enter your die choice:\n'b' for black, 'r' for red, or 'enter' for both:\n", userInput => {
           dieChoice = getDieChoice(userInput, diceTotal, dRoll);
           rl.close();
@@ -40,13 +40,13 @@ function game() {
         rl.setPrompt(`\nWhich marker would you like to move?\n'a', 'b', or 'c'\n`);
         rl.prompt();
         rl.on('line', userInput => { ////
-          markerToMove = getMarkerChoice(userInput);
-          if (moveCheck(currentPlayer, markerToMove)) {
+          chosenMarkerPosition = getMarkerChoice(userInput);
+          if (markerCanMove(currentPlayer, chosenMarkerPosition, dieChoice)) {
             rl.setPrompt(`\n${currentPlayer.name}, that marker is finished. Please try again.\n'a', 'b', or 'c'\n`);
             rl.prompt();
           } else
             if (userInput === "a" || userInput === "b" || userInput === "c") {
-              markerToMove = getMarkerChoice(userInput, currentPlayer);
+              chosenMarkerPosition = getMarkerChoice(userInput, currentPlayer);
               rl.close();
             } else {
               rl.setPrompt(
@@ -57,22 +57,22 @@ function game() {
         }); //// on('line') ////
 
         rl.on("close", () => { ////////
-          currentPlayer[markerToMove] = movePlayer(currentPlayer, dieChoice, markerToMove);
+          currentPlayer[chosenMarkerPosition] = movePlayer(currentPlayer, dieChoice, chosenMarkerPosition);
           if (dieChoice === diceTotal) {
             rl.close();
             playerPrompts(players[++i % players.length]);
           } else {
             const rl = makeInterface();
-            rl.setPrompt(`\nOk ${currentPlayer.name}, which marker would you like to move now?\n'a', 'b', or 'c'\n`);
+            rl.setPrompt(`hello${dRoll[0]} ${dRoll[1]}\nOk ${currentPlayer.name}, which marker would you like to move now?\n'a', 'b', or 'c'\n`);
             rl.prompt();
             rl.on("line", userInput => { ///////
-            markerToMove = getMarkerChoice(userInput, currentPlayer);
-            if (moveCheck(currentPlayer, markerToMove)) {
+            chosenMarkerPosition = getMarkerChoice(userInput, currentPlayer);
+            if (markerCanMove(currentPlayer, chosenMarkerPosition, dieChoice)) {
               rl.setPrompt(`\n${currentPlayer.name}, that marker is finished. Please try again.\n'a', 'b', or 'c'\n`);
               rl.prompt();
             } else
               if (userInput === "a" || userInput === "b" || userInput === "c") {
-                currentPlayer[markerToMove] = movePlayer(currentPlayer, diceTotal - dieChoice, markerToMove);
+                currentPlayer[chosenMarkerPosition] = movePlayer(currentPlayer, diceTotal - dieChoice, chosenMarkerPosition);
                 rl.close();
                 playerPrompts(players[++i % players.length]);
               } else {
@@ -105,24 +105,24 @@ function game() {
   function getMarkerChoice(userInput) {
     switch (userInput) {
       case "a":
-        markerToMove = "markerAPos";
+        chosenMarkerPosition = "markerAPos";
         break;
       case "b":
-        markerToMove = "markerBPos";
+        chosenMarkerPosition = "markerBPos";
         break;
       case "c":
-        markerToMove = "markerCPos";
+        chosenMarkerPosition = "markerCPos";
         break;
       default:
-        markerToMove = "markerAPos";
+        chosenMarkerPosition = "markerAPos";
     }
-    return markerToMove;
+    return chosenMarkerPosition;
   }
 
-  function logGameStats(currentPlayer, markerToMove) {
+  function logGameStats(currentPlayer, chosenMarkerPosition) {
     console.clear();
     console.log('\n\n', hand, '\n');
-    if (currentPlayer.markerAPos >= hand.length && currentPlayer.markerBPos >= hand.length && currentPlayer.markerCPos >= hand.length) {
+    if (currentPlayer.markerAPos >= 8 - 1 && currentPlayer.markerBPos >= 8 - 1 && currentPlayer.markerCPos >= 8 - 1) {
       console.log(`\n\n${currentPlayer.name} 'wins!'\n`);
       process.exit();
     } else {
@@ -136,12 +136,12 @@ function game() {
     }
   }
 
-  function moveCheck(currentPlayer, markerToMove) {
-    let posFromEnd = hand.length - markerToMove;
-      if (currentPlayer[markerToMove] >= hand.length - 1) {
-        return true;
-      }
-      return false;
+  function markerCanMove(currentPlayer, chosenMarkerPosition, dieChoice) {
+console.log(dieChoice);
+    if (currentPlayer[chosenMarkerPosition] >= 8 - 1) {
+      return true;
+    }
+    return false;
   }
 
   function initializeGame() {
@@ -218,19 +218,19 @@ function game() {
     return [blackDie, redDie];
   }
 
-  function movePlayer(player, dieRoll, markerToMove) {
-    for (let i = player[markerToMove] + 1; i < hand.length; i++) {
+  function movePlayer(player, dieRoll, chosenMarkerPosition) {
+    for (let i = player[chosenMarkerPosition] + 1; i < hand.length; i++) {
       if (hand[i] % 100 < dieRoll) {
-        player[markerToMove]++;
-        logGameStats(player, markerToMove);
+        player[chosenMarkerPosition]++;
+        logGameStats(player, chosenMarkerPosition);
       } else {
-        player[markerToMove]++;
-        logGameStats(player, markerToMove);
+        player[chosenMarkerPosition]++;
+        logGameStats(player, chosenMarkerPosition);
         break;
       }
     }
-    return player[markerToMove];
+    return player[chosenMarkerPosition];
   }
 }
 
-game("Tom", "Jackie", "Vrishali", "Cliff");
+game("Tom"); //, "Jackie", "Vrishali", "Cliff");

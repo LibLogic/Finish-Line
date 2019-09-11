@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>Document</title>
+    <link rel="stylesheet" type="text/css" href="styles/style.css" />
+  </head>
+  <body id="bg-image">
+    <div id="header">
+      <div id="dice">Dice Racer</div>
+      <button id="btn1" class="btn">Click To Begin</button>
+      <button id="btn2" class="btn hidden" onclick="rollDice()">
+        Roll The Dice
+      </button>
+      <h2 id="content" class="hidden"></h2>
+      <div id="players-names" class="hidden">
+        <input id="players" type="text" name="user-names" />
+        <button type="submit" class="btn" onclick="getPlayerNames()">
+          Submit
+        </button>
+      </div>
+      <h1 class="markers hidden">
+        <span id="red-marker">•</span><span id="green-marker">•</span
+        ><span id="blue-marker">•</span>
+      </h1>
+    </div>
+
+    <div id="game-wrap">
+      <div id="player-names"></div>
+      <div id="hand"></div>
+    </div>
+    <script src="./hand.js"></script>
+  </body>
+</html>
