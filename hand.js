@@ -67,27 +67,49 @@ let dieStr = [
 
 function renderPlayers() {
   let placeHolder = document.getElementById("player-names");
-  let dummy = "";
+
+  let noName0 = "";
+  let noName1 = "";
+  let noName2 = "";
+  let noName3 = "";
+  if (players.length < 3) {
+    players[0] === undefined ? (noName0 = ".........") : null;
+    players[1] === undefined ? (noName1 = ".........") : null;
+  }
+  if (players.length > 2) {
+    players[2] === undefined ? (noName2 = ".........") : null;
+    players[3] === undefined ? (noName3 = ".........") : null;
+  }
+
+  let playerList = "";
   for (let i = 0; i < 7; i++) {
     if (players.length < 3) {
-      dummy += `<div id="place-holder" class="container"><div id="dummy" class="card">${String.fromCodePoint(
+      playerList += `<div id="place-holder" class="container"><div id="dummy" class="card">${String.fromCodePoint(
         127153
-      )}</div><ul class="d"><li>${players[0].name}</li><li>${
-        players[1].name
+      )}</div><ul class="d"><li class="player0 highlight">${
+        noName0 ? noName0 : players[0].name
+      }</li><li class="player1">${
+        noName1 ? noName1 : players[1].name
       }</li></ul></div>`;
     } else if (players.length > 2) {
-      dummy += `<div id="place-holder" class="container"><div id="dummy" class="card">${String.fromCodePoint(
+      playerList += `<div id="place-holder" class="container"><div id="dummy" class="card">${String.fromCodePoint(
         127153
-      )}</div><ul class="d"><li>${players[0].name}</li><li>${
-        players[1].name
-      }</li><li>${players[2].name}</li><li>${players[3].name}</li></ul></div>`;
+      )}</div><ul class="d"><li class="player0 highlight">${
+        noName0 ? noName0 : players[0].name
+      }</li><li class="player1">${
+        noName1 ? noName1 : players[1].name
+      }</li><li class="player2">${
+        noName2 ? noName2 : players[2].name
+      }</li><li class="player3">${
+        noName3 ? noName3 : players[3].name
+      }</li></ul></div>`;
     }
   }
-  placeHolder.innerHTML = dummy;
+  placeHolder.innerHTML = playerList;
 }
 
 let playerRow = "";
-function createPlayerRow() {
+function renderPlayerRow() {
   if (players.length > 2) {
     playerRow = `<ul class="p"><li class="li p1"></li><li class="li p2"></li><li class="li p3"></li><li class="li p4"></li></ul>`;
   } else if (players.length < 3) {
@@ -99,7 +121,7 @@ function createPlayerRow() {
 function renderBoard() {
   let handStr = "";
   unicodeHand.forEach(card => {
-    playerRow = createPlayerRow();
+    playerRow = renderPlayerRow();
     if (card > 127152 && card < 127184) {
       handStr += `<div class="container"><div class="card red">${String.fromCodePoint(
         card
@@ -144,13 +166,18 @@ function redMarkerClick({ target }) {
       dieChoiceValue === num1 + num2 + 2
         ? num1 + num2 + 2
         : num1 + num2 + 2 - dieChoiceValue;
+    document.querySelectorAll(`.player${currentPlayer}`).forEach(player => {
+      player.classList.remove("highlight");
+    });
     movePlayer(dieChoiceValue, markerChoice);
     ++currentPlayer;
     currentPlayer = currentPlayer % players.length;
+    document.querySelectorAll(`.player${currentPlayer}`).forEach(player => {
+      player.classList.add("highlight");
+    });
   } else {
     movePlayer(dieChoiceValue, markerChoice);
   }
-  // alert(markerChoice + " " + dieChoiceValue + " " + currentPlayer);
   target.classList.add("hidden");
   sentence.innerHTML = prompts[3];
 }
@@ -171,14 +198,18 @@ function greenMarkerClick({ target }) {
       dieChoiceValue === num1 + num2 + 2
         ? num1 + num2 + 2
         : num1 + num2 + 2 - dieChoiceValue;
-    // console.log(dieChoiceValue);
+    document.querySelectorAll(`.player${currentPlayer}`).forEach(player => {
+      player.classList.remove("highlight");
+    });
     movePlayer(dieChoiceValue, markerChoice);
     ++currentPlayer;
     currentPlayer = currentPlayer % players.length;
+    document.querySelectorAll(`.player${currentPlayer}`).forEach(player => {
+      player.classList.add("highlight");
+    });
   } else {
     movePlayer(dieChoiceValue, markerChoice);
   }
-  // alert(markerChoice + " " + dieChoiceValue + " " + currentPlayer);
   target.classList.add("hidden");
   sentence.innerHTML = prompts[3];
 }
@@ -199,13 +230,18 @@ function blueMarkerClick({ target }) {
       dieChoiceValue === num1 + num2 + 2
         ? num1 + num2 + 2
         : num1 + num2 + 2 - dieChoiceValue;
+    document.querySelectorAll(`.player${currentPlayer}`).forEach(player => {
+      player.classList.remove("highlight");
+    });
     movePlayer(dieChoiceValue, markerChoice);
     ++currentPlayer;
     currentPlayer = currentPlayer % players.length;
+    document.querySelectorAll(`.player${currentPlayer}`).forEach(player => {
+      player.classList.add("highlight");
+    });
   } else {
     movePlayer(dieChoiceValue, markerChoice);
   }
-  // alert(markerChoice + " " + dieChoiceValue + " " + currentPlayer);
   target.classList.add("hidden");
   sentence.innerHTML = prompts[3];
 }
@@ -230,8 +266,31 @@ btn2.addEventListener("click", () => {
   diceDiv.classList.remove("hidden");
 });
 
+// function markerStatus(dieMove, markerChoice, position) {
+//   let markerToMove = "";
+//   switch (markerChoice) {
+//     case "red":
+//       markerToMove = "markerAPos";
+//       break;
+//     case "green":
+//       markerToMove = "markerBPos";
+//       break;
+//     case "blue":
+//       markerToMove = "markerCPos";
+//       break;
+//   }
+//   if (players[currentPlayer][markerToMove] === hand.length - 1) {
+//     dieMove = 0;
+//     currentPlayer--;
+//     alert("That Marker is Finished, Please choose another");
+//     movePlayer(dieMove, markerChoice);
+//   } else {
+//     return;
+//   }
+// }
+
 function movePlayer(dieMove, markerChoice) {
-  let markerToMove = "";
+  markerToMove = "";
   switch (markerChoice) {
     case "red":
       markerToMove = "markerAPos";
@@ -243,25 +302,26 @@ function movePlayer(dieMove, markerChoice) {
       markerToMove = "markerCPos";
       break;
   }
-
   let moveCount = 0;
   let stopValue = 0;
   for (let i = players[currentPlayer][markerToMove] + 1; i < hand.length; i++) {
     stopValue = num1 + num2 + 2;
-    if (hand[i] % 100 < stopValue) {
+    if ((hand[i] % 100) % 14 < stopValue) {
       moveCount++;
       if (moveCount >= dieMove) {
         players[currentPlayer][markerToMove]++;
         break;
       }
       players[currentPlayer][markerToMove]++;
+      // markerStatus(dieMove, markerChoice, players[currentPlayer][markerToMove]);
     } else {
       players[currentPlayer][markerToMove]++;
+      // markerStatus(dieMove, markerChoice, players[currentPlayer][markerToMove]);
       break;
     }
   }
 
-  createPlayerRow();
+  renderPlayerRow();
   renderBoard();
   let spaces;
   let row = "";
@@ -308,7 +368,7 @@ function getPlayerNames() {
     .getElementById("hand")
     .setAttribute("style", "background-color: #fff;");
   playersInfo = document.getElementById("players").value;
-  playerStr = playersInfo.split(",");
+  playerStr = playersInfo.split(", ");
 
   class Player {
     constructor(name) {
@@ -326,12 +386,6 @@ function getPlayerNames() {
     }
   })();
 
-  // players[0] === undefined ? (players[0] = "——") : null;
-  // players[1] === undefined ? (players[1] = "——") : null;
-  // if (players.length > 2) {
-  //   players[2] === undefined ? (players[2] = "——") : null;
-  //   players[3] === undefined ? (players[3] = "——") : null;
-  // }
   playersDiv.classList.add("hidden");
   document.getElementById("content").classList.add("hidden");
 
@@ -426,7 +480,6 @@ function rollDice() {
   function blackDieClick() {
     dieChoiceValue = num2 + 1;
     selectedMarkerCount = 0;
-    // alert(selectedMarkerCount + " black die selected " + (num2 + 1));
     if (selectedMarkerCount == 2) {
       sentence.innerHTML = prompts[3];
       sentence.classList.remove("hidden");

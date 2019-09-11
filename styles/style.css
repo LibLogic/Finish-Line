@@ -43,7 +43,6 @@ body {
   margin: 0;
   background-color: #ededed;
   background-image: url("../dice.jpg");
-  opacity: 0.9;
 }
 
 ul {
@@ -57,9 +56,17 @@ ul {
 
 #header {
   height: 227px;
+  width: 100%;
   padding-top: 132px;
   text-align: center;
-  background-color: #ddd;
+  background-color: rgba(221, 221, 221, 0.9);
+  position: fixed;
+  top: 0;
+  left: 0;
+}
+
+#game-wrap {
+  margin-top: 358px;
 }
 
 input {
@@ -182,6 +189,11 @@ input {
   line-height: 1.15em;
   font-weight: 600;
   color: green;
+}
+
+.d li.highlight {
+  text-decoration: underline;
+  color: blueviolet;
 }
 
 .p {
