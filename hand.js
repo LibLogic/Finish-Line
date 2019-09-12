@@ -145,6 +145,11 @@ let prompts = [
 ];
 
 let players = [];
+document.getElementById("players").addEventListener("keyup", e => {
+  if (e.keyCode === 13) {
+    getPlayerNames();
+  }
+});
 
 let markers = document.querySelector(".markers");
 markers.classList.add("hidden");
@@ -350,18 +355,19 @@ function checkMarkerStatus(
   previousMarkerPosition
 ) {
   // if marker gets past end dont allow move
-  if (players[currentPlayer][markerToMove] === hand.length - 1) {
+  let handLength = 7; // hand.length -1
+  if (players[currentPlayer][markerToMove] === handLength) {
     alert("your marker has finished");
-  } else if (players[currentPlayer][markerToMove] > hand.length - 1) {
+  } else if (players[currentPlayer][markerToMove] > handLength) {
     alert("Moves that would go past the last card are not allowed");
     players[currentPlayer][markerToMove] = previousMarkerPosition;
     return;
   }
 
   if (
-    players[currentPlayer].markerAPos === hand.length - 1 &&
-    players[currentPlayer].markerBPos === hand.length - 1 &&
-    players[currentPlayer].markerCPos === hand.length - 1
+    players[currentPlayer].markerAPos === handLength &&
+    players[currentPlayer].markerBPos === handLength &&
+    players[currentPlayer].markerCPos === handLength
   ) {
     alert(players[currentPlayer].name + " wins!");
   }
