@@ -187,13 +187,12 @@ input {
 .d li {
   text-align: right;
   line-height: 1.15em;
-  font-weight: 600;
-  color: green;
+  color: blueviolet;
 }
 
 .d li.highlight {
-  text-decoration: underline;
-  color: blueviolet;
+  font-weight: 600;
+  color: green;
 }
 
 .p {
