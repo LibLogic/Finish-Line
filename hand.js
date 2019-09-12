@@ -266,31 +266,7 @@ btn2.addEventListener("click", () => {
   diceDiv.classList.remove("hidden");
 });
 
-// function markerStatus(dieMove, markerChoice, position) {
-//   let markerToMove = "";
-//   switch (markerChoice) {
-//     case "red":
-//       markerToMove = "markerAPos";
-//       break;
-//     case "green":
-//       markerToMove = "markerBPos";
-//       break;
-//     case "blue":
-//       markerToMove = "markerCPos";
-//       break;
-//   }
-//   if (players[currentPlayer][markerToMove] === hand.length - 1) {
-//     dieMove = 0;
-//     currentPlayer--;
-//     alert("That Marker is Finished, Please choose another");
-//     movePlayer(dieMove, markerChoice);
-//   } else {
-//     return;
-//   }
-// }
-
 function movePlayer(dieMove, markerChoice) {
-  markerToMove = "";
   switch (markerChoice) {
     case "red":
       markerToMove = "markerAPos";
@@ -302,9 +278,14 @@ function movePlayer(dieMove, markerChoice) {
       markerToMove = "markerCPos";
       break;
   }
+
   let moveCount = 0;
   let stopValue = 0;
+  let previousMarkerPosition = players[currentPlayer][markerToMove];
   for (let i = players[currentPlayer][markerToMove] + 1; i < hand.length; i++) {
+    if (dieMove === 0) {
+      break;
+    }
     stopValue = num1 + num2 + 2;
     if ((hand[i] % 100) % 14 < stopValue) {
       moveCount++;
@@ -313,13 +294,16 @@ function movePlayer(dieMove, markerChoice) {
         break;
       }
       players[currentPlayer][markerToMove]++;
-      // markerStatus(dieMove, markerChoice, players[currentPlayer][markerToMove]);
     } else {
       players[currentPlayer][markerToMove]++;
-      // markerStatus(dieMove, markerChoice, players[currentPlayer][markerToMove]);
       break;
     }
   }
+
+  //check status
+  checkMarkerStatus(players, markerToMove, dieMove, previousMarkerPosition);
+  // if good do nothng
+  // come back with previousMarkerPosition
 
   renderPlayerRow();
   renderBoard();
@@ -357,6 +341,31 @@ function movePlayer(dieMove, markerChoice) {
       ].innerHTML += `<span style="color: mediumpurple">•</span>`;
     }
   }
+}
+
+function checkMarkerStatus(
+  players,
+  markerToMove,
+  dieMove,
+  previousMarkerPosition
+) {
+  // if marker gets past end dont allow move
+  if (players[currentPlayer][markerToMove] === hand.length - 1) {
+    alert("your marker has finished");
+  } else if (players[currentPlayer][markerToMove] > hand.length - 1) {
+    alert("Moves that would go past the last card are not allowed");
+    players[currentPlayer][markerToMove] = previousMarkerPosition;
+    return;
+  }
+
+  if (
+    players[currentPlayer].markerAPos === hand.length - 1 &&
+    players[currentPlayer].markerBPos === hand.length - 1 &&
+    players[currentPlayer].markerCPos === hand.length - 1
+  ) {
+    alert(players[currentPlayer].name + " wins!");
+  }
+  return;
 }
 
 let playersInfo = "";
