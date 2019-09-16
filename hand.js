@@ -1,4 +1,5 @@
-let deck = [],
+let currentPlayer = 0,
+  deck = [],
   newHand = [],
   hand = [];
 
@@ -66,68 +67,42 @@ let dieStr = [
 ];
 
 function renderPlayers() {
-  let placeHolder = document.getElementById("player-names");
-
-  let noName0 = "";
-  let noName1 = "";
-  let noName2 = "";
-  let noName3 = "";
-  if (players.length < 3) {
-    players[0] === undefined ? (noName0 = ".........") : null;
-    players[1] === undefined ? (noName1 = ".........") : null;
-  }
-  if (players.length > 2) {
-    players[2] === undefined ? (noName2 = ".........") : null;
-    players[3] === undefined ? (noName3 = ".........") : null;
-  }
-
+  let playerNames1 = document.querySelector(".player-names-left");
+  let playerNames2 = document.querySelector(".player-names-right");
   let playerList = "";
-  for (let i = 0; i < 7; i++) {
-    if (players.length < 3) {
-      playerList += `<div id="place-holder" class="container"><div id="dummy" class="card">${String.fromCodePoint(
-        127153
-      )}</div><ul class="d"><li class="player0 highlight">${
-        noName0 ? noName0 : players[0].name
-      }</li><li class="player1">${
-        noName1 ? noName1 : players[1].name
-      }</li></ul></div>`;
-    } else if (players.length > 2) {
-      playerList += `<div id="place-holder" class="container"><div id="dummy" class="card">${String.fromCodePoint(
-        127153
-      )}</div><ul class="d"><li class="player0 highlight">${
-        noName0 ? noName0 : players[0].name
-      }</li><li class="player1">${
-        noName1 ? noName1 : players[1].name
-      }</li><li class="player2">${
-        noName2 ? noName2 : players[2].name
-      }</li><li class="player3">${
-        noName3 ? noName3 : players[3].name
-      }</li></ul></div>`;
-    }
+  for (let i = 0; i < 6; i++) {
+    playerList += `<div id="place-holder" class="container"><div id="dummy" class="card">${String.fromCodePoint(
+      127153
+    )}</div><ul class="d">`;
+    players.forEach((player, i) => {
+      playerList += `<li class="player${i}">${player.name}</li>`;
+    });
+    playerList += `</ul></div>`;
   }
-  placeHolder.innerHTML = playerList;
+  playerNames1.innerHTML = playerList;
+  playerNames2.innerHTML = playerList;
+
+  document.querySelectorAll(".player0").forEach(player => {
+    player.classList.add("highlight");
+  });
 }
 
-let playerRow = "";
-function renderPlayerRow() {
-  if (players.length > 2) {
-    playerRow = `<ul class="p"><li class="li p1"></li><li class="li p2"></li><li class="li p3"></li><li class="li p4"></li></ul>`;
-  } else if (players.length < 3) {
-    playerRow = `<ul class="p"><li class="li p1"></li><li class="li p2"></li></ul>`;
-  }
-  return playerRow;
-}
-
-function renderBoard() {
+function renderEmptyBoard() {
+  let playerRow = "";
   let handStr = "";
-  unicodeHand.forEach(card => {
-    playerRow = renderPlayerRow();
+  playerRow += `<ul class="p">`;
+  players.forEach((player, i) => {
+    playerRow += `<li class="li p${i + 1}"></li>`;
+  });
+  playerRow += `</ul>`;
+
+  unicodeHand.forEach((card, i) => {
     if (card > 127152 && card < 127184) {
-      handStr += `<div class="container"><div class="card red">${String.fromCodePoint(
+      handStr += `<div class="container${i}"><div class="card red">${String.fromCodePoint(
         card
       )}</div>${playerRow}</div>`;
     } else {
-      handStr += `<div class="container"><div class="card black">${String.fromCodePoint(
+      handStr += `<div class="container${i}"><div class="card black">${String.fromCodePoint(
         card
       )}</div>${playerRow}</div>`;
     }
@@ -156,7 +131,7 @@ markers.classList.add("hidden");
 
 let selectedMarkerCount = 0;
 let dieChoiceValue = 0;
-let currentPlayer = 0;
+// let currentPlayer = 0;
 document.getElementById("red-marker").addEventListener("click", redMarkerClick);
 function redMarkerClick({ target }) {
   let markerChoice = "red";
@@ -174,14 +149,16 @@ function redMarkerClick({ target }) {
     document.querySelectorAll(`.player${currentPlayer}`).forEach(player => {
       player.classList.remove("highlight");
     });
+    document.querySelectorAll(`.p${currentPlayer + 1}`).forEach(row => {
+      row.classList.remove("highlight2");
+    });
     movePlayer(dieChoiceValue, markerChoice);
     ++currentPlayer;
     currentPlayer = currentPlayer % players.length;
-    document.querySelectorAll(`.player${currentPlayer}`).forEach(player => {
-      player.classList.add("highlight");
-    });
+    fillSpaces();
   } else {
     movePlayer(dieChoiceValue, markerChoice);
+    fillSpaces();
   }
   target.classList.add("hidden");
   sentence.innerHTML = prompts[3];
@@ -206,14 +183,16 @@ function greenMarkerClick({ target }) {
     document.querySelectorAll(`.player${currentPlayer}`).forEach(player => {
       player.classList.remove("highlight");
     });
+    document.querySelectorAll(`.p${currentPlayer + 1}`).forEach(row => {
+      row.classList.remove("highlight2");
+    });
     movePlayer(dieChoiceValue, markerChoice);
     ++currentPlayer;
     currentPlayer = currentPlayer % players.length;
-    document.querySelectorAll(`.player${currentPlayer}`).forEach(player => {
-      player.classList.add("highlight");
-    });
+    fillSpaces();
   } else {
     movePlayer(dieChoiceValue, markerChoice);
+    fillSpaces();
   }
   target.classList.add("hidden");
   sentence.innerHTML = prompts[3];
@@ -238,14 +217,16 @@ function blueMarkerClick({ target }) {
     document.querySelectorAll(`.player${currentPlayer}`).forEach(player => {
       player.classList.remove("highlight");
     });
+    document.querySelectorAll(`.p${currentPlayer + 1}`).forEach(row => {
+      row.classList.remove("highlight2");
+    });
     movePlayer(dieChoiceValue, markerChoice);
     ++currentPlayer;
     currentPlayer = currentPlayer % players.length;
-    document.querySelectorAll(`.player${currentPlayer}`).forEach(player => {
-      player.classList.add("highlight");
-    });
+    fillSpaces();
   } else {
     movePlayer(dieChoiceValue, markerChoice);
+    fillSpaces();
   }
   target.classList.add("hidden");
   sentence.innerHTML = prompts[3];
@@ -286,32 +267,69 @@ function movePlayer(dieMove, markerChoice) {
 
   let moveCount = 0;
   let stopValue = 0;
+  let currentCard = 0;
+  let wingCards = [
+    (hand[8] % 100) % 14,
+    (hand[17] % 100) % 14,
+    (hand[26] % 100) % 14,
+    (hand[35] % 100) % 14,
+    (hand[44] % 100) % 14,
+    (hand[53] % 100) % 14
+  ];
   let previousMarkerPosition = players[currentPlayer][markerToMove];
   for (let i = players[currentPlayer][markerToMove] + 1; i < hand.length; i++) {
     if (dieMove === 0) {
+      console.log("a");
       break;
     }
     stopValue = num1 + num2 + 2;
-    if ((hand[i] % 100) % 14 < stopValue) {
-      moveCount++;
+    moveCount++;
+    console.clear();
+    console.log(
+      "Previous Marker position: ",
+      previousMarkerPosition + 1,
+      "\nCurrent player",
+      players[currentPlayer].name,
+      "\nMarker to move",
+      markerToMove,
+      "\nStop value",
+      stopValue,
+      "\nCurrent die value",
+      dieMove,
+      "\nMove count",
+      moveCount
+    );
+    currentCard = (hand[i] % 100) % 14;
+    if (currentCard < stopValue) {
       if (moveCount >= dieMove) {
+        console.log("b stopped by die value");
         players[currentPlayer][markerToMove]++;
         break;
       }
+      console.log("c never stops here?");
       players[currentPlayer][markerToMove]++;
     } else {
+      console.log("d stopped by card value first");
       players[currentPlayer][markerToMove]++;
       break;
     }
   }
 
-  //check status
-  checkMarkerStatus(players, markerToMove, dieMove, previousMarkerPosition);
-  // if good do nothng
-  // come back with previousMarkerPosition
+  //check status if good do nothng else come back with previousMarkerPosition
+  checkMarkerStatus(dieMove, previousMarkerPosition, currentCard, wingCards);
+  // checkMarkerStatus(stopValue, dieMove, moveCount, previousMarkerPosition);
+  renderEmptyBoard();
+}
 
-  renderPlayerRow();
-  renderBoard();
+function fillSpaces() {
+  document.querySelectorAll(`.player${currentPlayer}`).forEach(player => {
+    player.classList.add("highlight");
+  });
+
+  document.querySelectorAll(`.p${currentPlayer + 1}`).forEach(row => {
+    row.classList.add("highlight2");
+  });
+
   let spaces;
   let row = "";
   for (let i = 0; i < players.length; i++) {
@@ -349,29 +367,79 @@ function movePlayer(dieMove, markerChoice) {
 }
 
 function checkMarkerStatus(
-  players,
-  markerToMove,
   dieMove,
-  previousMarkerPosition
+  previousMarkerPosition,
+  currentCard,
+  wingCards
 ) {
-  // if marker gets past end dont allow move
-  let handLength = 7; // hand.length -1
-  if (players[currentPlayer][markerToMove] === handLength) {
-    alert("your marker has finished");
-  } else if (players[currentPlayer][markerToMove] > handLength) {
-    alert("Moves that would go past the last card are not allowed");
-    players[currentPlayer][markerToMove] = previousMarkerPosition;
+  let handLength = hand.length - 1;
+
+  // first do all the things that should just return
+  // remember moves have already been made, just not displayed yet
+  if (players[currentPlayer][markerToMove] < handLength) {
+    checkActivation(currentCard, wingCards);
+    checkForAttack();
     return;
   }
-
-  if (
-    players[currentPlayer].markerAPos === handLength &&
-    players[currentPlayer].markerBPos === handLength &&
-    players[currentPlayer].markerCPos === handLength
-  ) {
-    alert(players[currentPlayer].name + " wins!");
+  if (previousMarkerPosition + dieMove === handLength) {
+    if (
+      players[currentPlayer].markerAPos === handLength &&
+      players[currentPlayer].markerBPos === handLength &&
+      players[currentPlayer].markerCPos === handLength
+    ) {
+      alert(players[currentPlayer].name + " wins!");
+      return;
+    }
+    alert("Your Marker Has Finished");
+    return;
+  } else {
+    players[currentPlayer][markerToMove] = previousMarkerPosition;
+    currentPlayer += players.length % players.length;
+    alert("Move Not Allowed");
+    return;
   }
-  return;
+}
+
+function checkActivation(currentCard, wingCards) {
+  let isSafety = false;
+  let activatedCard = false;
+  console.log(currentCard, "currentCard", wingCards);
+  let activationCards = [13, 12, 11, 1, 2];
+  activationCards.forEach(activationCard => {
+    if (currentCard === activationCard) {
+      activatedCard = currentCard;
+      isSafety = wingCards.some(wingCard => {
+        return activatedCard === wingCard;
+      });
+    }
+  });
+  if (isSafety === true) {
+    alert("activation card is " + activatedCard + " but it is a safety card");
+  } else if (activatedCard) {
+    alert("activation card is " + activatedCard);
+  }
+}
+
+function checkForAttack() {
+  let collisions = [];
+  for (let i = currentPlayer + 1; i !== currentPlayer; i++) {
+    i = i % players.length;
+    if (i === currentPlayer) {
+      break;
+    }
+    players[currentPlayer][markerToMove] === players[i].markerAPos
+      ? collisions.push("A")
+      : collisions;
+    players[currentPlayer][markerToMove] === players[i].markerBPos
+      ? collisions.push("B")
+      : collisions;
+    players[currentPlayer][markerToMove] === players[i].markerCPos
+      ? collisions.push("C")
+      : collisions;
+    if (collisions.length > 0) {
+      alert("Attacks detected on markers " + collisions);
+    }
+  }
 }
 
 let playersInfo = "";
@@ -420,7 +488,7 @@ function getPlayerNames() {
 
   btn2.classList.remove("hidden");
   renderPlayers();
-  renderBoard();
+  renderEmptyBoard();
 }
 
 function rollDice() {

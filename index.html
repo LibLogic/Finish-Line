@@ -9,14 +9,20 @@
   </head>
   <body id="bg-image">
     <div id="header">
-      <div id="dice">Dice Racer</div>
+      <div id="dice"><h1>Dice Racer</h1></div>
       <button id="btn1" class="btn">Click To Begin</button>
       <button id="btn2" class="btn hidden" onclick="rollDice()">
         Roll The Dice
       </button>
       <h2 id="content" class="hidden"></h2>
       <div id="players-names" class="hidden">
-        <input id="players" type="text" name="user-names" />
+        <input
+          id="players"
+          type="text"
+          name="user-names"
+          autofocus
+          value="Tom, Jackie, Cliff, Vrashali"
+        />
         <button type="submit" class="btn" onclick="getPlayerNames()">
           Submit
         </button>
@@ -28,8 +34,9 @@
     </div>
 
     <div id="game-wrap">
-      <div id="player-names"></div>
+      <div id="player-names" class="player-names-left"></div>
       <div id="hand"></div>
+      <div class="player-names-right"></div>
     </div>
     <script src="./hand.js"></script>
   </body>
