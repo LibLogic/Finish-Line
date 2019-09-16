@@ -1,48 +1,8 @@
-@-moz-document url-prefix() {
-  html {
-    font-size: 10.5px;
-  }
-
-  #dice {
-    font-size: 95px !important;
-  }
-
-  #player-names {
-    padding-left: 60px !important;
-    padding-right: 0% !important;
-  }
-
-  #place-holder {
-    margin-bottom: 20px !important;
-  }
-
-  #hand {
-    padding-right: 20px !important;
-  }
-
-  .p {
-    margin: 2px 0 0 23px !important;
-  }
-
-  .d {
-    margin: -3px 0 0 23px !important;
-  }
-
-  .d li {
-    font-size: 70%;
-  }
-
-  .p li {
-    line-height: 0.2em !important;
-  }
-}
-
-/* ------------------------ */
-
 body {
   margin: 0;
   background-color: #ededed;
   background-image: url("../dice.jpg");
+  background-size: 40%;
 }
 
 ul {
@@ -55,9 +15,8 @@ ul {
 }
 
 #header {
-  height: 227px;
+  height: 35%;
   width: 100%;
-  padding-top: 132px;
   text-align: center;
   background-color: rgba(221, 221, 221, 0.9);
   position: fixed;
@@ -66,39 +25,43 @@ ul {
 }
 
 #game-wrap {
-  margin-top: 358px;
+  margin-top: 21%;
 }
 
 input {
-  width: 500px;
-  font-size: 28px;
+  width: 620px;
+  font-size: 132%;
 }
 
-#dice {
-  cursor: pointer;
-  font-size: 140px;
-  margin-top: -100px;
+#dice h1 {
+  font-size: 400%;
+  margin-bottom: 1%;
 }
 
 .bullet {
   display: inline-block;
+  cursor: pointer;
   color: green;
-  font-size: 180px;
+  font-size: 1000%;
   vertical-align: text-bottom;
-  line-height: 158px;
+  line-height: 53%;
 }
 
 #content {
-  margin-top: 26px;
+  margin-top: 0;
 }
 
 .red-die {
   display: inline-block;
+  cursor: pointer;
+  font-size: 650%;
   color: red;
 }
 
 .black-die {
   display: inline-block;
+  cursor: pointer;
+  font-size: 650%;
 }
 
 .markers {
@@ -108,7 +71,7 @@ input {
 
 .markers span {
   cursor: pointer;
-  font-size: 120px;
+  font-size: 320%;
   letter-spacing: 0.3em;
 }
 
@@ -125,46 +88,54 @@ input {
 }
 
 .btn {
-  font-size: 22px;
+  font-size: 16px;
   padding: 7px 18px 7px 18px;
 }
 
 #game-wrap {
   display: grid;
-  grid-template-columns: 200px 1390px;
+  grid-template-columns: 60px 1fr 60px;
+  grid-template-rows: 1fr;
   padding-top: 50px;
-}
-
-#place-holder {
-  margin-bottom: 18px;
 }
 
 #dummy {
   visibility: hidden;
 }
 
-#player-names {
-  width: 140px;
-  padding-left: 40px;
-  padding-right: 20px;
+#hand::after {
+  content: "";
+  grid-column: 1;
+  grid-row: 1;
 }
 
 #hand {
   display: grid;
-  margin: 0 auto;
-  grid-template-columns: repeat(8, auto);
-  grid-column-gap: 60px;
+  margin: 0 0 0 0;
+  grid-template-columns: repeat(10, auto);
+  /* grid-template-rows: repeat(6, 9.1em); */
 }
 
-.container {
-  font-size: 16rem;
-  margin-bottom: 15px;
+.container8,
+.container17,
+.container26,
+.container35,
+.container44,
+.container53 {
+  position: relative;
+  top: 5em;
+}
+
+.container18,
+.container36 {
+  grid-column: 2;
 }
 
 .card {
-  font-size: 16rem;
+  font-size: 800%;
   text-align: center;
   line-height: 1em;
+  z-index: 2;
 }
 
 .red {
@@ -179,15 +150,22 @@ input {
   color: #eee;
 }
 
-.d {
-  margin: -11px 0 3px 0;
-  font-size: 26px;
+ul {
+  margin: -0.2em 0 0.2em 0;
 }
 
 .d li {
-  text-align: right;
-  line-height: 1.15em;
-  color: blueviolet;
+  height: 1.2em;
+  line-height: 1.2em;
+  color: #aaa;
+}
+
+/* .highlight {
+  background-color: #eee;
+} */
+
+.highlight2 {
+  background-color: rgb(36, 207, 107, 0.1);
 }
 
 .d li.highlight {
@@ -195,14 +173,252 @@ input {
   color: green;
 }
 
+.player-names-left .container:nth-child(even) {
+  visibility: hidden;
+}
+
+.player-names-right .container:nth-child(odd) {
+  visibility: hidden;
+}
+
+.player-names-left {
+  margin-top: -4px;
+  margin-right: -8em;
+  text-align: right;
+  z-index: 1;
+}
+
+.player-names-right {
+  margin-top: -4px;
+  margin-left: -8em;
+  text-align: left;
+  z-index: 1;
+}
+
 .p {
-  margin: -10px 0 0 23px;
-  font-size: 28%;
-  letter-spacing: 0.3em;
+  font-size: 200%;
   text-align: center;
 }
 
 .p li {
-  min-height: 28px;
-  line-height: 0.41em;
+  height: 0.6em;
+  line-height: 0.6em;
+  padding-left: 9%;
+  letter-spacing: 0.3em;
+}
+
+.container0 {
+  order: 0;
+}
+
+.container1 {
+  order: 1;
+}
+
+.container2 {
+  order: 2;
+}
+
+.container3 {
+  order: 3;
+}
+
+.container4 {
+  order: 4;
+}
+
+.container5 {
+  order: 5;
+}
+
+.container6 {
+  order: 6;
+}
+
+.container7 {
+  order: 7;
+}
+
+.container8 {
+  order: 8;
+}
+
+.container9 {
+  order: 17;
+}
+
+.container10 {
+  order: 16;
+}
+
+.container11 {
+  order: 15;
+}
+
+.container12 {
+  order: 14;
+}
+
+.container13 {
+  order: 13;
+}
+
+.container14 {
+  order: 12;
+}
+
+.container15 {
+  order: 11;
+}
+
+.container16 {
+  order: 10;
+}
+
+.container17 {
+  order: 9;
+}
+
+.container18 {
+  order: 18;
+}
+
+.container19 {
+  order: 19;
+}
+
+.container20 {
+  order: 20;
+}
+
+.container21 {
+  order: 21;
+}
+
+.container22 {
+  order: 22;
+}
+
+.container23 {
+  order: 23;
+}
+
+.container24 {
+  order: 24;
+}
+
+.container25 {
+  order: 25;
+}
+
+.container26 {
+  order: 26;
+}
+
+.container27 {
+  order: 35;
+}
+
+.container28 {
+  order: 34;
+}
+
+.container29 {
+  order: 33;
+}
+
+.container30 {
+  order: 32;
+}
+
+.container31 {
+  order: 31;
+}
+
+.container32 {
+  order: 30;
+}
+
+.container33 {
+  order: 29;
+}
+
+.container34 {
+  order: 28;
+}
+
+.container35 {
+  order: 27;
+}
+
+.container36 {
+  order: 36;
+}
+
+.container37 {
+  order: 37;
+}
+
+.container38 {
+  order: 38;
+}
+
+.container39 {
+  order: 39;
+}
+
+.container40 {
+  order: 40;
+}
+
+.container41 {
+  order: 41;
+}
+
+.container42 {
+  order: 42;
+}
+
+.container43 {
+  order: 43;
+}
+
+.container44 {
+  order: 44;
+}
+
+.container45 {
+  order: 53;
+}
+
+.container46 {
+  order: 52;
+}
+
+.container47 {
+  order: 51;
+}
+
+.container48 {
+  order: 50;
+}
+
+.container49 {
+  order: 49;
+}
+
+.container50 {
+  order: 48;
+}
+
+.container51 {
+  order: 47;
+}
+
+.container52 {
+  order: 46;
+}
+
+.container53 {
+  order: 45;
 }
