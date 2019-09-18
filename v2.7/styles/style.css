@@ -1,4 +1,5 @@
 body {
+  height: 100%;
   margin: 0;
   background-color: #ededed;
   background-image: url("../dice.jpg");
@@ -18,10 +19,18 @@ ul {
   height: 35%;
   width: 100%;
   text-align: center;
-  background-color: rgba(221, 221, 221, 0.9);
+  background-image: linear-gradient(
+    rgba(180, 180, 180, 1),
+    rgba(200, 200, 200, 0.9),
+    rgba(250, 250, 255, 0.7)
+  );
+  box-shadow: 4px 4px 8px gray;
+  /* border-bottom: 4px solid green; */
+  /* background-color: rgba(221, 221, 221, 0.9); */
   position: fixed;
   top: 0;
   left: 0;
+  z-index: 2;
 }
 
 #game-wrap {
@@ -56,12 +65,14 @@ input {
   cursor: pointer;
   font-size: 650%;
   color: red;
+  /* text-shadow: 4px 4px gray; */
 }
 
 .black-die {
   display: inline-block;
   cursor: pointer;
   font-size: 650%;
+  /* text-shadow: 4px 4px gray; */
 }
 
 .markers {
@@ -96,24 +107,28 @@ input {
   display: grid;
   grid-template-columns: 60px 1fr 60px;
   grid-template-rows: 1fr;
-  padding-top: 50px;
+  padding: 8% 0;
 }
 
 #dummy {
   visibility: hidden;
 }
 
-#hand::after {
-  content: "";
-  grid-column: 1;
-  grid-row: 1;
-}
-
 #hand {
   display: grid;
-  margin: 0 0 0 0;
+  /* margin: 0 0 0 0; */
   grid-template-columns: repeat(10, auto);
-  /* grid-template-rows: repeat(6, 9.1em); */
+}
+
+.container9,
+.container27,
+.container45 {
+  grid-column: 2;
+}
+
+.container26,
+.container44 {
+  grid-column: 1;
 }
 
 .container8,
@@ -123,19 +138,15 @@ input {
 .container44,
 .container53 {
   position: relative;
-  top: 5em;
-}
-
-.container18,
-.container36 {
-  grid-column: 2;
+  top: -5.8em;
 }
 
 .card {
   font-size: 800%;
   text-align: center;
   line-height: 1em;
-  z-index: 2;
+  background-color: #fff;
+  text-shadow: 1px 1px 4px rgba(200, 200, 200, 1);
 }
 
 .red {
@@ -160,11 +171,7 @@ ul {
   color: #aaa;
 }
 
-/* .highlight {
-  background-color: #eee;
-} */
-
-.highlight2 {
+.row-highlight {
   background-color: rgb(36, 207, 107, 0.1);
 }
 
@@ -173,11 +180,11 @@ ul {
   color: green;
 }
 
-.player-names-left .container:nth-child(even) {
+.player-names-left .container:nth-child(odd) {
   visibility: hidden;
 }
 
-.player-names-right .container:nth-child(odd) {
+.player-names-right .container:nth-child(even) {
   visibility: hidden;
 }
 
@@ -208,217 +215,169 @@ ul {
 }
 
 .container0 {
-  order: 0;
+  order: 53;
 }
-
 .container1 {
-  order: 1;
+  order: 52;
 }
-
 .container2 {
-  order: 2;
+  order: 51;
 }
-
 .container3 {
-  order: 3;
+  order: 50;
 }
-
 .container4 {
-  order: 4;
+  order: 49;
 }
-
 .container5 {
-  order: 5;
+  order: 48;
 }
-
 .container6 {
-  order: 6;
+  order: 47;
 }
-
 .container7 {
-  order: 7;
+  order: 46;
 }
-
 .container8 {
-  order: 8;
+  order: 45;
 }
 
 .container9 {
-  order: 17;
-}
-
-.container10 {
-  order: 16;
-}
-
-.container11 {
-  order: 15;
-}
-
-.container12 {
-  order: 14;
-}
-
-.container13 {
-  order: 13;
-}
-
-.container14 {
-  order: 12;
-}
-
-.container15 {
-  order: 11;
-}
-
-.container16 {
-  order: 10;
-}
-
-.container17 {
-  order: 9;
-}
-
-.container18 {
-  order: 18;
-}
-
-.container19 {
-  order: 19;
-}
-
-.container20 {
-  order: 20;
-}
-
-.container21 {
-  order: 21;
-}
-
-.container22 {
-  order: 22;
-}
-
-.container23 {
-  order: 23;
-}
-
-.container24 {
-  order: 24;
-}
-
-.container25 {
-  order: 25;
-}
-
-.container26 {
-  order: 26;
-}
-
-.container27 {
-  order: 35;
-}
-
-.container28 {
-  order: 34;
-}
-
-.container29 {
-  order: 33;
-}
-
-.container30 {
-  order: 32;
-}
-
-.container31 {
-  order: 31;
-}
-
-.container32 {
-  order: 30;
-}
-
-.container33 {
-  order: 29;
-}
-
-.container34 {
-  order: 28;
-}
-
-.container35 {
-  order: 27;
-}
-
-.container36 {
   order: 36;
 }
-
-.container37 {
+.container10 {
   order: 37;
 }
-
-.container38 {
+.container11 {
   order: 38;
 }
-
-.container39 {
+.container12 {
   order: 39;
 }
-
-.container40 {
+.container13 {
   order: 40;
 }
-
-.container41 {
+.container14 {
   order: 41;
 }
-
-.container42 {
+.container15 {
   order: 42;
 }
-
-.container43 {
+.container16 {
   order: 43;
 }
-
-.container44 {
+.container17 {
   order: 44;
 }
 
+.container18 {
+  order: 35;
+}
+.container19 {
+  order: 34;
+}
+.container20 {
+  order: 33;
+}
+.container21 {
+  order: 32;
+}
+.container22 {
+  order: 31;
+}
+.container23 {
+  order: 30;
+}
+.container24 {
+  order: 29;
+}
+.container25 {
+  order: 28;
+}
+.container26 {
+  order: 27;
+}
+
+.container27 {
+  order: 18;
+}
+.container28 {
+  order: 19;
+}
+.container29 {
+  order: 20;
+}
+.container30 {
+  order: 21;
+}
+.container31 {
+  order: 22;
+}
+.container32 {
+  order: 23;
+}
+.container33 {
+  order: 24;
+}
+.container34 {
+  order: 25;
+}
+.container35 {
+  order: 26;
+}
+
+.container36 {
+  order: 17;
+}
+.container37 {
+  order: 16;
+}
+.container38 {
+  order: 15;
+}
+.container39 {
+  order: 14;
+}
+.container40 {
+  order: 13;
+}
+.container41 {
+  order: 12;
+}
+.container42 {
+  order: 11;
+}
+.container43 {
+  order: 10;
+}
+.container44 {
+  order: 9;
+}
+
 .container45 {
-  order: 53;
+  order: 0;
 }
-
 .container46 {
-  order: 52;
+  order: 1;
 }
-
 .container47 {
-  order: 51;
+  order: 2;
 }
-
 .container48 {
-  order: 50;
+  order: 3;
 }
-
 .container49 {
-  order: 49;
+  order: 4;
 }
-
 .container50 {
-  order: 48;
+  order: 5;
 }
-
 .container51 {
-  order: 47;
+  order: 6;
 }
-
 .container52 {
-  order: 46;
+  order: 7;
 }
-
 .container53 {
-  order: 45;
+  order: 8;
 }
