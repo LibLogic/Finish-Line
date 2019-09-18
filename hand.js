@@ -41,18 +41,19 @@ function drawCard(startPos = 0, fromEnd = deck.length) {
 // Generate a "track" **Do not allow jack, queen, king, ace, or joker in either
 // first 3 or last 3 marker Positions.
 function generateHand() {
-  let handCenter = [];
-  // lets generate the two ends first then
-  // insert the remaining cards into the middle
+  let wings = [];
+  // Generate wing cards first (excluding J, Q, K, A, or 2)
   for (let i = 0; i < 6; i++) {
-    hand.push(drawCard(4, 15));
+    wings.push(drawCard(8, 14));
   }
-  // Generate and insert middle
+  // Put a wing card at the end of each row (every 9th card)
   let deckSize = deck.length;
-  for (let i = 0; i < deckSize; i++) {
-    handCenter.push(drawCard());
+  for (let col = 0; col < 6; col++) {
+    for (let row = 0; row < 8; row++) {
+      hand.push(drawCard());
+    }
+    hand.push(wings.pop());
   }
-  hand.splice(3, 0, ...handCenter);
   return hand;
 }
 
@@ -88,28 +89,24 @@ function renderPlayers() {
 }
 
 function renderEmptyBoard() {
-  let playerRow = "";
   let handStr = "";
-  playerRow += `<ul class="p">`;
-  players.forEach((player, i) => {
-    playerRow += `<li class="li p${i + 1}"></li>`;
-  });
-  playerRow += `</ul>`;
-
   unicodeHand.forEach((card, i) => {
     if (card > 127152 && card < 127184) {
-      handStr += `<div class="container${i}"><div class="card red">${String.fromCodePoint(
+      handStr += `<div class="marker-row container${i}"><div class="card red">${String.fromCodePoint(
         card
-      )}</div>${playerRow}</div>`;
+      )}</div></div>`;
     } else {
-      handStr += `<div class="container${i}"><div class="card black">${String.fromCodePoint(
+      handStr += `<div class="marker-row container${i}"><div class="card black">${String.fromCodePoint(
         card
-      )}</div>${playerRow}</div>`;
+      )}</div></div>`;
     }
   });
 
   let cards = document.getElementById("hand");
   cards.innerHTML = handStr;
+
+  const elem = document.getElementById("scrollToBottom");
+  elem.scroll(0, document.documentElement.scrollHeight);
 }
 
 let prompts = [
@@ -137,11 +134,7 @@ function redMarkerClick({ target }) {
   let markerChoice = "red";
   selectedMarkerCount++;
   if (selectedMarkerCount === 2) {
-    sentence.classList.add("hidden");
-    markers.classList.add("hidden");
-    btn2.classList.remove("hidden");
-    document.querySelector(".black-die").classList.add("dim");
-    document.querySelector(".red-die").classList.add("dim");
+    showRollBtn();
     dieChoiceValue =
       dieChoiceValue === num1 + num2 + 2
         ? num1 + num2 + 2
@@ -150,7 +143,7 @@ function redMarkerClick({ target }) {
       player.classList.remove("highlight");
     });
     document.querySelectorAll(`.p${currentPlayer + 1}`).forEach(row => {
-      row.classList.remove("highlight2");
+      row.classList.remove("row-highlight");
     });
     movePlayer(dieChoiceValue, markerChoice);
     ++currentPlayer;
@@ -171,11 +164,7 @@ function greenMarkerClick({ target }) {
   let markerChoice = "green";
   selectedMarkerCount++;
   if (selectedMarkerCount === 2) {
-    sentence.classList.add("hidden");
-    markers.classList.add("hidden");
-    btn2.classList.remove("hidden");
-    document.querySelector(".black-die").classList.add("dim");
-    document.querySelector(".red-die").classList.add("dim");
+    showRollBtn();
     dieChoiceValue =
       dieChoiceValue === num1 + num2 + 2
         ? num1 + num2 + 2
@@ -184,7 +173,7 @@ function greenMarkerClick({ target }) {
       player.classList.remove("highlight");
     });
     document.querySelectorAll(`.p${currentPlayer + 1}`).forEach(row => {
-      row.classList.remove("highlight2");
+      row.classList.remove("row-highlight");
     });
     movePlayer(dieChoiceValue, markerChoice);
     ++currentPlayer;
@@ -205,11 +194,7 @@ function blueMarkerClick({ target }) {
   let markerChoice = "blue";
   selectedMarkerCount++;
   if (selectedMarkerCount === 2) {
-    sentence.classList.add("hidden");
-    markers.classList.add("hidden");
-    btn2.classList.remove("hidden");
-    document.querySelector(".black-die").classList.add("dim");
-    document.querySelector(".red-die").classList.add("dim");
+    showRollBtn();
     dieChoiceValue =
       dieChoiceValue === num1 + num2 + 2
         ? num1 + num2 + 2
@@ -218,7 +203,7 @@ function blueMarkerClick({ target }) {
       player.classList.remove("highlight");
     });
     document.querySelectorAll(`.p${currentPlayer + 1}`).forEach(row => {
-      row.classList.remove("highlight2");
+      row.classList.remove("row-highlight");
     });
     movePlayer(dieChoiceValue, markerChoice);
     ++currentPlayer;
@@ -230,6 +215,14 @@ function blueMarkerClick({ target }) {
   }
   target.classList.add("hidden");
   sentence.innerHTML = prompts[3];
+}
+
+function showRollBtn() {
+  sentence.classList.add("hidden");
+  markers.classList.add("hidden");
+  btn2.classList.remove("hidden");
+  document.querySelector(".black-die").classList.add("dim");
+  document.querySelector(".red-die").classList.add("dim");
 }
 
 let sentence = document.getElementById("content");
@@ -302,32 +295,42 @@ function movePlayer(dieMove, markerChoice) {
     currentCard = (hand[i] % 100) % 14;
     if (currentCard < stopValue) {
       if (moveCount >= dieMove) {
-        console.log("b stopped by die value");
+        console.log("b stopped by die value", currentCard);
         players[currentPlayer][markerToMove]++;
         break;
       }
       console.log("c never stops here?");
       players[currentPlayer][markerToMove]++;
     } else {
-      console.log("d stopped by card value first");
+      console.log("d stopped by card value first", currentCard);
       players[currentPlayer][markerToMove]++;
       break;
     }
   }
 
   //check status if good do nothng else come back with previousMarkerPosition
-  checkMarkerStatus(dieMove, previousMarkerPosition, currentCard, wingCards);
-  // checkMarkerStatus(stopValue, dieMove, moveCount, previousMarkerPosition);
+  checkMarkerStatus(dieMove, previousMarkerPosition, currentCard);
   renderEmptyBoard();
 }
 
 function fillSpaces() {
+  let playerRow = "";
+  playerRow += `<ul class="p">`;
+  players.forEach((player, i) => {
+    playerRow += `<li class="li p${i + 1}"></li>`;
+  });
+  playerRow += `</ul>`;
+
+  document.querySelectorAll(".marker-row").forEach(li => {
+    li.innerHTML += playerRow;
+  });
+
   document.querySelectorAll(`.player${currentPlayer}`).forEach(player => {
     player.classList.add("highlight");
   });
 
   document.querySelectorAll(`.p${currentPlayer + 1}`).forEach(row => {
-    row.classList.add("highlight2");
+    row.classList.add("row-highlight");
   });
 
   let spaces;
@@ -348,6 +351,7 @@ function fillSpaces() {
         break;
     }
     spaces = document.querySelectorAll(row);
+
     if (players[i].markerAPos > -1) {
       spaces[
         players[i].markerAPos
@@ -366,18 +370,13 @@ function fillSpaces() {
   }
 }
 
-function checkMarkerStatus(
-  dieMove,
-  previousMarkerPosition,
-  currentCard,
-  wingCards
-) {
+function checkMarkerStatus(dieMove, previousMarkerPosition, currentCard) {
   let handLength = hand.length - 1;
 
   // first do all the things that should just return
   // remember moves have already been made, just not displayed yet
   if (players[currentPlayer][markerToMove] < handLength) {
-    checkActivation(currentCard, wingCards);
+    checkActivation(currentCard);
     checkForAttack();
     return;
   }
@@ -400,24 +399,23 @@ function checkMarkerStatus(
   }
 }
 
-function checkActivation(currentCard, wingCards) {
-  let isSafety = false;
+function checkActivation(currentCard) {
+  console.log(currentCard, "current card");
   let activatedCard = false;
-  console.log(currentCard, "currentCard", wingCards);
   let activationCards = [13, 12, 11, 1, 2];
   activationCards.forEach(activationCard => {
     if (currentCard === activationCard) {
       activatedCard = currentCard;
-      isSafety = wingCards.some(wingCard => {
-        return activatedCard === wingCard;
-      });
+      alert("activation card is " + activatedCard);
+      // determine color of activated card
+      // showRollBtn();
+      // allow for player to roll dice again
+      // determine the color of the higher die
+      // if higher die is same color as activater card
+      // do stuff
+      // else do nothing
     }
   });
-  if (isSafety === true) {
-    alert("activation card is " + activatedCard + " but it is a safety card");
-  } else if (activatedCard) {
-    alert("activation card is " + activatedCard);
-  }
 }
 
 function checkForAttack() {
