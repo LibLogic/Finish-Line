@@ -88,7 +88,7 @@ function renderPlayers() {
   });
 }
 
-function renderBoard() {
+function renderEmptyBoard() {
   let handStr = "";
   unicodeHand.forEach((card, i) => {
     if (card > 127152 && card < 127184) {
@@ -119,7 +119,7 @@ let prompts = [
 let players = [];
 document.getElementById("players").addEventListener("keyup", e => {
   if (e.keyCode === 13) {
-    initializePage();
+    getPlayerNames();
   }
 });
 
@@ -128,23 +128,30 @@ markers.classList.add("hidden");
 
 let selectedMarkerCount = 0;
 let dieChoiceValue = 0;
+// let currentPlayer = 0;
 document.getElementById("red-marker").addEventListener("click", redMarkerClick);
 function redMarkerClick({ target }) {
   let markerChoice = "red";
   selectedMarkerCount++;
   if (selectedMarkerCount === 2) {
-    showRollView();
+    showRollBtn();
     dieChoiceValue =
       dieChoiceValue === redDieValue + blackDieValue + 2
         ? redDieValue + blackDieValue + 2
         : redDieValue + blackDieValue + 2 - dieChoiceValue;
+    document.querySelectorAll(`.player${currentPlayer}`).forEach(player => {
+      player.classList.remove("highlight");
+    });
+    document.querySelectorAll(`.p${currentPlayer + 1}`).forEach(row => {
+      row.classList.remove("row-highlight");
+    });
     movePlayer(dieChoiceValue, markerChoice);
     ++currentPlayer;
     currentPlayer = currentPlayer % players.length;
-    updateMarkers();
+    fillSpaces();
   } else {
     movePlayer(dieChoiceValue, markerChoice);
-    updateMarkers();
+    fillSpaces();
   }
   target.classList.add("hidden");
   sentence.innerHTML = prompts[3];
@@ -157,18 +164,24 @@ function greenMarkerClick({ target }) {
   let markerChoice = "green";
   selectedMarkerCount++;
   if (selectedMarkerCount === 2) {
-    showRollView();
+    showRollBtn();
     dieChoiceValue =
       dieChoiceValue === redDieValue + blackDieValue + 2
         ? redDieValue + blackDieValue + 2
         : redDieValue + blackDieValue + 2 - dieChoiceValue;
+    document.querySelectorAll(`.player${currentPlayer}`).forEach(player => {
+      player.classList.remove("highlight");
+    });
+    document.querySelectorAll(`.p${currentPlayer + 1}`).forEach(row => {
+      row.classList.remove("row-highlight");
+    });
     movePlayer(dieChoiceValue, markerChoice);
     ++currentPlayer;
     currentPlayer = currentPlayer % players.length;
-    updateMarkers();
+    fillSpaces();
   } else {
     movePlayer(dieChoiceValue, markerChoice);
-    updateMarkers();
+    fillSpaces();
   }
   target.classList.add("hidden");
   sentence.innerHTML = prompts[3];
@@ -181,38 +194,64 @@ function blueMarkerClick({ target }) {
   let markerChoice = "blue";
   selectedMarkerCount++;
   if (selectedMarkerCount === 2) {
-    showRollView();
+    showRollBtn();
     dieChoiceValue =
       dieChoiceValue === redDieValue + blackDieValue + 2
         ? redDieValue + blackDieValue + 2
         : redDieValue + blackDieValue + 2 - dieChoiceValue;
+    document.querySelectorAll(`.player${currentPlayer}`).forEach(player => {
+      player.classList.remove("highlight");
+    });
+    document.querySelectorAll(`.p${currentPlayer + 1}`).forEach(row => {
+      row.classList.remove("row-highlight");
+    });
     movePlayer(dieChoiceValue, markerChoice);
     ++currentPlayer;
     currentPlayer = currentPlayer % players.length;
-    updateMarkers();
+    fillSpaces();
   } else {
     movePlayer(dieChoiceValue, markerChoice);
-    updateMarkers();
+    fillSpaces();
   }
   target.classList.add("hidden");
   sentence.innerHTML = prompts[3];
 }
 
-function showRollView() {
-  sentence.classList.add("hidden");
-  markers.classList.add("hidden");
-  document.querySelector(".black-die").classList.add("dim");
+let special = false;
+function showRollBtn() {
+  //special
+  let dice1 = dieStr[(redDieValue = 3)];
+  let dice2 = dieStr[(blackDieValue = 4)];
+  dice =
+    '<div class="red-die dim">' +
+    dice1 +
+    '</div><div class="bullet dim">•</div><div class="black-die dim">' +
+    dice2 +
+    "</div>";
+
+  document.getElementById("dice").innerHTML = dice;
+
   document.querySelector(".red-die").classList.add("dim");
+  document.querySelector(".black-die").classList.add("dim");
   document.querySelector(".bullet").classList.add("dim");
 
-  document.getElementById("rollBtn").classList.remove("hidden");
-  // document.getElementById("btn2").classList.remove("hidden");
-  document.getElementById("btn3").classList.add("hidden");
+  if (special === true) {
+    document.getElementById("btn3").classList.remove("hidden");
+    alert("This will be a special roll");
+  } else {
+    document.getElementById("btn2").classList.remove("hidden");
+  }
+
+  sentence.classList.add("hidden");
+  markers.classList.add("hidden");
+  // btn2.classList.remove("hidden");
+  // document.querySelector(".black-die").classList.add("dim");
+  // document.querySelector(".red-die").classList.add("dim");
 }
 
 let sentence = document.getElementById("content");
 
-let diceDiv = document.getElementById("dice");
+// let diceDiv = document.getElementById("dice");
 
 let btn1 = document.getElementById("btn1");
 
@@ -225,8 +264,12 @@ btn1.addEventListener("click", () => {
   btn1.classList.add("hidden");
 });
 
+// let btn2 = document.getElementById("btn2");
+// btn2.addEventListener("click", () => {
+//   diceDiv.classList.remove("hidden");
+// });
+
 function movePlayer(dieMove, markerChoice) {
-  console.log("running movePlayer");
   switch (markerChoice) {
     case "red":
       markerToMove = "markerAPos";
@@ -241,7 +284,7 @@ function movePlayer(dieMove, markerChoice) {
 
   let moveCount = 0;
   let stopValue = 0;
-  let currentCardValue = 0;
+  let fullCardValue = 0;
   let wingCards = [
     (hand[8] % 100) % 14,
     (hand[17] % 100) % 14,
@@ -253,7 +296,7 @@ function movePlayer(dieMove, markerChoice) {
   let previousMarkerPosition = players[currentPlayer][markerToMove];
   for (let i = players[currentPlayer][markerToMove] + 1; i < hand.length; i++) {
     if (dieMove === 0) {
-      console.log("dieMove was 0");
+      console.log("a");
       break;
     }
     stopValue = redDieValue + blackDieValue + 2;
@@ -273,81 +316,92 @@ function movePlayer(dieMove, markerChoice) {
       "\nMove count",
       moveCount
     );
-
-    currentCard = hand[i];
-    currentCardValue = (hand[i] % 100) % 14;
-
-    if (currentCardValue < stopValue) {
+    fullCardValue = hand[i];
+    let currentCard = (fullCardValue % 100) % 14;
+    if ((fullCardValue % 100) % 14 < stopValue) {
       if (moveCount >= dieMove) {
-        console.log("stopped by die value @ ", currentCardValue);
+        console.log("b stopped by die value", currentCard);
         players[currentPlayer][markerToMove]++;
         break;
       }
-      console.log("increments here, but never stops here");
+      console.log("c never stops here?");
       players[currentPlayer][markerToMove]++;
     } else {
-      console.log("stopped by card value first @ ", currentCardValue);
+      console.log("d stopped by card value first", currentCard);
       players[currentPlayer][markerToMove]++;
       break;
     }
   }
 
   //check status if good do nothng else come back with previousMarkerPosition
-  checkMarkerStatus(dieMove, previousMarkerPosition, currentCard);
-  updateMarkers();
+  checkMarkerStatus(dieMove, previousMarkerPosition, fullCardValue);
+  renderEmptyBoard();
 }
 
-function updateMarkers() {
-  console.log("running updateMarkers");
-  let spaces;
-  let row = "";
-  // for (let i = 0; i < players.length; i++) {
-  switch (currentPlayer) {
-    case 0:
-      row = ".p1";
-      break;
-    case 1:
-      row = ".p2";
-      break;
-    case 2:
-      row = ".p3";
-      break;
-    case 3:
-      row = ".p4";
-      break;
-  }
-  document.querySelectorAll(`.p${currentPlayer + 1} span`).forEach(li => {
-    li.innerHTML = "";
+function fillSpaces() {
+  let playerRow = "";
+  playerRow += `<ul class="p">`;
+  players.forEach((player, i) => {
+    playerRow += `<li class="li p${i + 1}"></li>`;
+  });
+  playerRow += `</ul>`;
+
+  document.querySelectorAll(".marker-row").forEach(li => {
+    li.innerHTML += playerRow;
   });
 
-  spaces = document.querySelectorAll(row);
-  if (players[currentPlayer].markerAPos > -1) {
-    spaces[
-      players[currentPlayer].markerAPos
-    ].innerHTML += `<span style="color: tomato">•</span>`;
-  }
-  if (players[currentPlayer].markerBPos > -1) {
-    spaces[
-      players[currentPlayer].markerBPos
-    ].innerHTML += `<span style="color: mediumseagreen">•</span>`;
-  }
-  if (players[currentPlayer].markerCPos > -1) {
-    spaces[
-      players[currentPlayer].markerCPos
-    ].innerHTML += `<span style="color: mediumpurple">•</span>`;
+  document.querySelectorAll(`.player${currentPlayer}`).forEach(player => {
+    player.classList.add("highlight");
+  });
+
+  document.querySelectorAll(`.p${currentPlayer + 1}`).forEach(row => {
+    row.classList.add("row-highlight");
+  });
+
+  let spaces;
+  let row = "";
+  for (let i = 0; i < players.length; i++) {
+    switch (i) {
+      case 0:
+        row = ".p1";
+        break;
+      case 1:
+        row = ".p2";
+        break;
+      case 2:
+        row = ".p3";
+        break;
+      case 3:
+        row = ".p4";
+        break;
+    }
+    spaces = document.querySelectorAll(row);
+
+    if (players[i].markerAPos > -1) {
+      spaces[
+        players[i].markerAPos
+      ].innerHTML += `<span style="color: tomato">•</span>`;
+    }
+    if (players[i].markerBPos > -1) {
+      spaces[
+        players[i].markerBPos
+      ].innerHTML += `<span style="color: mediumseagreen">•</span>`;
+    }
+    if (players[i].markerCPos > -1) {
+      spaces[
+        players[i].markerCPos
+      ].innerHTML += `<span style="color: mediumpurple">•</span>`;
+    }
   }
 }
 
-function checkMarkerStatus(dieMove, previousMarkerPosition, currentCard) {
-  console.log("running checkMarkerStatus");
+function checkMarkerStatus(dieMove, previousMarkerPosition, fullCardValue) {
   let handLength = hand.length - 1;
+
   // first do all the things that should just return
   // remember moves have already been made, just not displayed yet
   if (players[currentPlayer][markerToMove] < handLength) {
-    getSpecialCards(currentCard);
-    if (userCards.length > 0 && selectedMarkerCount > 1) {
-      processSpecialCards();
-    }
+    checkActivation(fullCardValue);
     checkForAttack();
     return;
   }
@@ -370,96 +424,28 @@ function checkMarkerStatus(dieMove, previousMarkerPosition, currentCard) {
   }
 }
 
-let userCards = [];
-function getSpecialCards(currentCard) {
-  let specialCards = [13, 12, 11, 1, 2];
-  currentCardValue = (currentCard % 100) % 14;
-  specialCards.forEach(specialCard => {
-    if (currentCardValue === specialCard) {
-      userCards.push(currentCard);
-      console.log("running getSpecialCards");
+function checkActivation(fullCardValue) {
+  console.log((fullCardValue % 100) % 14, "current card");
+  let activatedCard = false;
+  let activationCards = [13, 12, 11, 1, 2];
+  activationCards.forEach(activationCard => {
+    if ((fullCardValue % 100) % 14 === activationCard) {
+      activatedCard = (fullCardValue % 100) % 14;
+      // alert("activation card is " + activatedCard);
+      let cardColor = "";
+      let suit = Math.floor(fullCardValue / 100);
+      if (suit === 2 || suit === 3) {
+        cardColor = "red";
+      } else {
+        cardColor = "black";
+      }
+      rollDice(); //temp
+      // specialCardRoll(cardColor);
     }
   });
 }
 
-function processSpecialCards() {
-  let furthestSpecialCard = getFurthestCard();
-
-  let furthestCardColor =
-    Math.floor(furthestSpecialCard / 100) === 2 ||
-    Math.floor(furthestSpecialCard / 100 === 3)
-      ? "red"
-      : "black";
-
-  console.log(
-    furthestSpecialCard,
-    furthestCardColor,
-    "furthestSpecialCard, furthestCardColor"
-  );
-
-  // 3. get new die roll for this card
-  // a. create the roll btn
-
-  // rollBtn.removeEventListener("click", rollBtnClick);
-  // rollBtn.addEventListener("click", specialRollClick);
-  // b. showRollView with btn
-
-  showRollView();
-
-  function decideActivation() {
-    let winningDieColor = null;
-    if (redDieValue < blackDieValue) {
-      winningDieColor = "black";
-    } else if (blackDieValue < redDieValue) {
-      winningDieColor = "red";
-    }
-
-    setTimeout(() => {
-      if (winningDieColor === furthestCardColor) {
-        alert("Card has been activated " + furthestCardColor);
-        // applyPenalty();
-      } else {
-        alert("Sorry, card not activated " + furthestCardColor);
-
-        // need to change out event listeners here
-        // rollBtn.removeEventListener("click", specialRollClick);
-        // rollBtn.addEventListener("click", rollBtnClick);
-
-        // rollDice();
-      }
-    }, 4000);
-  }
-
-  // 4. determine which die is greater
-  // 5. if greater die matches card color apply rule
-  // 6. process next special card
-
-  function getFurthestCard() {
-    let posA = -1;
-    let posB = -1;
-    let posC = -1;
-    if (userCards.includes(hand[players[currentPlayer].markerAPos])) {
-      posA = players[currentPlayer].markerAPos;
-    }
-    if (userCards.includes(hand[players[currentPlayer].markerBPos])) {
-      posB = players[currentPlayer].markerBPos;
-    }
-    if (userCards.includes(hand[players[currentPlayer].markerCPos])) {
-      posC = players[currentPlayer].markerCPos;
-    }
-    let furthestSpecialIndex = Math.max(posA, posB, posC);
-    let furthestSpecialCard = hand[furthestSpecialIndex];
-    return furthestSpecialCard;
-  }
-  // be sure to do this last //////////////////////////////
-  if (selectedMarkerCount > 1) {
-    userCards = [];
-  }
-  // be sure to do this last /////////////////////////////
-}
-
 function checkForAttack() {
-  console.log("running checkForAttack");
   let collisions = [];
   for (let i = currentPlayer + 1; i !== currentPlayer; i++) {
     i = i % players.length;
@@ -481,82 +467,23 @@ function checkForAttack() {
   }
 }
 
-// function setActivation() {
+function specialCardRoll() {
+  alert("You've landed on a special card. Please roll again ");
+  showRollBtn();
+  console.log(redDieValue, " ", blackDieValue); // we havent rolled yet
+  // if higher die is same color as activated card
+  // do stuff
+  // else do nothing
+}
 
-//   let winningDieColor = null;
-//   if (redDieValue < blackDieValue) {
-//     winningDieColor = "black";
-//   } else if (blackDieValue < redDieValue) {
-//     winningDieColor = "red";
-//   }
-
-//   setTimeout(() => {
-//     if (winningDieColor === specialCardColor) {
-//       alert("Card has been activated ");
-//       applyPenalty();
-//     } else {
-//       alert("Sorry, card not activated ");
-//       // need to change out event listeners here
-//       rollDice();
-//     }
-//   }, 4000);
-// }
-
-function initializePage() {
+let playersInfo = "";
+function getPlayerNames() {
   document
     .getElementById("bg-image")
     .setAttribute("style", "background-image: url(./dice2.jpg)");
   document
     .getElementById("hand")
     .setAttribute("style", "background-color: #fff;");
-
-  let dice1 = dieStr[(redDieValue = 3)];
-  let dice2 = dieStr[(blackDieValue = 4)];
-  dice =
-    '<div class="red-die dim">' +
-    dice1 +
-    '</div><div class="bullet dim">•</div><div class="black-die dim">' +
-    dice2 +
-    "</div>";
-  diceDiv.innerHTML = dice;
-
-  document.getElementById("dice").insertAdjacentHTML(
-    "afterend",
-    `<button id="rollBtn" class="btn">
-    Roll The Dice
-  </button>`
-  );
-
-  document.getElementById("rollBtn").addEventListener("click", rollBtnClick);
-
-  // document.getElementById("dice").insertAdjacentHTML(
-  //   "afterend",
-  //   `<button id="btn2" class="btn" onclick="rollDice()">
-  //   Roll The Dice
-  // </button>`
-  // );
-
-  document.getElementById("dice").insertAdjacentHTML(
-    "afterend",
-    `<button id="btn3" class="btn hidden">
-    Special Roll
-  </button>`
-  );
-
-  getPlayerNames();
-}
-
-function rollBtnClick() {
-  rollDice();
-}
-
-function specialRollClick() {
-  specialCardRoll();
-  decideActivation();
-}
-
-let playersInfo = "";
-function getPlayerNames() {
   playersInfo = document.getElementById("players").value;
   playerStr = playersInfo.split(", ");
 
@@ -579,68 +506,39 @@ function getPlayerNames() {
   namesInputDiv.classList.add("hidden");
   document.getElementById("content").classList.add("hidden");
 
+  document.getElementById("dice").insertAdjacentHTML(
+    "afterend",
+    `<button id="btn3" class="btn hidden" onclick="specialCardRoll()">
+    Roll The Dice2
+  </button>`
+  );
+
+  document.getElementById("dice").insertAdjacentHTML(
+    "afterend",
+    `<button id="btn2" class="btn hidden" onclick="rollDice()">
+    Roll The Dice
+  </button>`
+  );
+  // let dice1 = dieStr[(redDieValue = 3)];
+  // let dice2 = dieStr[(blackDieValue = 4)];
+  // dice =
+  //   '<div class="red-die dim">' +
+  //   dice1 +
+  //   '</div><div class="bullet dim">•</div><div class="black-die dim">' +
+  //   dice2 +
+  //   "</div>";
+  // diceDiv.innerHTML = dice;
+
+  // document.querySelector(".red-die").classList.add("dim");
+  // document.querySelector(".black-die").classList.add("dim");
+  // document.querySelector(".bullet").classList.add("dim");
+  showRollBtn();
+  // btn2.classList.remove("hidden");
   renderPlayers();
-  renderBoard();
-
-  let playerRow = "";
-  playerRow += `<ul class="p">`;
-  players.forEach((player, i) => {
-    playerRow += `<li class="li p${i + 1}"></li>`;
-  });
-  playerRow += `</ul>`;
-
-  document.querySelectorAll(".marker-row").forEach(li => {
-    li.innerHTML += playerRow;
-  });
-
-  document.querySelectorAll(`.p1`).forEach(li => {
-    li.classList.add("row-highlight");
-  });
-}
-
-function specialCardRoll() {
-  alert(" running specialCardRoll");
-
-  redDieValue = Math.floor(Math.random() * 6);
-  let dice1 = dieStr[redDieValue];
-  blackDieValue = Math.floor(Math.random() * 6);
-  let dice2 = dieStr[blackDieValue];
-  dice =
-    '<div class="red-die">' +
-    dice1 +
-    '</div><div class="bullet">•</div><div class="black-die">' +
-    dice2 +
-    "</div>";
-
-  diceDiv.innerHTML = dice;
-  document.querySelector(".black-die").classList.remove("dim");
-  document.querySelector(".red-die").classList.remove("dim");
-  document.getElementById("btn3").classList.add("hidden");
-}
-
-function applyPenalty() {
-  alert("penalty applied");
-  showRollView();
+  renderEmptyBoard();
 }
 
 function rollDice() {
-  for (let i = 0; i < players.length; i++) {
-    document.querySelectorAll(`.player${i}`).forEach(player => {
-      player.classList.remove("highlight");
-    });
-    document.querySelectorAll(`.p${i + 1}`).forEach(row => {
-      row.classList.remove("row-highlight");
-    });
-  }
-
-  document.querySelectorAll(`.player${currentPlayer}`).forEach(player => {
-    player.classList.add("highlight");
-  });
-
-  document.querySelectorAll(`.p${currentPlayer + 1}`).forEach(li => {
-    li.classList.add("row-highlight");
-  });
-
   selectedMarkerCount = 0;
 
   document.getElementById("red-marker").classList.remove("hidden");
@@ -658,10 +556,9 @@ function rollDice() {
     dice2 +
     "</div>";
 
-  diceDiv.innerHTML = dice;
+  document.getElementById("dice").innerHTML = dice;
 
-  rollBtn.classList.add("hidden");
-  // btn2.classList.add("hidden");
+  document.getElementById("btn2").classList.add("hidden");
 
   sentence.innerHTML = prompts[2];
   sentence.classList.remove("hidden");
