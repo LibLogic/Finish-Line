@@ -11,9 +11,6 @@
     <div id="header">
       <div id="dice"><h1>Dice Racer</h1></div>
       <button id="btn1" class="btn">Click To Begin</button>
-      <button id="btn2" class="btn hidden" onclick="rollDice()">
-        Roll The Dice
-      </button>
       <h2 id="content" class="hidden"></h2>
       <div id="players-names" class="hidden">
         <input
@@ -21,9 +18,9 @@
           type="text"
           name="user-names"
           autofocus
-          value="Tom, Jackie, Cliff, Vrashali"
+          value="Tom, Jackie, Cliff, Vrishali"
         />
-        <button type="submit" class="btn" onclick="getPlayerNames()">
+        <button type="submit" class="btn" onclick="initializePage()">
           Submit
         </button>
       </div>

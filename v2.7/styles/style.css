@@ -1,6 +1,6 @@
 body {
   height: 100%;
-  margin: 0;
+  margin: 0 3%;
   background-color: #ededed;
   background-image: url("../dice.jpg");
   background-size: 40%;
@@ -158,7 +158,7 @@ input {
 }
 
 .dim {
-  color: #eee;
+  color: rgba(255, 255, 255, 0.4);
 }
 
 ul {
@@ -212,6 +212,10 @@ ul {
   line-height: 0.6em;
   padding-left: 9%;
   letter-spacing: 0.3em;
+}
+
+.faded {
+  opacity: 0.3;
 }
 
 .container0 {
