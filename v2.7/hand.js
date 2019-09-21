@@ -468,7 +468,7 @@ function processSpecialCards() {
       switchUser();
       rollBtn.addEventListener("click", rollBtnClick);
     } else {
-      alert("Sorry, card not activated " + winningDieColor + " die won");
+      alert("Sorry, card not activated " + furthestCardColor + " die lost");
       rollBtn.removeEventListener("click", function() {
         specialCardRoll();
         decideActivation();
@@ -482,10 +482,12 @@ function processSpecialCards() {
     let furthestMarkerEntry = ["", -1];
     let playerEntries = Object.entries(players[currentPlayer]);
     for (const [marker, position] of playerEntries) {
-      if (position > furthestMarkerEntry[1]) {
-        furthestMarkerEntry = [marker, position];
+      if (userCards.includes(hand[players[currentPlayer][marker]])) {
+        if (position > furthestMarkerEntry[1]) {
+          furthestMarkerEntry = [marker, position];
+        }
+        furthestMarker = furthestMarkerEntry[0];
       }
-      furthestMarker = furthestMarkerEntry[0];
     }
 
     let posA = -1;
@@ -636,7 +638,16 @@ function specialCardRoll() {
 }
 
 function applyPenalty(furthestMarker) {
-  console.log(currentPlayer, "apply");
+  let markerPos = players[currentPlayer][furthestMarker];
+  let markerIndex = (markerPos % 9) + 1;
+  let spacesToMove = 18 - markerIndex * 2;
+  console.log(
+    spacesToMove,
+    markerIndex,
+    markerPos,
+    currentPlayer,
+    "apply spacesToMove markerIndex markerPos currentPlayer"
+  );
 
   let card = hand[players[currentPlayer][furthestMarker]] % 100;
   console.log(players[currentPlayer].name, "is this player?");
@@ -664,6 +675,13 @@ function applyPenalty(furthestMarker) {
 
   function ladder() {
     alert("penalty will be ladder");
+    // move the right marker forward spacesToMove
+    players[currentPlayer][furthestMarker] += spacesToMove;
+    players[currentPlayer][furthestMarker] =
+      players[currentPlayer][furthestMarker] > hand.length - 1
+        ? hand.length - 1
+        : players[currentPlayer][furthestMarker];
+    updateMarkers();
   }
 
   function pullForwards() {
@@ -676,6 +694,12 @@ function applyPenalty(furthestMarker) {
 
   function chute() {
     alert("penalty will be chute");
+    players[currentPlayer][furthestMarker] -= spacesToMove;
+    players[currentPlayer][furthestMarker] =
+      players[currentPlayer][furthestMarker] < 0
+        ? -1
+        : players[currentPlayer][furthestMarker];
+    updateMarkers();
   }
 
   function swap() {
