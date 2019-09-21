@@ -133,7 +133,6 @@ function redMarkerClick({ target }) {
   let markerChoice = "red";
   selectedMarkerCount++;
   if (selectedMarkerCount === 2) {
-    showRollView();
     dieChoiceValue =
       dieChoiceValue === redDieValue + blackDieValue + 2
         ? redDieValue + blackDieValue + 2
@@ -141,6 +140,8 @@ function redMarkerClick({ target }) {
     movePlayer(dieChoiceValue, markerChoice);
     ++currentPlayer;
     currentPlayer = currentPlayer % players.length;
+    // switchUser();
+    showRollView();
     updateMarkers();
   } else {
     movePlayer(dieChoiceValue, markerChoice);
@@ -157,7 +158,6 @@ function greenMarkerClick({ target }) {
   let markerChoice = "green";
   selectedMarkerCount++;
   if (selectedMarkerCount === 2) {
-    showRollView();
     dieChoiceValue =
       dieChoiceValue === redDieValue + blackDieValue + 2
         ? redDieValue + blackDieValue + 2
@@ -165,6 +165,8 @@ function greenMarkerClick({ target }) {
     movePlayer(dieChoiceValue, markerChoice);
     ++currentPlayer;
     currentPlayer = currentPlayer % players.length;
+    // switchUser();
+    showRollView();
     updateMarkers();
   } else {
     movePlayer(dieChoiceValue, markerChoice);
@@ -181,7 +183,6 @@ function blueMarkerClick({ target }) {
   let markerChoice = "blue";
   selectedMarkerCount++;
   if (selectedMarkerCount === 2) {
-    showRollView();
     dieChoiceValue =
       dieChoiceValue === redDieValue + blackDieValue + 2
         ? redDieValue + blackDieValue + 2
@@ -189,6 +190,8 @@ function blueMarkerClick({ target }) {
     movePlayer(dieChoiceValue, markerChoice);
     ++currentPlayer;
     currentPlayer = currentPlayer % players.length;
+    // switchUser();
+    showRollView();
     updateMarkers();
   } else {
     movePlayer(dieChoiceValue, markerChoice);
@@ -204,10 +207,29 @@ function showRollView() {
   document.querySelector(".black-die").classList.add("dim");
   document.querySelector(".red-die").classList.add("dim");
   document.querySelector(".bullet").classList.add("dim");
-
   document.getElementById("rollBtn").classList.remove("hidden");
-  // document.getElementById("btn2").classList.remove("hidden");
-  document.getElementById("btn3").classList.add("hidden");
+}
+
+function switchUser() {
+  console.log("running switchUser");
+
+  // need to keep this from running when we activate cards
+  rollBtn.innerHTML = `${players[currentPlayer].name}<br/>Roll The Dice x`;
+
+  for (let i = 0; i < players.length; i++) {
+    document.querySelectorAll(`.player${i}`).forEach(player => {
+      player.classList.remove("highlight");
+    });
+    document.querySelectorAll(`.p${i + 1}`).forEach(row => {
+      row.classList.remove("row-highlight");
+    });
+  }
+  document.querySelectorAll(`.player${currentPlayer}`).forEach(player => {
+    player.classList.add("highlight");
+  });
+  document.querySelectorAll(`.p${currentPlayer + 1}`).forEach(li => {
+    li.classList.add("row-highlight");
+  });
 }
 
 let sentence = document.getElementById("content");
@@ -336,6 +358,16 @@ function updateMarkers() {
       players[currentPlayer].markerCPos
     ].innerHTML += `<span style="color: mediumpurple">•</span>`;
   }
+
+  console.log(specialCardFlag, selectedMarkerCount);
+
+  console.log(specialCardFlag === false && selectedMarkerCount > 1);
+
+  // maybe we can set a flag here?
+  if (specialCardFlag === false && selectedMarkerCount > 1) {
+    console.log("about to run switchUser");
+    switchUser();
+  }
 }
 
 function checkMarkerStatus(dieMove, previousMarkerPosition, currentCard) {
@@ -345,9 +377,14 @@ function checkMarkerStatus(dieMove, previousMarkerPosition, currentCard) {
   // remember moves have already been made, just not displayed yet
   if (players[currentPlayer][markerToMove] < handLength) {
     getSpecialCards(currentCard);
+
     if (userCards.length > 0 && selectedMarkerCount > 1) {
       processSpecialCards();
     }
+    //  else if (userCards.length === 0 && selectedMarkerCount > 1) {
+    //   switchUser((flag = false));
+    // }
+
     checkForAttack();
     return;
   }
@@ -372,22 +409,26 @@ function checkMarkerStatus(dieMove, previousMarkerPosition, currentCard) {
 
 let userCards = [];
 function getSpecialCards(currentCard) {
+  console.log("running getSpecialCards");
+
   let specialCards = [13, 12, 11, 1, 2];
   currentCardValue = (currentCard % 100) % 14;
   specialCards.forEach(specialCard => {
     if (currentCardValue === specialCard) {
       userCards.push(currentCard);
-      console.log("running getSpecialCards");
     }
   });
 }
 
+let specialCardFlag = false;
 function processSpecialCards() {
+  console.log("running processSpecialCards");
+  console.log(userCards);
   let furthestSpecialCard = getFurthestCard();
 
   let furthestCardColor =
     Math.floor(furthestSpecialCard / 100) === 2 ||
-    Math.floor(furthestSpecialCard / 100 === 3)
+    Math.floor(furthestSpecialCard / 100) === 3
       ? "red"
       : "black";
 
@@ -397,42 +438,61 @@ function processSpecialCards() {
     "furthestSpecialCard, furthestCardColor"
   );
 
-  // 3. get new die roll for this card
-  // a. create the roll btn
-
-  // rollBtn.removeEventListener("click", rollBtnClick);
-  // rollBtn.addEventListener("click", specialRollClick);
-  // b. showRollView with btn
-
-  showRollView();
+  rollBtn.removeEventListener("click", rollBtnClick);
+  rollBtn.innerHTML = `${players[currentPlayer].name}<br/>Special Card(s)<br/>Activation Roll`;
+  rollBtn.addEventListener(
+    "click",
+    function() {
+      specialCardRoll();
+      decideActivation();
+      specialCardFlag = false;
+    },
+    { once: true }
+  );
 
   function decideActivation() {
-    let winningDieColor = null;
-    if (redDieValue < blackDieValue) {
+    console.log(
+      furthestCardColor,
+      "furthestCardColor — running decideActivation"
+    );
+    let winningDieColor = "neither";
+    if (blackDieValue + 1 > redDieValue + 1) {
       winningDieColor = "black";
-    } else if (blackDieValue < redDieValue) {
+    } else if (blackDieValue + 1 < redDieValue + 1) {
       winningDieColor = "red";
     }
+    console.log(
+      redDieValue + 1,
+      "r",
+      blackDieValue + 1,
+      "b",
+      "<-die values",
+      winningDieColor,
+      furthestCardColor,
+      "winningDieColor, furthestCardColor outside setTimeout"
+    );
 
-    setTimeout(() => {
-      if (winningDieColor === furthestCardColor) {
-        alert("Card has been activated " + furthestCardColor);
-        // applyPenalty();
-      } else {
-        alert("Sorry, card not activated " + furthestCardColor);
-
-        // need to change out event listeners here
-        // rollBtn.removeEventListener("click", specialRollClick);
-        // rollBtn.addEventListener("click", rollBtnClick);
-
-        // rollDice();
-      }
-    }, 4000);
+    if (winningDieColor === furthestCardColor) {
+      console.log("Card has been activated " + winningDieColor + " die won");
+      applyPenalty();
+      rollBtn.removeEventListener("click", function() {
+        specialCardRoll();
+        decideActivation();
+      });
+      switchUser();
+      // rollBtn.innerHTML = `${players[currentPlayer].name}<br/>Roll The Dice y`;
+      rollBtn.addEventListener("click", rollBtnClick);
+    } else {
+      console.log("Sorry, card not activated " + winningDieColor + " die won");
+      rollBtn.removeEventListener("click", function() {
+        specialCardRoll();
+        decideActivation();
+      });
+      switchUser();
+      // rollBtn.innerHTML = `${players[currentPlayer].name}<br/>Roll The Dice z`;
+      rollBtn.addEventListener("click", rollBtnClick);
+    }
   }
-
-  // 4. determine which die is greater
-  // 5. if greater die matches card color apply rule
-  // 6. process next special card
 
   function getFurthestCard() {
     let posA = -1;
@@ -451,6 +511,11 @@ function processSpecialCards() {
     let furthestSpecialCard = hand[furthestSpecialIndex];
     return furthestSpecialCard;
   }
+
+  if (userCards.length > 0) {
+    specialCardFlag = true;
+  }
+
   // be sure to do this last //////////////////////////////
   if (selectedMarkerCount > 1) {
     userCards = [];
@@ -481,27 +546,6 @@ function checkForAttack() {
   }
 }
 
-// function setActivation() {
-
-//   let winningDieColor = null;
-//   if (redDieValue < blackDieValue) {
-//     winningDieColor = "black";
-//   } else if (blackDieValue < redDieValue) {
-//     winningDieColor = "red";
-//   }
-
-//   setTimeout(() => {
-//     if (winningDieColor === specialCardColor) {
-//       alert("Card has been activated ");
-//       applyPenalty();
-//     } else {
-//       alert("Sorry, card not activated ");
-//       // need to change out event listeners here
-//       rollDice();
-//     }
-//   }, 4000);
-// }
-
 function initializePage() {
   document
     .getElementById("bg-image")
@@ -520,39 +564,20 @@ function initializePage() {
     "</div>";
   diceDiv.innerHTML = dice;
 
-  document.getElementById("dice").insertAdjacentHTML(
-    "afterend",
-    `<button id="rollBtn" class="btn">
-    Roll The Dice
-  </button>`
-  );
+  getPlayerNames();
+
+  document
+    .getElementById("dice")
+    .insertAdjacentHTML(
+      "afterend",
+      `<button id="rollBtn" class="btn">${players[currentPlayer].name}<br/>Roll The Dice w</button>`
+    );
 
   document.getElementById("rollBtn").addEventListener("click", rollBtnClick);
-
-  // document.getElementById("dice").insertAdjacentHTML(
-  //   "afterend",
-  //   `<button id="btn2" class="btn" onclick="rollDice()">
-  //   Roll The Dice
-  // </button>`
-  // );
-
-  document.getElementById("dice").insertAdjacentHTML(
-    "afterend",
-    `<button id="btn3" class="btn hidden">
-    Special Roll
-  </button>`
-  );
-
-  getPlayerNames();
 }
 
 function rollBtnClick() {
   rollDice();
-}
-
-function specialRollClick() {
-  specialCardRoll();
-  decideActivation();
 }
 
 let playersInfo = "";
@@ -599,8 +624,7 @@ function getPlayerNames() {
 }
 
 function specialCardRoll() {
-  alert(" running specialCardRoll");
-
+  console.log("running specialCardRoll");
   redDieValue = Math.floor(Math.random() * 6);
   let dice1 = dieStr[redDieValue];
   blackDieValue = Math.floor(Math.random() * 6);
@@ -615,32 +639,13 @@ function specialCardRoll() {
   diceDiv.innerHTML = dice;
   document.querySelector(".black-die").classList.remove("dim");
   document.querySelector(".red-die").classList.remove("dim");
-  document.getElementById("btn3").classList.add("hidden");
 }
 
 function applyPenalty() {
   alert("penalty applied");
-  showRollView();
 }
 
 function rollDice() {
-  for (let i = 0; i < players.length; i++) {
-    document.querySelectorAll(`.player${i}`).forEach(player => {
-      player.classList.remove("highlight");
-    });
-    document.querySelectorAll(`.p${i + 1}`).forEach(row => {
-      row.classList.remove("row-highlight");
-    });
-  }
-
-  document.querySelectorAll(`.player${currentPlayer}`).forEach(player => {
-    player.classList.add("highlight");
-  });
-
-  document.querySelectorAll(`.p${currentPlayer + 1}`).forEach(li => {
-    li.classList.add("row-highlight");
-  });
-
   selectedMarkerCount = 0;
 
   document.getElementById("red-marker").classList.remove("hidden");
@@ -661,7 +666,6 @@ function rollDice() {
   diceDiv.innerHTML = dice;
 
   rollBtn.classList.add("hidden");
-  // btn2.classList.add("hidden");
 
   sentence.innerHTML = prompts[2];
   sentence.classList.remove("hidden");

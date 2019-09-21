@@ -4,6 +4,7 @@ body {
   background-color: #ededed;
   background-image: url("../dice.jpg");
   background-size: 40%;
+  user-select: none;
 }
 
 ul {
@@ -171,15 +172,6 @@ ul {
   color: #aaa;
 }
 
-.row-highlight {
-  background-color: rgb(36, 207, 107, 0.1);
-}
-
-.d li.highlight {
-  font-weight: 600;
-  color: green;
-}
-
 .player-names-left .container:nth-child(odd) {
   visibility: hidden;
 }
@@ -212,10 +204,22 @@ ul {
   line-height: 0.6em;
   padding-left: 9%;
   letter-spacing: 0.3em;
+  box-sizing: border-box;
+  border-bottom: 1px solid #ccc;
+  background-color: #f7f5f7;
 }
 
 .faded {
   opacity: 0.3;
+}
+
+.p li.row-highlight {
+  background-color: rgb(36, 207, 107, 0.1);
+}
+
+.d li.highlight {
+  font-weight: 600;
+  color: green;
 }
 
 .container0 {
