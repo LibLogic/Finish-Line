@@ -140,7 +140,6 @@ function redMarkerClick({ target }) {
     movePlayer(dieChoiceValue, markerChoice);
     ++currentPlayer;
     currentPlayer = currentPlayer % players.length;
-    // switchUser();
     showRollView();
     updateMarkers();
   } else {
@@ -165,7 +164,6 @@ function greenMarkerClick({ target }) {
     movePlayer(dieChoiceValue, markerChoice);
     ++currentPlayer;
     currentPlayer = currentPlayer % players.length;
-    // switchUser();
     showRollView();
     updateMarkers();
   } else {
@@ -190,7 +188,6 @@ function blueMarkerClick({ target }) {
     movePlayer(dieChoiceValue, markerChoice);
     ++currentPlayer;
     currentPlayer = currentPlayer % players.length;
-    // switchUser();
     showRollView();
     updateMarkers();
   } else {
@@ -214,7 +211,7 @@ function switchUser() {
   console.log("running switchUser");
 
   // need to keep this from running when we activate cards
-  rollBtn.innerHTML = `${players[currentPlayer].name}<br/>Roll The Dice x`;
+  rollBtn.innerHTML = `${players[currentPlayer].name}<br/>Roll The Dice`;
 
   for (let i = 0; i < players.length; i++) {
     document.querySelectorAll(`.player${i}`).forEach(player => {
@@ -358,14 +355,7 @@ function updateMarkers() {
       players[currentPlayer].markerCPos
     ].innerHTML += `<span style="color: mediumpurple">•</span>`;
   }
-
-  console.log(specialCardFlag, selectedMarkerCount);
-
-  console.log(specialCardFlag === false && selectedMarkerCount > 1);
-
-  // maybe we can set a flag here?
   if (specialCardFlag === false && selectedMarkerCount > 1) {
-    console.log("about to run switchUser");
     switchUser();
   }
 }
@@ -377,14 +367,9 @@ function checkMarkerStatus(dieMove, previousMarkerPosition, currentCard) {
   // remember moves have already been made, just not displayed yet
   if (players[currentPlayer][markerToMove] < handLength) {
     getSpecialCards(currentCard);
-
     if (userCards.length > 0 && selectedMarkerCount > 1) {
       processSpecialCards();
     }
-    //  else if (userCards.length === 0 && selectedMarkerCount > 1) {
-    //   switchUser((flag = false));
-    // }
-
     checkForAttack();
     return;
   }
@@ -421,9 +406,11 @@ function getSpecialCards(currentCard) {
 }
 
 let specialCardFlag = false;
+let furthestMarker = "";
 function processSpecialCards() {
   console.log("running processSpecialCards");
   console.log(userCards);
+
   let furthestSpecialCard = getFurthestCard();
 
   let furthestCardColor =
@@ -439,7 +426,7 @@ function processSpecialCards() {
   );
 
   rollBtn.removeEventListener("click", rollBtnClick);
-  rollBtn.innerHTML = `${players[currentPlayer].name}<br/>Special Card(s)<br/>Activation Roll`;
+  rollBtn.innerHTML = `${players[currentPlayer].name} Has Special Card(s)<br/>Roll For Activation`;
   rollBtn.addEventListener(
     "click",
     function() {
@@ -461,40 +448,46 @@ function processSpecialCards() {
     } else if (blackDieValue + 1 < redDieValue + 1) {
       winningDieColor = "red";
     }
-    console.log(
-      redDieValue + 1,
-      "r",
-      blackDieValue + 1,
-      "b",
-      "<-die values",
-      winningDieColor,
-      furthestCardColor,
-      "winningDieColor, furthestCardColor outside setTimeout"
-    );
 
     if (winningDieColor === furthestCardColor) {
-      console.log("Card has been activated " + winningDieColor + " die won");
-      applyPenalty();
+      alert(
+        "Card has been activated, " +
+          winningDieColor +
+          " die won.\nPenalty will be applied to " +
+          furthestMarker
+      );
+      currentPlayer += players.length - 1;
+      currentPlayer = currentPlayer % players.length;
+      applyPenalty(furthestMarker);
+      ++currentPlayer;
+      currentPlayer = currentPlayer % players.length;
       rollBtn.removeEventListener("click", function() {
         specialCardRoll();
         decideActivation();
       });
       switchUser();
-      // rollBtn.innerHTML = `${players[currentPlayer].name}<br/>Roll The Dice y`;
       rollBtn.addEventListener("click", rollBtnClick);
     } else {
-      console.log("Sorry, card not activated " + winningDieColor + " die won");
+      alert("Sorry, card not activated " + winningDieColor + " die won");
       rollBtn.removeEventListener("click", function() {
         specialCardRoll();
         decideActivation();
       });
       switchUser();
-      // rollBtn.innerHTML = `${players[currentPlayer].name}<br/>Roll The Dice z`;
       rollBtn.addEventListener("click", rollBtnClick);
     }
   }
 
   function getFurthestCard() {
+    let furthestMarkerEntry = ["", -1];
+    let playerEntries = Object.entries(players[currentPlayer]);
+    for (const [marker, position] of playerEntries) {
+      if (position > furthestMarkerEntry[1]) {
+        furthestMarkerEntry = [marker, position];
+      }
+      furthestMarker = furthestMarkerEntry[0];
+    }
+
     let posA = -1;
     let posB = -1;
     let posC = -1;
@@ -507,8 +500,9 @@ function processSpecialCards() {
     if (userCards.includes(hand[players[currentPlayer].markerCPos])) {
       posC = players[currentPlayer].markerCPos;
     }
-    let furthestSpecialIndex = Math.max(posA, posB, posC);
-    let furthestSpecialCard = hand[furthestSpecialIndex];
+    let furthestCardIndex = Math.max(posA, posB, posC);
+    let furthestSpecialCard = hand[furthestCardIndex];
+    console.log(playerEntries, "playerEntries");
     return furthestSpecialCard;
   }
 
@@ -570,7 +564,7 @@ function initializePage() {
     .getElementById("dice")
     .insertAdjacentHTML(
       "afterend",
-      `<button id="rollBtn" class="btn">${players[currentPlayer].name}<br/>Roll The Dice w</button>`
+      `<button id="rollBtn" class="btn">${players[currentPlayer].name}<br/>Roll The Dice</button>`
     );
 
   document.getElementById("rollBtn").addEventListener("click", rollBtnClick);
@@ -641,8 +635,52 @@ function specialCardRoll() {
   document.querySelector(".red-die").classList.remove("dim");
 }
 
-function applyPenalty() {
-  alert("penalty applied");
+function applyPenalty(furthestMarker) {
+  console.log(currentPlayer, "apply");
+
+  let card = hand[players[currentPlayer][furthestMarker]] % 100;
+  console.log(players[currentPlayer].name, "is this player?");
+  console.log(card, "is this card?");
+
+  switch (card) {
+    case 13:
+      ladder();
+      break;
+    case 12:
+      pullForwards();
+      break;
+    case 11:
+      pushBackwards();
+      break;
+    case 1:
+      chute();
+      break;
+    case 2:
+      swap();
+      break;
+    default:
+      console.log("unknown penalty type");
+  }
+
+  function ladder() {
+    alert("penalty will be ladder");
+  }
+
+  function pullForwards() {
+    alert("penalty will be pullForwards");
+  }
+
+  function pushBackwards() {
+    alert("penalty will be pushBackwards");
+  }
+
+  function chute() {
+    alert("penalty will be chute");
+  }
+
+  function swap() {
+    alert("penalty will be swap");
+  }
 }
 
 function rollDice() {
