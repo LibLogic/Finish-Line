@@ -315,6 +315,7 @@ function updateMarkers() {
   if (specialCardFlag === false && movesRemaining < 1) {
     switchUser();
   }
+  // }
 }
 
 function checkMarkerStatus(dieMove, previousMarkerPosition, currentCard) {
