@@ -137,25 +137,15 @@ let firstDieValue = 0;
 let secondDieValue = 0;
 function markerClick({ target }) {
   let markerChoice = target.id;
-  // console.clear();
+  console.clear();
+  sortOpponentMarkers(players);
+  // console.log(players);
   movesRemaining--;
   if (movesRemaining === 0) {
-    console.log(
-      movesRemaining,
-      secondDieValue,
-      markerChoice,
-      "movesRemaining secondDieValue marker click"
-    );
     movePlayer(secondDieValue, markerChoice);
     updateMarkers();
     showRollView();
   } else {
-    console.log(
-      movesRemaining,
-      firstDieValue,
-      markerChoice,
-      "movesRemaining firstDieValue marker click"
-    );
     movePlayer(firstDieValue, markerChoice);
     updateMarkers();
   }
@@ -166,7 +156,6 @@ function markerClick({ target }) {
 function showRollView() {
   console.log("running showRollView");
   displayMarkers();
-
   sentence.classList.add("hidden");
   document.querySelector(".markers").classList.add("hidden");
   document.querySelector(".black-die").classList.add("dim");
@@ -176,6 +165,7 @@ function showRollView() {
 }
 
 function switchUser() {
+  console.log("running switchUser");
   ++currentPlayer;
   currentPlayer = currentPlayer % players.length;
   movesRemaining = 2;
@@ -191,6 +181,7 @@ function switchUser() {
       row.classList.remove("row-highlight");
     });
   }
+
   document.querySelectorAll(`.player${currentPlayer}`).forEach(player => {
     player.classList.add("highlight");
   });
@@ -281,9 +272,10 @@ function movePlayer(dieMove, markerChoice) {
 }
 
 function updateMarkers() {
+  console.log("running updateMarkers");
+
   let spaces;
   let row = "";
-  // for (let i = 0; i < players.length; i++) {
   switch (currentPlayer) {
     case 0:
       row = ".p1";
@@ -298,7 +290,8 @@ function updateMarkers() {
       row = ".p4";
       break;
   }
-  document.querySelectorAll(`.p${currentPlayer + 1} span`).forEach(li => {
+
+  document.querySelectorAll(`.p${currentPlayer + 1}`).forEach(li => {
     li.innerHTML = "";
   });
 
@@ -322,7 +315,6 @@ function updateMarkers() {
   if (specialCardFlag === false && movesRemaining < 1) {
     switchUser();
   }
-  // }
 }
 
 function checkMarkerStatus(dieMove, previousMarkerPosition, currentCard) {
@@ -330,11 +322,11 @@ function checkMarkerStatus(dieMove, previousMarkerPosition, currentCard) {
   // first do all the things that should just return
   // remember moves have already been made, just not displayed yet
   if (players[currentPlayer][markerToMove] < handLength) {
-    // getSpecialCards(currentCard);
-    // if (userCards.length > 0 && movesRemaining < 1) {
-    //   processSpecialCards();
-    // }
-    // checkForAttack();
+    getSpecialCards(currentCard);
+    if (userCards.length > 0 && movesRemaining < 1) {
+      processSpecialCards();
+    }
+    checkForAttack();
     return;
   }
   if (previousMarkerPosition + dieMove === handLength) {
@@ -369,21 +361,15 @@ function getSpecialCards(currentCard) {
 let specialCardFlag = false;
 let furthestMarker = "";
 function processSpecialCards() {
-  console.log(userCards);
+  // console.log(userCards);
 
-  let furthestSpecialCard = getFurthestCard();
+  let furthestSpecialCard = getFurthestSpecialCard();
 
   let furthestCardColor =
     Math.floor(furthestSpecialCard / 100) === 2 ||
     Math.floor(furthestSpecialCard / 100) === 3
       ? "red"
       : "black";
-
-  console.log(
-    furthestSpecialCard,
-    furthestCardColor,
-    "furthestSpecialCard, furthestCardColor"
-  );
 
   rollBtn.removeEventListener("click", rollBtnClick);
   rollBtn.innerHTML = `${players[currentPlayer].name} Has Special Card(s)<br/>Roll For Activation`;
@@ -416,11 +402,7 @@ function processSpecialCards() {
           " die won.\nPenalty will be applied to " +
           furthestMarker
       );
-      currentPlayer += players.length - 1;
-      currentPlayer = currentPlayer % players.length;
       applyPenalty(furthestMarker);
-      ++currentPlayer;
-      currentPlayer = currentPlayer % players.length;
       rollBtn.removeEventListener("click", function() {
         specialCardRoll();
         decideActivation();
@@ -438,7 +420,7 @@ function processSpecialCards() {
     }
   }
 
-  function getFurthestCard() {
+  function getFurthestSpecialCard() {
     let furthestMarkerEntry = ["", -1];
     let playerEntries = Object.entries(players[currentPlayer]);
     for (const [marker, position] of playerEntries) {
@@ -464,7 +446,6 @@ function processSpecialCards() {
     }
     let furthestCardIndex = Math.max(posA, posB, posC);
     let furthestSpecialCard = hand[furthestCardIndex];
-    console.log(playerEntries, "playerEntries");
     return furthestSpecialCard;
   }
 
@@ -542,18 +523,19 @@ function getPlayerNames() {
   playerStr = playersInfo.split(", ");
 
   class Player {
-    constructor(name) {
-      this.markerAPos = 47;
-      this.markerBPos = 47;
-      this.markerCPos = 47;
+    constructor(index, name) {
+      this.index = index;
+      this.markerAPos = -1;
+      this.markerBPos = -1;
+      this.markerCPos = -1;
       this.name = name;
       players.push(this);
     }
   }
 
   (function() {
-    for (let i = 0; i < playerStr.length; i++) {
-      new Player(playerStr[i]);
+    for (let index = 0; index < playerStr.length; index++) {
+      new Player(index, playerStr[index]);
     }
   })();
 
@@ -600,19 +582,10 @@ function specialCardRoll() {
 function applyPenalty(furthestMarker) {
   let markerPos = players[currentPlayer][furthestMarker];
   let markerIndex = (markerPos % 9) + 1;
-  let spacesToMove = 18 - markerIndex * 2;
-  console.log(
-    spacesToMove,
-    markerIndex,
-    markerPos,
-    currentPlayer,
-    "apply spacesToMove markerIndex markerPos currentPlayer"
-  );
+  let forwardSpacesToMove = 18 - markerIndex * 2;
+  let backwardSpacesToMove = markerIndex * 2;
 
   let card = hand[players[currentPlayer][furthestMarker]] % 100;
-  console.log(players[currentPlayer].name, "is this player?");
-  console.log(card, "is this card?");
-
   switch (card) {
     case 13:
       ladder();
@@ -635,8 +608,7 @@ function applyPenalty(furthestMarker) {
 
   function ladder() {
     alert("penalty will be ladder");
-    // move the right marker forward spacesToMove
-    players[currentPlayer][furthestMarker] += spacesToMove;
+    players[currentPlayer][furthestMarker] += forwardSpacesToMove;
     players[currentPlayer][furthestMarker] =
       players[currentPlayer][furthestMarker] > hand.length - 1
         ? hand.length - 1
@@ -646,15 +618,45 @@ function applyPenalty(furthestMarker) {
 
   function pullForwards() {
     alert("penalty will be pullForwards");
+    currentPosition = players[currentPlayer][furthestMarker];
+    let sortedMarkers = sortPlayerMarkers();
+    let markerToMove = sortedMarkers.filter(marker => {
+      return marker[3] < currentPosition;
+    });
+    markerToMove = markerToMove[0][2];
+    players[currentPlayer][markerToMove] = currentPosition;
+    updateMarkers();
   }
 
   function pushBackwards() {
     alert("penalty will be pushBackwards");
+    currentPosition = players[currentPlayer][furthestMarker];
+    let playerToMove = [];
+    let markerToMoveValue = 0;
+    let sortedMarkers = sortOpponentMarkers(players);
+    // console.log(sortedMarkers, "pushBackwards sortedMarkers");
+
+    let markerToMove = sortedMarkers.filter(marker => {
+      return marker[2] > currentPosition;
+    });
+    // console.log(markerToMove, "pushBackwards markerToMove");
+    if (markerToMove.length > 0) {
+      markerToMoveValue = markerToMove[markerToMove.length - 1][2];
+      playerToMove = markerToMove[markerToMove.length - 1];
+      // console.log(
+      //   playerToMove,
+      //   markerToMove,
+      //   "pushBackwards playerToMove markerToMove"
+      // );
+
+      // players[currentPlayer][markerToMove] = currentPosition; //wrongo
+      updateMarkers();
+    }
   }
 
   function chute() {
-    alert("penalty will be chute");
-    players[currentPlayer][furthestMarker] -= spacesToMove;
+    alert("penalty will be chute"); // something wrongo
+    players[currentPlayer][furthestMarker] -= backwardSpacesToMove;
     players[currentPlayer][furthestMarker] =
       players[currentPlayer][furthestMarker] < 0
         ? -1
@@ -668,6 +670,7 @@ function applyPenalty(furthestMarker) {
 }
 
 function rollDice() {
+  console.log("running rollDice");
   movesRemaining = 2;
 
   redDieValue = Math.floor(Math.random() * 6);
@@ -688,6 +691,18 @@ function rollDice() {
 }
 
 function displayMarkers() {
+  console.log("running displayMarkers");
+
+  document
+    .getElementById("green-marker")
+    .removeEventListener("click", markerClick);
+  document
+    .getElementById("red-marker")
+    .removeEventListener("click", markerClick);
+  document
+    .getElementById("blue-marker")
+    .removeEventListener("click", markerClick);
+
   let visibleMarkerCount = 3;
   players[currentPlayer].markerAPos < hand.length - 1
     ? document.getElementById("red-marker").classList.remove("hidden")
@@ -702,8 +717,6 @@ function displayMarkers() {
     ? document.getElementById("blue-marker").classList.remove("hidden")
     : (document.getElementById("blue-marker").classList.add("hidden"),
       visibleMarkerCount--);
-
-  console.log(visibleMarkerCount, "visibleMarkerCount running displayMarkers");
 
   if (visibleMarkerCount < 2) {
     movesRemaining = 1;
@@ -726,16 +739,24 @@ function dieClick({ target }) {
     movesRemaining = 1;
     target.classList.add("dim");
     target.classList.add("dim");
+    document.querySelector(".red-die").removeEventListener("click", dieClick);
+    document.querySelector(".black-die").removeEventListener("click", dieClick);
   }
   if (target.className === "red-die") {
     firstDieValue = redDieValue + 1;
     secondDieValue = blackDieValue + 1;
     target.classList.add("dim");
+    document.querySelector(".bullet").classList.add("dim");
+    document.querySelector(".bullet").removeEventListener("click", dieClick);
+    document.querySelector(".black-die").removeEventListener("click", dieClick);
   }
   if (target.className === "black-die") {
     firstDieValue = blackDieValue + 1;
     secondDieValue = redDieValue + 1;
     target.classList.add("dim");
+    document.querySelector(".bullet").classList.add("dim");
+    document.querySelector(".bullet").removeEventListener("click", dieClick);
+    document.querySelector(".red-die").removeEventListener("click", dieClick);
   }
   sentence.innerHTML = prompts[1];
   sentence.classList.remove("hidden");
@@ -743,3 +764,63 @@ function dieClick({ target }) {
   target.classList.add("dim");
   markerEvents();
 }
+
+function sortOpponentMarkers(players) {
+  opponents = players.filter((player, i) => {
+    return i !== currentPlayer;
+  });
+  let sorted = [];
+  opponents.forEach(player => {
+    for (let marker in player) {
+      if (!(marker === "name" || marker === "index")) {
+        sorted.push([player.index, player.name, marker, player[marker]]);
+      }
+    }
+    sorted.sort((b, a) => {
+      return a[3] - b[3];
+    });
+  });
+  console.log(sorted);
+  return sorted;
+}
+
+function sortPlayerMarkers() {
+  let sorted = [];
+  for (let marker in players[currentPlayer]) {
+    if (!(marker === "name" || marker === "index")) {
+      sorted.push([
+        players[currentPlayer].index,
+        players[currentPlayer].name,
+        marker,
+        players[currentPlayer][marker]
+      ]);
+    }
+  }
+  sorted.sort((b, a) => {
+    return a[2] - b[2];
+  });
+  return sorted;
+}
+
+// function newSortOpponentMarkers(players) {
+//   let indexed = [];
+//   let opponents = [];
+//   let sorted = [];
+//   players.forEach((player, i) => {
+//     indexed.push([i, ...Object.entries(player)]);
+//   });
+//   opponents = indexed.filter((player, i) => {
+//     return i !== currentPlayer;
+//   });
+//   opponents.forEach(player => {
+//     player.forEach((entry, i) => {
+//       if (!(i === 4 || i === 0)) {
+//         console.log(entry[1]); // this is the position that we need to sort
+//         sorted = player.sort((a, b) => {
+//           return a[entry] - b[entry];
+//         });
+//       }
+//     });
+//   });
+//   console.log(sorted);
+// }
