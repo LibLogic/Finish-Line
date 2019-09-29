@@ -273,49 +273,48 @@ function movePlayer(dieMove, markerChoice) {
 
 function updateMarkers() {
   console.log("running updateMarkers");
+  players.forEach((player, playerIndex) => {
+    let row = "";
+    switch (playerIndex) {
+      case 0:
+        row = ".p1";
+        break;
+      case 1:
+        row = ".p2";
+        break;
+      case 2:
+        row = ".p3";
+        break;
+      case 3:
+        row = ".p4";
+        break;
+    }
 
-  let spaces;
-  let row = "";
-  switch (currentPlayer) {
-    case 0:
-      row = ".p1";
-      break;
-    case 1:
-      row = ".p2";
-      break;
-    case 2:
-      row = ".p3";
-      break;
-    case 3:
-      row = ".p4";
-      break;
-  }
+    document.querySelectorAll(`.p${playerIndex + 1}`).forEach(li => {
+      li.innerHTML = "";
+    });
 
-  document.querySelectorAll(`.p${currentPlayer + 1}`).forEach(li => {
-    li.innerHTML = "";
+    spaces = document.querySelectorAll(row);
+    if (players[playerIndex].markerAPos > -1) {
+      spaces[
+        players[playerIndex].markerAPos
+      ].innerHTML += `<span style="color: tomato">•</span>`;
+    }
+    if (players[playerIndex].markerBPos > -1) {
+      spaces[
+        players[playerIndex].markerBPos
+      ].innerHTML += `<span style="color: mediumseagreen">•</span>`;
+    }
+    if (players[playerIndex].markerCPos > -1) {
+      spaces[
+        players[playerIndex].markerCPos
+      ].innerHTML += `<span style="color: mediumpurple">•</span>`;
+    }
+
+    if (specialCardFlag === false && movesRemaining < 1) {
+      switchUser();
+    }
   });
-
-  spaces = document.querySelectorAll(row);
-  if (players[currentPlayer].markerAPos > -1) {
-    spaces[
-      players[currentPlayer].markerAPos
-    ].innerHTML += `<span style="color: tomato">•</span>`;
-  }
-  if (players[currentPlayer].markerBPos > -1) {
-    spaces[
-      players[currentPlayer].markerBPos
-    ].innerHTML += `<span style="color: mediumseagreen">•</span>`;
-  }
-  if (players[currentPlayer].markerCPos > -1) {
-    spaces[
-      players[currentPlayer].markerCPos
-    ].innerHTML += `<span style="color: mediumpurple">•</span>`;
-  }
-
-  if (specialCardFlag === false && movesRemaining < 1) {
-    switchUser();
-  }
-  // }
 }
 
 function checkMarkerStatus(dieMove, previousMarkerPosition, currentCard) {
@@ -485,6 +484,13 @@ function checkForAttack() {
 }
 
 function initializePage() {
+  document.querySelector(".show-header").addEventListener("mouseenter", () => {
+    document.querySelector(".show-header").setAttribute("style", "opacity: 1");
+  });
+  document.querySelector(".show-header").addEventListener("mouseleave", () => {
+    document.querySelector(".show-header").setAttribute("style", "opacity: 0");
+  });
+
   document
     .getElementById("bg-image")
     .setAttribute("style", "background-image: url(./dice2.jpg)");
@@ -524,8 +530,7 @@ function getPlayerNames() {
   playerStr = playersInfo.split(", ");
 
   class Player {
-    constructor(index, name) {
-      this.index = index;
+    constructor(name) {
       this.markerAPos = -1;
       this.markerBPos = -1;
       this.markerCPos = -1;
@@ -535,8 +540,8 @@ function getPlayerNames() {
   }
 
   (function() {
-    for (let index = 0; index < playerStr.length; index++) {
-      new Player(index, playerStr[index]);
+    for (let i = 0; i < playerStr.length; i++) {
+      new Player(playerStr[i]);
     }
   })();
 
@@ -624,33 +629,33 @@ function applyPenalty(furthestMarker) {
     let markerToMove = sortedMarkers.filter(marker => {
       return marker[3] < currentPosition;
     });
-    markerToMove = markerToMove[0][2];
-    players[currentPlayer][markerToMove] = currentPosition;
+    if (markerToMove[0][2]) {
+      markerToMove = markerToMove[0][2];
+      // gettin errors above Cannot read property '2' of undefined
+      players[currentPlayer][markerToMove] = currentPosition;
+    }
     updateMarkers();
   }
 
   function pushBackwards() {
     alert("penalty will be pushBackwards");
     currentPosition = players[currentPlayer][furthestMarker];
-    let playerToMove = [];
-    let markerToMoveValue = 0;
-    let sortedMarkers = sortOpponentMarkers(players);
-    // console.log(sortedMarkers, "pushBackwards sortedMarkers");
+    let closestPlayer = [];
+    let opponentIndex = 0;
 
-    let markerToMove = sortedMarkers.filter(marker => {
+    let sortedMarkers = sortOpponentMarkers(players);
+    let markerList = sortedMarkers.filter(marker => {
       return marker[2] > currentPosition;
     });
-    // console.log(markerToMove, "pushBackwards markerToMove");
-    if (markerToMove.length > 0) {
-      markerToMoveValue = markerToMove[markerToMove.length - 1][2];
-      playerToMove = markerToMove[markerToMove.length - 1];
-      // console.log(
-      //   playerToMove,
-      //   markerToMove,
-      //   "pushBackwards playerToMove markerToMove"
-      // );
-
-      // players[currentPlayer][markerToMove] = currentPosition; //wrongo
+    if (markerList.length > 0) {
+      closestPlayer = markerList[markerList.length - 1];
+      players.forEach((player, i) => {
+        if (player.name === closestPlayer[0]) {
+          opponentIndex = i;
+        }
+      });
+      players[opponentIndex][closestPlayer[1]] = currentPosition;
+      alert("Pushing " + players[opponentIndex].name + " back.");
       updateMarkers();
     }
   }
@@ -667,6 +672,33 @@ function applyPenalty(furthestMarker) {
 
   function swap() {
     alert("penalty will be swap");
+    currentPosition = players[currentPlayer][furthestMarker];
+    let opponentIndex = 0;
+    let sortedMarkers = sortOpponentMarkers(players);
+    let filteredMarkers = sortedMarkers.filter(player => {
+      return !(player[2] === currentPosition || player[2] === -1);
+    });
+    let randomIndex = Math.floor(Math.random() * filteredMarkers.length);
+    let randomPlayer = [];
+    randomPlayer = filteredMarkers[randomIndex];
+    if (filteredMarkers.length > 0) {
+      players.forEach((player, i) => {
+        if (player.name === randomPlayer[0]) {
+          opponentIndex = i;
+        }
+      });
+      players[currentPlayer][furthestMarker] =
+        players[opponentIndex][randomPlayer[1]];
+      players[opponentIndex][randomPlayer[1]] = currentPosition;
+      alert(
+        `Swapping with ${players[opponentIndex].name}'s marker at position ${
+          randomPlayer[2]
+        }`
+      );
+    } else {
+      alert("Nobody to swap with.");
+    }
+    updateMarkers();
   }
 }
 
@@ -773,15 +805,14 @@ function sortOpponentMarkers(players) {
   let sorted = [];
   opponents.forEach(player => {
     for (let marker in player) {
-      if (!(marker === "name" || marker === "index")) {
-        sorted.push([player.index, player.name, marker, player[marker]]);
+      if (marker !== "name") {
+        sorted.push([player.name, marker, player[marker]]);
       }
     }
     sorted.sort((b, a) => {
-      return a[3] - b[3];
+      return a[2] - b[2];
     });
   });
-  console.log(sorted);
   return sorted;
 }
 
@@ -798,30 +829,7 @@ function sortPlayerMarkers() {
     }
   }
   sorted.sort((b, a) => {
-    return a[2] - b[2];
+    return a[3] - b[3];
   });
   return sorted;
 }
-
-// function newSortOpponentMarkers(players) {
-//   let indexed = [];
-//   let opponents = [];
-//   let sorted = [];
-//   players.forEach((player, i) => {
-//     indexed.push([i, ...Object.entries(player)]);
-//   });
-//   opponents = indexed.filter((player, i) => {
-//     return i !== currentPlayer;
-//   });
-//   opponents.forEach(player => {
-//     player.forEach((entry, i) => {
-//       if (!(i === 4 || i === 0)) {
-//         console.log(entry[1]); // this is the position that we need to sort
-//         sorted = player.sort((a, b) => {
-//           return a[entry] - b[entry];
-//         });
-//       }
-//     });
-//   });
-//   console.log(sorted);
-// }
