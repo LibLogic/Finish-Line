@@ -502,7 +502,7 @@ function initializePage() {
     document.querySelector(".show-header").setAttribute("style", "opacity: 1");
   });
   document.querySelector(".show-header").addEventListener("mouseleave", () => {
-    document.querySelector(".show-header").setAttribute("style", "opacity: 0");
+    document.querySelector(".show-header").setAttribute("style", "opacity: .3");
   });
 
   document
