@@ -164,6 +164,7 @@ function showRollView() {
 }
 
 function switchUser() {
+  userCards = [];
   console.log("running switchUser");
   ++currentPlayer;
   currentPlayer = currentPlayer % players.length;
@@ -309,11 +310,11 @@ function updateMarkers() {
         players[playerIndex].markerCPos
       ].innerHTML += `<span style="color: mediumpurple">•</span>`;
     }
-
     if (specialCardFlag === false && movesRemaining < 1) {
       switchUser();
     }
   });
+  console.log(players);
 }
 
 function checkMarkerStatus(dieMove, previousMarkerPosition, currentCard) {
@@ -362,17 +363,45 @@ function getSpecialCards(currentCard) {
 let specialCardFlag = false;
 let furthestMarker = "";
 function processSpecialCards() {
+  console.log("processSpecialCards");
   rollBtn.removeEventListener("click", rollBtnClick);
   rollBtn.innerHTML = `${players[currentPlayer].name} Has Special Card(s)<br/>Roll For Activation`;
-  rollBtn.addEventListener(
-    "click",
-    function() {
-      specialCardRoll();
-      decideActivation();
+  rollBtn.addEventListener("click", specialBtnClick, { once: true });
+
+  function specialBtnClick() {
+    console.log(userCards, "special btn event 1");
+
+    rollBtn.removeEventListener("click", pauseBtnClick);
+    rollBtn.removeEventListener("click", specialBtnClick, { once: true });
+    specialCardRoll();
+    decideActivation();
+    document.querySelector(".bullet").classList.add("dim");
+    rollBtn.innerHTML = `Ok`;
+    rollBtn.addEventListener("click", pauseBtnClick);
+  }
+
+  function pauseBtnClick() {
+    sentence.classList.add("hidden");
+    rollBtn.removeEventListener("click", pauseBtnClick);
+    rollBtn.removeEventListener("click", specialBtnClick, { once: true });
+    userCards.forEach((card, i) => {
+      if (card === furthestSpecialCard) {
+        userCards.splice(i, 1);
+      }
+    });
+    document.querySelector(".black-die").classList.add("dim");
+    document.querySelector(".red-die").classList.add("dim");
+    if (userCards.length === 0) {
+      showRollView();
+      switchUser();
+      rollBtn.addEventListener("click", rollBtnClick);
       specialCardFlag = false;
-    },
-    { once: true }
-  );
+    } else {
+      if (userCards.length > 0 && movesRemaining < 1) {
+        processSpecialCards();
+      }
+    }
+  }
 
   furthestSpecialCard = getFurthestSpecialCard();
   let furthestCardColor =
@@ -382,6 +411,7 @@ function processSpecialCards() {
       : "black";
 
   function decideActivation() {
+    console.log("decideActivation");
     let winningDieColor = "neither";
     if (blackDieValue + 1 > redDieValue + 1) {
       winningDieColor = "black";
@@ -390,47 +420,10 @@ function processSpecialCards() {
     }
 
     if (winningDieColor === furthestCardColor) {
-      sentence.innerHTML = `card activated, ${winningDieColor} die won.`;
-      sentence.classList.remove("hidden");
-      applyPenalty(furthestMarker);
-      rollBtn.removeEventListener(
-        "click",
-        function() {
-          specialCardRoll();
-          decideActivation();
-          specialCardFlag = false;
-        },
-        { once: true }
-      );
+      applyPenalty(furthestMarker, winningDieColor);
     } else {
-      sentence.innerHTML = `card not activated ${furthestCardColor} die didn't win.`;
+      sentence.innerHTML = `Card not activated<br>${furthestCardColor.toUpperCase()} die didn't win.`;
       sentence.classList.remove("hidden");
-      rollBtn.removeEventListener(
-        "click",
-        function() {
-          specialCardRoll();
-          decideActivation();
-          specialCardFlag = false;
-        },
-        { once: true }
-      );
-    }
-    userCards.forEach((card, i) => {
-      if (card === furthestSpecialCard) {
-        userCards.splice(i, 1);
-      }
-    });
-    if (userCards.length !== 0) {
-      processSpecialCards();
-    } else {
-      setTimeout(() => {
-        document.querySelector(".black-die").classList.add("dim");
-        document.querySelector(".red-die").classList.add("dim");
-        document.querySelector(".bullet").classList.add("dim");
-        sentence.classList.add("hidden");
-        switchUser();
-        rollBtn.addEventListener("click", rollBtnClick);
-      }, 4500);
     }
   }
 
@@ -466,35 +459,29 @@ function processSpecialCards() {
   if (userCards.length > 0) {
     specialCardFlag = true;
   }
-
-  // be sure to do this last //////////////////////////////
-  // if (movesRemaining < 1) {
-  //   userCards = [];
-  // }
-  // be sure to do this last /////////////////////////////
 }
 
 function checkForAttack() {
   console.log("running checkForAttack");
   let collisions = [];
-  for (let i = currentPlayer + 1; i !== currentPlayer; i++) {
+  for (var i = currentPlayer + 1; i !== currentPlayer; i++) {
     i = i % players.length;
     if (i === currentPlayer) {
       break;
     }
     players[currentPlayer][markerToMove] === players[i].markerAPos
-      ? collisions.push("A")
+      ? collisions.push(`Red marker `)
       : collisions;
     players[currentPlayer][markerToMove] === players[i].markerBPos
-      ? collisions.push("B")
+      ? collisions.push(`Green marker `)
       : collisions;
     players[currentPlayer][markerToMove] === players[i].markerCPos
-      ? collisions.push("C")
+      ? collisions.push(`Blue marker `)
       : collisions;
-    if (collisions.length > 0) {
-      // alert("Attacks detected on markers " + collisions);
-    }
   }
+  // if (collisions.length > 0) {
+  //   alert(`You are attacking ${players[i].name}'s ${collisions}`);
+  // }
 }
 
 function initializePage() {
@@ -502,7 +489,7 @@ function initializePage() {
     document.querySelector(".show-header").setAttribute("style", "opacity: 1");
   });
   document.querySelector(".show-header").addEventListener("mouseleave", () => {
-    document.querySelector(".show-header").setAttribute("style", "opacity: .3");
+    document.querySelector(".show-header").setAttribute("style", "opacity: .8");
   });
 
   document
@@ -599,12 +586,15 @@ function specialCardRoll() {
   document.querySelector(".red-die").classList.remove("dim");
 }
 
-function applyPenalty(furthestMarker) {
+function applyPenalty(furthestMarker, winningDieColor) {
+  console.log("running applyPenalty");
+
+  console.log(hand[players[currentPlayer][furthestMarker]] % 100);
+
   let markerPos = players[currentPlayer][furthestMarker];
   let markerIndex = (markerPos % 9) + 1;
   let forwardSpacesToMove = 18 - markerIndex * 2;
   let backwardSpacesToMove = markerIndex * 2;
-
   let card = hand[players[currentPlayer][furthestMarker]] % 100;
   switch (card) {
     case 13:
@@ -627,7 +617,8 @@ function applyPenalty(furthestMarker) {
   }
 
   function ladder() {
-    sentence.innerHTML = `"ladder" applied`;
+    sentence.innerHTML = `Card activated, ${winningDieColor.toUpperCase()} die won.<br>
+    LADDER was applied`;
     sentence.classList.remove("hidden");
     players[currentPlayer][furthestMarker] += forwardSpacesToMove;
     players[currentPlayer][furthestMarker] =
@@ -638,7 +629,8 @@ function applyPenalty(furthestMarker) {
   }
 
   function pullForwards() {
-    sentence.innerHTML = `"pull-forward" applied`;
+    sentence.innerHTML = `Card activated, ${winningDieColor.toUpperCase()} die won.<br>
+    PULL FORWARDS was applied`;
     sentence.classList.remove("hidden");
     currentPosition = players[currentPlayer][furthestMarker];
     let sortedMarkers = sortPlayerMarkers();
@@ -647,13 +639,16 @@ function applyPenalty(furthestMarker) {
     });
     if (markerToMove.length > 0) {
       markerToMove = markerToMove[0][2];
-      // gettin errors above Cannot read property '2' of undefined
       players[currentPlayer][markerToMove] = currentPosition;
     }
     updateMarkers();
   }
 
   function pushBackwards() {
+    sentence.innerHTML = `Card activated, ${winningDieColor.toUpperCase()} die won.<br>
+    SEND BACK was applied`;
+    sentence.classList.remove("hidden");
+
     currentPosition = players[currentPlayer][furthestMarker];
     let closestPlayer = [];
     let opponentIndex = 0;
@@ -662,6 +657,7 @@ function applyPenalty(furthestMarker) {
     let markerList = sortedMarkers.filter(marker => {
       return marker[2] > currentPosition;
     });
+    console.log(sortedMarkers, markerList);
     if (markerList.length > 0) {
       closestPlayer = markerList[markerList.length - 1];
       players.forEach((player, i) => {
@@ -670,17 +666,16 @@ function applyPenalty(furthestMarker) {
         }
       });
       players[opponentIndex][closestPlayer[1]] = currentPosition;
-      alert("Pulling " + players[opponentIndex].name + " back.");
-      sentence.innerHTML = `"send-back" applied`;
-      sentence.classList.remove("hidden");
+      // alert("Pulling " + players[opponentIndex].name + " back.");
       updateMarkers();
     } else {
-      alert(`Nobody to send back.`);
+      // alert(`Nobody to send back.`);
     }
   }
 
   function chute() {
-    sentence.innerHTML = `"chute" applied`;
+    sentence.innerHTML = `Card activated, ${winningDieColor.toUpperCase()} die won.<br>
+    CHUTE was applied`;
     sentence.classList.remove("hidden");
     players[currentPlayer][furthestMarker] -= backwardSpacesToMove;
     players[currentPlayer][furthestMarker] =
@@ -691,7 +686,8 @@ function applyPenalty(furthestMarker) {
   }
 
   function swap() {
-    sentence.innerHTML = `"swap" applied`;
+    sentence.innerHTML = `Card activated, ${winningDieColor.toUpperCase()} die won.<br>
+    SWAP was applied`;
     sentence.classList.remove("hidden");
     currentPosition = players[currentPlayer][furthestMarker];
     let opponentIndex = 0;
@@ -711,13 +707,13 @@ function applyPenalty(furthestMarker) {
       players[currentPlayer][furthestMarker] =
         players[opponentIndex][randomPlayer[1]];
       players[opponentIndex][randomPlayer[1]] = currentPosition;
-      alert(
-        `Swapping with ${players[opponentIndex].name}'s marker at position ${
-          randomPlayer[2]
-        }`
-      );
+      // alert(
+      //   `Swapping with ${players[opponentIndex].name}'s marker at position ${
+      //     randomPlayer[2]
+      //   }`
+      // );
     } else {
-      alert("Nobody to swap with.");
+      // alert("Nobody to swap with.");
     }
     updateMarkers();
   }
@@ -820,6 +816,7 @@ function dieClick({ target }) {
 }
 
 function sortOpponentMarkers(players) {
+  updateMarkers();
   opponents = players.filter((player, i) => {
     return i !== currentPlayer;
   });
@@ -838,6 +835,7 @@ function sortOpponentMarkers(players) {
 }
 
 function sortPlayerMarkers() {
+  updateMarkers();
   let sorted = [];
   for (let marker in players[currentPlayer]) {
     if (!(marker === "name" || marker === "index")) {
