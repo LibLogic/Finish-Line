@@ -352,6 +352,7 @@ function checkMarkerStatus(dieMove, previousMarkerPosition, currentCard) {
 
 let userCards = [];
 function getSpecialCards(currentCard) {
+  console.log("running getSpecialCards");
   currentCardValue = (currentCard % 100) % 14;
   specialCards.forEach(specialCard => {
     if (currentCardValue === specialCard) {
@@ -369,9 +370,7 @@ function processSpecialCards() {
   rollBtn.addEventListener("click", specialBtnClick, { once: true });
 
   function specialBtnClick() {
-    console.log(userCards, "special btn event 1");
-
-    rollBtn.removeEventListener("click", pauseBtnClick);
+    console.log(userCards, "1");
     rollBtn.removeEventListener("click", specialBtnClick, { once: true });
     specialCardRoll();
     decideActivation();
@@ -381,22 +380,27 @@ function processSpecialCards() {
   }
 
   function pauseBtnClick() {
-    sentence.classList.add("hidden");
+    console.log(userCards, "2");
+    updateMarkers();
     rollBtn.removeEventListener("click", pauseBtnClick);
     rollBtn.removeEventListener("click", specialBtnClick, { once: true });
+    sentence.classList.add("hidden");
+    console.log(userCards, "3");
     userCards.forEach((card, i) => {
       if (card === furthestSpecialCard) {
         userCards.splice(i, 1);
       }
     });
+    console.log(userCards, "4");
     document.querySelector(".black-die").classList.add("dim");
     document.querySelector(".red-die").classList.add("dim");
     if (userCards.length === 0) {
+      rollBtn.addEventListener("click", rollBtnClick);
       showRollView();
       switchUser();
-      rollBtn.addEventListener("click", rollBtnClick);
       specialCardFlag = false;
     } else {
+      console.log("running recursive call");
       if (userCards.length > 0 && movesRemaining < 1) {
         processSpecialCards();
       }
@@ -617,20 +621,20 @@ function applyPenalty(furthestMarker, winningDieColor) {
   }
 
   function ladder() {
-    sentence.innerHTML = `Card activated, ${winningDieColor.toUpperCase()} die won.<br>
-    LADDER was applied`;
+    sentence.innerHTML = `${winningDieColor.toUpperCase()} die wins. King is activated<br>
+    — moving up 1 row —`;
     sentence.classList.remove("hidden");
     players[currentPlayer][furthestMarker] += forwardSpacesToMove;
     players[currentPlayer][furthestMarker] =
       players[currentPlayer][furthestMarker] > hand.length - 1
         ? hand.length - 1
         : players[currentPlayer][furthestMarker];
-    updateMarkers();
+    // updateMarkers();
   }
 
   function pullForwards() {
-    sentence.innerHTML = `Card activated, ${winningDieColor.toUpperCase()} die won.<br>
-    PULL FORWARDS was applied`;
+    sentence.innerHTML = `${winningDieColor.toUpperCase()} die wins. Queen is activated<br>
+    — pulling your nearest marker forward —`;
     sentence.classList.remove("hidden");
     currentPosition = players[currentPlayer][furthestMarker];
     let sortedMarkers = sortPlayerMarkers();
@@ -641,13 +645,13 @@ function applyPenalty(furthestMarker, winningDieColor) {
       markerToMove = markerToMove[0][2];
       players[currentPlayer][markerToMove] = currentPosition;
     }
-    updateMarkers();
+    // updateMarkers();
   }
 
   function pushBackwards() {
-    sentence.innerHTML = `Card activated, ${winningDieColor.toUpperCase()} die won.<br>
-    SEND BACK was applied`;
-    sentence.classList.remove("hidden");
+    // sentence.innerHTML = `Jack activated, ${winningDieColor.toUpperCase()} die won.<br>
+    // — pulling your nearest opponents marker back —`;
+    // sentence.classList.remove("hidden");
 
     currentPosition = players[currentPlayer][furthestMarker];
     let closestPlayer = [];
@@ -666,29 +670,35 @@ function applyPenalty(furthestMarker, winningDieColor) {
         }
       });
       players[opponentIndex][closestPlayer[1]] = currentPosition;
+
+      sentence.innerHTML = `${winningDieColor.toUpperCase()} die wins. Jack is activated<br>
+        — pulling ${players[opponentIndex].name}'s marker back —`;
+      sentence.classList.remove("hidden");
+
       // alert("Pulling " + players[opponentIndex].name + " back.");
-      updateMarkers();
+      // updateMarkers();
     } else {
-      // alert(`Nobody to send back.`);
+      sentence.innerHTML = `The ${winningDieColor.toUpperCase()} die won<br> but there is nobody to send back.`;
+      sentence.classList.remove("hidden");
     }
   }
 
   function chute() {
-    sentence.innerHTML = `Card activated, ${winningDieColor.toUpperCase()} die won.<br>
-    CHUTE was applied`;
+    sentence.innerHTML = `${winningDieColor.toUpperCase()} die wins. Ace is activated<br>
+    — movin down 1 row —`;
     sentence.classList.remove("hidden");
     players[currentPlayer][furthestMarker] -= backwardSpacesToMove;
     players[currentPlayer][furthestMarker] =
       players[currentPlayer][furthestMarker] < 0
         ? -1
         : players[currentPlayer][furthestMarker];
-    updateMarkers();
+    // updateMarkers();
   }
 
   function swap() {
-    sentence.innerHTML = `Card activated, ${winningDieColor.toUpperCase()} die won.<br>
-    SWAP was applied`;
-    sentence.classList.remove("hidden");
+    // sentence.innerHTML = `Two activated, ${winningDieColor.toUpperCase()} die won.<br>
+    // — swapping places with a random opponent marker —`;
+    // sentence.classList.remove("hidden");
     currentPosition = players[currentPlayer][furthestMarker];
     let opponentIndex = 0;
     let sortedMarkers = sortOpponentMarkers(players);
@@ -707,6 +717,10 @@ function applyPenalty(furthestMarker, winningDieColor) {
       players[currentPlayer][furthestMarker] =
         players[opponentIndex][randomPlayer[1]];
       players[opponentIndex][randomPlayer[1]] = currentPosition;
+
+      sentence.innerHTML = `${winningDieColor.toUpperCase()} die wins. Two activated, Two is activated<br>
+        — swapping places with ${players[opponentIndex].name}'s marker —`;
+      sentence.classList.remove("hidden");
       // alert(
       //   `Swapping with ${players[opponentIndex].name}'s marker at position ${
       //     randomPlayer[2]
@@ -715,7 +729,7 @@ function applyPenalty(furthestMarker, winningDieColor) {
     } else {
       // alert("Nobody to swap with.");
     }
-    updateMarkers();
+    // updateMarkers();
   }
 }
 
