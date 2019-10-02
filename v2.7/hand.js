@@ -310,11 +310,11 @@ function updateMarkers() {
         players[playerIndex].markerCPos
       ].innerHTML += `<span style="color: mediumpurple">•</span>`;
     }
-
     if (specialCardFlag === false && movesRemaining < 1) {
       switchUser();
     }
   });
+  console.log(players);
 }
 
 function checkMarkerStatus(dieMove, previousMarkerPosition, currentCard) {
@@ -384,21 +384,17 @@ function processSpecialCards() {
     sentence.classList.add("hidden");
     rollBtn.removeEventListener("click", pauseBtnClick);
     rollBtn.removeEventListener("click", specialBtnClick, { once: true });
-    console.log(userCards, "pause event 1");
     userCards.forEach((card, i) => {
       if (card === furthestSpecialCard) {
         userCards.splice(i, 1);
       }
     });
-    console.log(userCards, "pause event 2");
     document.querySelector(".black-die").classList.add("dim");
     document.querySelector(".red-die").classList.add("dim");
     if (userCards.length === 0) {
       showRollView();
       switchUser();
       rollBtn.addEventListener("click", rollBtnClick);
-
-      // sentence.classList.add("hidden");
       specialCardFlag = false;
     } else {
       if (userCards.length > 0 && movesRemaining < 1) {
@@ -468,24 +464,24 @@ function processSpecialCards() {
 function checkForAttack() {
   console.log("running checkForAttack");
   let collisions = [];
-  for (let i = currentPlayer + 1; i !== currentPlayer; i++) {
+  for (var i = currentPlayer + 1; i !== currentPlayer; i++) {
     i = i % players.length;
     if (i === currentPlayer) {
       break;
     }
     players[currentPlayer][markerToMove] === players[i].markerAPos
-      ? collisions.push("A")
+      ? collisions.push(`Red marker `)
       : collisions;
     players[currentPlayer][markerToMove] === players[i].markerBPos
-      ? collisions.push("B")
+      ? collisions.push(`Green marker `)
       : collisions;
     players[currentPlayer][markerToMove] === players[i].markerCPos
-      ? collisions.push("C")
+      ? collisions.push(`Blue marker `)
       : collisions;
-    if (collisions.length > 0) {
-      alert("Attacks detected on markers " + collisions);
-    }
   }
+  // if (collisions.length > 0) {
+  //   alert(`You are attacking ${players[i].name}'s ${collisions}`);
+  // }
 }
 
 function initializePage() {
@@ -591,6 +587,10 @@ function specialCardRoll() {
 }
 
 function applyPenalty(furthestMarker, winningDieColor) {
+  console.log("running applyPenalty");
+
+  console.log(hand[players[currentPlayer][furthestMarker]] % 100);
+
   let markerPos = players[currentPlayer][furthestMarker];
   let markerIndex = (markerPos % 9) + 1;
   let forwardSpacesToMove = 18 - markerIndex * 2;
@@ -645,6 +645,10 @@ function applyPenalty(furthestMarker, winningDieColor) {
   }
 
   function pushBackwards() {
+    sentence.innerHTML = `Card activated, ${winningDieColor.toUpperCase()} die won.<br>
+    SEND BACK was applied`;
+    sentence.classList.remove("hidden");
+
     currentPosition = players[currentPlayer][furthestMarker];
     let closestPlayer = [];
     let opponentIndex = 0;
@@ -653,6 +657,7 @@ function applyPenalty(furthestMarker, winningDieColor) {
     let markerList = sortedMarkers.filter(marker => {
       return marker[2] > currentPosition;
     });
+    console.log(sortedMarkers, markerList);
     if (markerList.length > 0) {
       closestPlayer = markerList[markerList.length - 1];
       players.forEach((player, i) => {
@@ -662,9 +667,6 @@ function applyPenalty(furthestMarker, winningDieColor) {
       });
       players[opponentIndex][closestPlayer[1]] = currentPosition;
       // alert("Pulling " + players[opponentIndex].name + " back.");
-      sentence.innerHTML = `Card activated, ${winningDieColor.toUpperCase()} die won.<br>
-      SEND BACK was applied`;
-      sentence.classList.remove("hidden");
       updateMarkers();
     } else {
       // alert(`Nobody to send back.`);
@@ -705,11 +707,11 @@ function applyPenalty(furthestMarker, winningDieColor) {
       players[currentPlayer][furthestMarker] =
         players[opponentIndex][randomPlayer[1]];
       players[opponentIndex][randomPlayer[1]] = currentPosition;
-      alert(
-        `Swapping with ${players[opponentIndex].name}'s marker at position ${
-          randomPlayer[2]
-        }`
-      );
+      // alert(
+      //   `Swapping with ${players[opponentIndex].name}'s marker at position ${
+      //     randomPlayer[2]
+      //   }`
+      // );
     } else {
       // alert("Nobody to swap with.");
     }
@@ -814,6 +816,7 @@ function dieClick({ target }) {
 }
 
 function sortOpponentMarkers(players) {
+  updateMarkers();
   opponents = players.filter((player, i) => {
     return i !== currentPlayer;
   });
@@ -832,6 +835,7 @@ function sortOpponentMarkers(players) {
 }
 
 function sortPlayerMarkers() {
+  updateMarkers();
   let sorted = [];
   for (let marker in players[currentPlayer]) {
     if (!(marker === "name" || marker === "index")) {
