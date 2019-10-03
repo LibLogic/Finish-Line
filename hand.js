@@ -141,13 +141,16 @@ function markerClick({ target }) {
   console.clear();
   sortOpponentMarkers(players);
   movesRemaining--;
-  if (movesRemaining === 0) {
+  if (movesRemaining === 0 && visibleMarkerCount > 1) {
     movePlayer(secondDieValue, markerChoice);
     updateMarkers();
     showRollView();
   } else {
     movePlayer(firstDieValue, markerChoice);
     updateMarkers();
+    if (visibleMarkerCount === 1) {
+      showRollView();
+    }
   }
   target.classList.add("hidden");
   sentence.innerHTML = prompts[3];
@@ -240,7 +243,7 @@ function movePlayer(dieMove, markerChoice) {
     // console.clear();
     console.log(
       "Previous Marker position: ",
-      previousMarkerPosition + 1,
+      previousMarkerPosition,
       "\nCurrent player",
       players[currentPlayer].name,
       "\nMarker to move",
@@ -754,6 +757,7 @@ function rollDice() {
   diceEvents();
 }
 
+let visibleMarkerCount = 3;
 function displayMarkers() {
   console.log("running displayMarkers");
 
@@ -767,7 +771,7 @@ function displayMarkers() {
     .getElementById("blue-marker")
     .removeEventListener("click", markerClick);
 
-  let visibleMarkerCount = 3;
+  visibleMarkerCount = 3;
   players[currentPlayer].markerAPos < hand.length - 1
     ? document.getElementById("red-marker").classList.remove("hidden")
     : (document.getElementById("red-marker").classList.add("hidden"),
