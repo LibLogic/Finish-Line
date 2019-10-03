@@ -16,6 +16,7 @@ unicodeHand = hand.map(card => {
   let result = 127120;
   cardValue > 11 ? cardValue++ : cardValue;
   result = result + suit * 16 + cardValue;
+  result = result === 127167 ? 127199 : result; // attempt at fixing missing red joker on mac
   return result;
 });
 
@@ -298,17 +299,21 @@ function updateMarkers() {
     if (players[playerIndex].markerAPos > -1) {
       spaces[
         players[playerIndex].markerAPos
-      ].innerHTML += `<span style="color: tomato">•</span>`;
+      ].innerHTML += `<span class="marker-a">•</span>`;
     }
     if (players[playerIndex].markerBPos > -1) {
       spaces[
         players[playerIndex].markerBPos
-      ].innerHTML += `<span style="color: mediumseagreen">•</span>`;
+      ].innerHTML += `<span class="marker-b">${String.fromCodePoint(
+        9650
+      )}</span>`;
     }
     if (players[playerIndex].markerCPos > -1) {
       spaces[
         players[playerIndex].markerCPos
-      ].innerHTML += `<span style="color: mediumpurple">•</span>`;
+      ].innerHTML += `<span class="marker-c">${String.fromCodePoint(
+        9632
+      )}</span>`;
     }
     if (specialCardFlag === false && movesRemaining < 1) {
       switchUser();
@@ -493,7 +498,7 @@ function initializePage() {
     document.querySelector(".show-header").setAttribute("style", "opacity: 1");
   });
   document.querySelector(".show-header").addEventListener("mouseleave", () => {
-    document.querySelector(".show-header").setAttribute("style", "opacity: .8");
+    document.querySelector(".show-header").setAttribute("style", "opacity: .7");
   });
 
   document
@@ -512,6 +517,12 @@ function initializePage() {
     dice2 +
     "</div>";
   diceContainer.innerHTML = dice;
+
+  let headerMarkers = `<span id="red-marker">•</span><span id="green-marker">${String.fromCodePoint(
+    9650
+  )}</span
+  ><span id="blue-marker">${String.fromCodePoint(9632)}</span>`;
+  document.getElementById("markers").innerHTML = headerMarkers;
 
   getPlayerNames();
 
@@ -629,7 +640,6 @@ function applyPenalty(furthestMarker, winningDieColor) {
       players[currentPlayer][furthestMarker] > hand.length - 1
         ? hand.length - 1
         : players[currentPlayer][furthestMarker];
-    // updateMarkers();
   }
 
   function pullForwards() {
@@ -645,7 +655,6 @@ function applyPenalty(furthestMarker, winningDieColor) {
       markerToMove = markerToMove[0][2];
       players[currentPlayer][markerToMove] = currentPosition;
     }
-    // updateMarkers();
   }
 
   function pushBackwards() {
@@ -674,9 +683,6 @@ function applyPenalty(furthestMarker, winningDieColor) {
       sentence.innerHTML = `${winningDieColor.toUpperCase()} die wins. Jack is activated<br>
         — pulling ${players[opponentIndex].name}'s marker back —`;
       sentence.classList.remove("hidden");
-
-      // alert("Pulling " + players[opponentIndex].name + " back.");
-      // updateMarkers();
     } else {
       sentence.innerHTML = `The ${winningDieColor.toUpperCase()} die won<br> but there is nobody to send back.`;
       sentence.classList.remove("hidden");
@@ -692,7 +698,6 @@ function applyPenalty(furthestMarker, winningDieColor) {
       players[currentPlayer][furthestMarker] < 0
         ? -1
         : players[currentPlayer][furthestMarker];
-    // updateMarkers();
   }
 
   function swap() {
@@ -718,18 +723,13 @@ function applyPenalty(furthestMarker, winningDieColor) {
         players[opponentIndex][randomPlayer[1]];
       players[opponentIndex][randomPlayer[1]] = currentPosition;
 
-      sentence.innerHTML = `${winningDieColor.toUpperCase()} die wins. Two activated, Two is activated<br>
+      sentence.innerHTML = `${winningDieColor.toUpperCase()} die wins. Two is activated<br>
         — swapping places with ${players[opponentIndex].name}'s marker —`;
       sentence.classList.remove("hidden");
-      // alert(
-      //   `Swapping with ${players[opponentIndex].name}'s marker at position ${
-      //     randomPlayer[2]
-      //   }`
-      // );
     } else {
-      // alert("Nobody to swap with.");
+      sentence.innerHTML = `Nobody to swap with.`;
+      sentence.classList.remove("hidden");
     }
-    // updateMarkers();
   }
 }
 
