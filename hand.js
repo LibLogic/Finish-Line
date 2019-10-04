@@ -2,6 +2,7 @@ let currentPlayer = 0,
   deck = [],
   newHand = [],
   hand = [];
+wings = [];
 
 deck = createDeck(56);
 deck.pop();
@@ -43,7 +44,6 @@ function drawCard(startPos = 0, fromEnd = deck.length) {
 // first 3 or last 3 marker Positions.
 let specialCards = [13, 12, 11, 1, 2];
 function generateHand() {
-  let wings = [];
   // Generate wing cards first (excluding J, Q, K, A, or 2)
   for (let i = 0; i < 6; i++) {
     wings.push(drawCard(8, 14));
@@ -92,8 +92,14 @@ function renderPlayers() {
 
 function renderBoard() {
   let handStr = "";
+  let jokerCount = 0;
   unicodeHand.forEach((card, i) => {
-    if (card > 127152 && card < 127184) {
+    if (card === 127199 && jokerCount === 0) {
+      handStr += `<div class="marker-row container${i}"><div class="card red">${String.fromCodePoint(
+        card
+      )}</div></div>`;
+      jokerCount++;
+    } else if (card > 127152 && card < 127184) {
       handStr += `<div class="marker-row container${i}"><div class="card red">${String.fromCodePoint(
         card
       )}</div></div>`;
@@ -322,7 +328,6 @@ function updateMarkers() {
       switchUser();
     }
   });
-  console.log(players);
 }
 
 function checkMarkerStatus(dieMove, previousMarkerPosition, currentCard) {
@@ -334,9 +339,9 @@ function checkMarkerStatus(dieMove, previousMarkerPosition, currentCard) {
 
     if (userCards.length > 0 && movesRemaining < 1) {
       processSpecialCards();
+    } else if (userCards.length === 0 && movesRemaining < 1) {
+      // checkForAttack();
     }
-
-    checkForAttack();
     return;
   }
   if (previousMarkerPosition + dieMove === handLength) {
@@ -372,13 +377,12 @@ function getSpecialCards(currentCard) {
 let specialCardFlag = false;
 let furthestMarker = "";
 function processSpecialCards() {
-  console.log("processSpecialCards");
+  console.log("running processSpecialCards");
   rollBtn.removeEventListener("click", rollBtnClick);
   rollBtn.innerHTML = `${players[currentPlayer].name} Has Special Card(s)<br/>Roll For Activation`;
   rollBtn.addEventListener("click", specialBtnClick, { once: true });
 
   function specialBtnClick() {
-    console.log(userCards, "1");
     rollBtn.removeEventListener("click", specialBtnClick, { once: true });
     specialCardRoll();
     decideActivation();
@@ -388,22 +392,20 @@ function processSpecialCards() {
   }
 
   function pauseBtnClick() {
-    console.log(userCards, "2");
     updateMarkers();
     rollBtn.removeEventListener("click", pauseBtnClick);
     rollBtn.removeEventListener("click", specialBtnClick, { once: true });
     sentence.classList.add("hidden");
-    console.log(userCards, "3");
     userCards.forEach((card, i) => {
       if (card === furthestSpecialCard) {
         userCards.splice(i, 1);
       }
     });
-    console.log(userCards, "4");
     document.querySelector(".black-die").classList.add("dim");
     document.querySelector(".red-die").classList.add("dim");
     if (userCards.length === 0) {
       rollBtn.addEventListener("click", rollBtnClick);
+      // checkForAttack();
       showRollView();
       switchUser();
       specialCardFlag = false;
@@ -423,7 +425,7 @@ function processSpecialCards() {
       : "black";
 
   function decideActivation() {
-    console.log("decideActivation");
+    console.log("running decideActivation");
     let winningDieColor = "neither";
     if (blackDieValue + 1 > redDieValue + 1) {
       winningDieColor = "black";
@@ -491,9 +493,11 @@ function checkForAttack() {
       ? collisions.push(`Blue marker `)
       : collisions;
   }
-  // if (collisions.length > 0) {
-  //   alert(`You are attacking ${players[i].name}'s ${collisions}`);
-  // }
+  if (collisions.length > 0) {
+    alert(
+      `You are attacking ${collisions.length} marker(s)\nbut for now we're not doing anything about it.`
+    );
+  }
 }
 
 function initializePage() {
@@ -606,9 +610,6 @@ function specialCardRoll() {
 
 function applyPenalty(furthestMarker, winningDieColor) {
   console.log("running applyPenalty");
-
-  console.log(hand[players[currentPlayer][furthestMarker]] % 100);
-
   let markerPos = players[currentPlayer][furthestMarker];
   let markerIndex = (markerPos % 9) + 1;
   let forwardSpacesToMove = 18 - markerIndex * 2;
@@ -654,17 +655,17 @@ function applyPenalty(furthestMarker, winningDieColor) {
     let markerToMove = sortedMarkers.filter(marker => {
       return marker[3] < currentPosition;
     });
-    if (markerToMove.length > 0) {
+    if (markerToMove.length > 0 && markerToMove[0][3] !== -1) {
       markerToMove = markerToMove[0][2];
       players[currentPlayer][markerToMove] = currentPosition;
+    } else {
+      sentence.innerHTML = `${winningDieColor.toUpperCase()} die wins. Queen is activated<br>
+      — but you have no marker to pull forward —`;
+      sentence.classList.remove("hidden");
     }
   }
 
   function pushBackwards() {
-    // sentence.innerHTML = `Jack activated, ${winningDieColor.toUpperCase()} die won.<br>
-    // — pulling your nearest opponents marker back —`;
-    // sentence.classList.remove("hidden");
-
     currentPosition = players[currentPlayer][furthestMarker];
     let closestPlayer = [];
     let opponentIndex = 0;
@@ -682,31 +683,33 @@ function applyPenalty(furthestMarker, winningDieColor) {
         }
       });
       players[opponentIndex][closestPlayer[1]] = currentPosition;
-
       sentence.innerHTML = `${winningDieColor.toUpperCase()} die wins. Jack is activated<br>
         — pulling ${players[opponentIndex].name}'s marker back —`;
       sentence.classList.remove("hidden");
     } else {
-      sentence.innerHTML = `The ${winningDieColor.toUpperCase()} die won<br> but there is nobody to send back.`;
+      sentence.innerHTML = `The ${winningDieColor.toUpperCase()} die wins. Jack is activated<br> but there is nobody to send back.`;
       sentence.classList.remove("hidden");
     }
   }
 
   function chute() {
     sentence.innerHTML = `${winningDieColor.toUpperCase()} die wins. Ace is activated<br>
-    — movin down 1 row —`;
+    — moving down 1 row —`;
     sentence.classList.remove("hidden");
     players[currentPlayer][furthestMarker] -= backwardSpacesToMove;
-    players[currentPlayer][furthestMarker] =
-      players[currentPlayer][furthestMarker] < 0
-        ? -1
-        : players[currentPlayer][furthestMarker];
+    if (players[currentPlayer][furthestMarker] < 0) {
+      players[currentPlayer][furthestMarker] == -1;
+      sentence.innerHTML = `${winningDieColor.toUpperCase()} die wins. Ace is activated<br>
+      — moving back to beginning —`;
+      sentence.classList.remove("hidden");
+    }
+    // players[currentPlayer][furthestMarker] =
+    //   players[currentPlayer][furthestMarker] < 0
+    //     ? -1
+    //     : players[currentPlayer][furthestMarker];
   }
 
   function swap() {
-    // sentence.innerHTML = `Two activated, ${winningDieColor.toUpperCase()} die won.<br>
-    // — swapping places with a random opponent marker —`;
-    // sentence.classList.remove("hidden");
     currentPosition = players[currentPlayer][furthestMarker];
     let opponentIndex = 0;
     let sortedMarkers = sortOpponentMarkers(players);
@@ -727,10 +730,12 @@ function applyPenalty(furthestMarker, winningDieColor) {
       players[opponentIndex][randomPlayer[1]] = currentPosition;
 
       sentence.innerHTML = `${winningDieColor.toUpperCase()} die wins. Two is activated<br>
-        — swapping places with ${players[opponentIndex].name}'s marker —`;
+        — swapping places with one of ${
+          players[opponentIndex].name
+        }'s markers —`;
       sentence.classList.remove("hidden");
     } else {
-      sentence.innerHTML = `Nobody to swap with.`;
+      sentence.innerHTML = `${winningDieColor.toUpperCase()} die wins. Two is activated<br> But nobody to swap with.`;
       sentence.classList.remove("hidden");
     }
   }
