@@ -10,6 +10,7 @@ function game() {
 
   const players = [];
   let deck = [],
+    newHand = [],
     hand = [];
   const rollDie = (numSides = 6) => Math.floor(Math.random() * numSides) + 1;
 
@@ -30,49 +31,84 @@ function game() {
     function dieQuestion(diceTotal, dRoll, currentPlayer) {
       const rl = makeInterface();
       let dieChoice, chosenMarkerPosition;
-      rl.question("Enter your die choice:\n'b' for black, 'r' for red, or 'enter' for both:\n", userInput => {
+      rl.question(
+        "Enter your die choice:\n'b' for black, 'r' for red, or 'enter' for both:\n",
+        userInput => {
           dieChoice = getDieChoice(userInput, diceTotal, dRoll);
           rl.close();
-        });
+        }
+      );
 
-      rl.on("close", () => { ////
+      rl.on("close", () => {
+        ////
         const rl = makeInterface();
-        rl.setPrompt(`\nWhich marker would you like to move?\n'a', 'b', or 'c'\n`);
+        rl.setPrompt(
+          `\nWhich marker would you like to move?\n'a', 'b', or 'c'\n`
+        );
         rl.prompt();
-        rl.on('line', userInput => { ////
+        rl.on("line", userInput => {
+          ////
           chosenMarkerPosition = getMarkerChoice(userInput);
           if (markerCanMove(currentPlayer, chosenMarkerPosition, dieChoice)) {
-            rl.setPrompt(`\n${currentPlayer.name}, that marker is finished. Please try again.\n'a', 'b', or 'c'\n`);
+            rl.setPrompt(
+              `\n${currentPlayer.name}, that marker is finished. Please try again.\n'a', 'b', or 'c'\n`
+            );
             rl.prompt();
-          } else
-            if (userInput === "a" || userInput === "b" || userInput === "c") {
-              chosenMarkerPosition = getMarkerChoice(userInput, currentPlayer);
-              rl.close();
-            } else {
-              rl.setPrompt(
-                `\n${currentPlayer.name}, only choose either 'a', 'b', or 'c' `
-              );
-              rl.prompt();
-            }
+          } else if (
+            userInput === "a" ||
+            userInput === "b" ||
+            userInput === "c"
+          ) {
+            chosenMarkerPosition = getMarkerChoice(userInput, currentPlayer);
+            rl.close();
+          } else {
+            rl.setPrompt(
+              `\n${currentPlayer.name}, only choose either 'a', 'b', or 'c' `
+            );
+            rl.prompt();
+          }
         }); //// on('line') ////
 
-        rl.on("close", () => { ////////
-          currentPlayer[chosenMarkerPosition] = movePlayer(currentPlayer, dieChoice, chosenMarkerPosition);
+        rl.on("close", () => {
+          ////////
+          currentPlayer[chosenMarkerPosition] = movePlayer(
+            currentPlayer,
+            dieChoice,
+            chosenMarkerPosition
+          );
           if (dieChoice === diceTotal) {
             rl.close();
             playerPrompts(players[++i % players.length]);
           } else {
             const rl = makeInterface();
-            rl.setPrompt(`hello${dRoll[0]} ${dRoll[1]}\nOk ${currentPlayer.name}, which marker would you like to move now?\n'a', 'b', or 'c'\n`);
+            console.log(
+              `\n${currentPlayer.name}s' Roll: \nBlack rolls: ${dRoll[0]}`
+            );
+            console.log(`Red rolls: ${dRoll[1]}\n`);
+            rl.setPrompt(
+              `\nOk ${currentPlayer.name}, which marker would you like to move\nfor your other die, 'a', 'b', or 'c'?\n`
+            );
             rl.prompt();
-            rl.on("line", userInput => { ///////
-            chosenMarkerPosition = getMarkerChoice(userInput, currentPlayer);
-            if (markerCanMove(currentPlayer, chosenMarkerPosition, dieChoice)) {
-              rl.setPrompt(`\n${currentPlayer.name}, that marker is finished. Please try again.\n'a', 'b', or 'c'\n`);
-              rl.prompt();
-            } else
-              if (userInput === "a" || userInput === "b" || userInput === "c") {
-                currentPlayer[chosenMarkerPosition] = movePlayer(currentPlayer, diceTotal - dieChoice, chosenMarkerPosition);
+            rl.on("line", userInput => {
+              ///////
+              chosenMarkerPosition = getMarkerChoice(userInput, currentPlayer);
+              if (
+                markerCanMove(currentPlayer, chosenMarkerPosition, dieChoice)
+              ) {
+                rl.setPrompt(
+                  `\n${currentPlayer.name}, that marker is finished. Please try again.\n'a', 'b', or 'c'\n`
+                );
+                rl.prompt();
+              } else if (
+                userInput === "a" ||
+                userInput === "b" ||
+                userInput === "c"
+              ) {
+                currentPlayer[chosenMarkerPosition] = movePlayer(
+                  currentPlayer,
+                  diceTotal - dieChoice,
+                  chosenMarkerPosition
+                );
                 rl.close();
                 playerPrompts(players[++i % players.length]);
               } else {
@@ -105,39 +141,54 @@ function game() {
   function getMarkerChoice(userInput) {
     switch (userInput) {
       case "a":
-        chosenMarkerPosition = "markerAPos";
+        chosenMarkerPosition = "markerA";
         break;
       case "b":
-        chosenMarkerPosition = "markerBPos";
+        chosenMarkerPosition = "markerB";
         break;
       case "c":
-        chosenMarkerPosition = "markerCPos";
+        chosenMarkerPosition = "markerC";
         break;
       default:
-        chosenMarkerPosition = "markerAPos";
+        chosenMarkerPosition = "markerA";
     }
     return chosenMarkerPosition;
   }
 
   function logGameStats(currentPlayer, chosenMarkerPosition) {
     console.clear();
-    console.log('\n\n', hand, '\n');
-    if (currentPlayer.markerAPos >= 8 - 1 && currentPlayer.markerBPos >= 8 - 1 && currentPlayer.markerCPos >= 8 - 1) {
-      console.log(`\n\n${currentPlayer.name} 'wins!'\n`);
+    console.log(hand);
+    console.log("\n");
+    // let handStr = "";
+    // unicodeHand.forEach(card => {
+    //   if (card > 127152 && card < 127184) {
+    //     handStr += "\033[31;1;107m" + String.fromCodePoint(card) + "\033[0m" + " ";
+    //   } else {
+    //     handStr += "\033[30;1;107m" + String.fromCodePoint(card) + "\033[0m" + " ";
+    //   }
+    // });
+
+    // console.log(handStr);
+
+    if (
+      currentPlayer.markerA >= 8 - 1 &&
+      currentPlayer.markerB >= 8 - 1 &&
+      currentPlayer.markerC >= 8 - 1
+    ) {
+      console.log(`\n\n${currentPlayer.name} 'wins! \uD83D\uDE00\n`);
       process.exit();
     } else {
       players.forEach(player => {
         let str = `${player.name}s' marker positions are:`.padEnd(36, " ");
-        let str1 = `A:${player.markerAPos + 1}`.padEnd(7, " ");
-        let str2 = `B:${player.markerBPos + 1}`.padEnd(7, " ");
-        let str3 = `C:${player.markerCPos + 1}`.padEnd(7, " ");
+        let str1 = `A:${player.markerA + 1}`.padEnd(7, " ");
+        let str2 = `B:${player.markerB + 1}`.padEnd(7, " ");
+        let str3 = `C:${player.markerC + 1}`.padEnd(7, " ");
         console.log(`${str}${str1}${str2}${str3}`);
       });
     }
   }
 
   function markerCanMove(currentPlayer, chosenMarkerPosition, dieChoice) {
-console.log(dieChoice);
     if (currentPlayer[chosenMarkerPosition] >= 8 - 1) {
       return true;
     }
@@ -154,11 +205,21 @@ console.log(dieChoice);
 
     hand = generateHand();
 
+    unicodeHand = hand.map(card => {
+      card == 114 ? (card = 414) : card;
+      let suit = Math.floor(card / 100);
+      let cardValue = card % 100;
+      let result = 127120;
+      cardValue > 11 ? cardValue++ : cardValue;
+      result = result + suit * 16 + cardValue;
+      return result;
+    });
+
     class Player {
       constructor(name) {
-        this.markerAPos = -1;
-        this.markerBPos = -1;
-        this.markerCPos = -1;
+        this.markerA = -1;
+        this.markerB = -1;
+        this.markerC = -1;
         this.name = name;
         players.push(this);
       }
@@ -195,7 +256,7 @@ console.log(dieChoice);
   }
 
   // Generate a "track" **Do not allow jack, queen, king, ace, or joker in either
-  // first 3 or last 3 markerAPoss.
+  // first 3 or last 3 markerAs.
   function generateHand() {
     let handCenter = [];
     // lets generate the two ends first then
@@ -233,4 +294,6 @@ console.log(dieChoice);
   }
 }
 
-game("Tom"); //, "Jackie", "Vrishali", "Cliff");
+// game("Tom"); //, "Jackie", "Vrishali", "Cliff");
+
+game("Tom", "Jackie", "Vrishali", "Cliff");

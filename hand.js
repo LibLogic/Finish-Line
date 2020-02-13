@@ -17,7 +17,7 @@ unicodeHand = hand.map(card => {
   let result = 127120;
   cardValue > 11 ? cardValue++ : cardValue;
   result = result + suit * 16 + cardValue;
-  result = result === 127167 ? 127199 : result; // attempt at fixing missing red joker on mac
+  result = result === 127167 ? 127199 : result; // fix for missing red joker on mac
   return result;
 });
 
@@ -40,7 +40,7 @@ function drawCard(startPos = 0, fromEnd = deck.length) {
   return card;
 }
 
-// Generate a "track" **Do not allow jack, queen, king, ace, or joker in either
+// Generate layout" **Do not allow jack, queen, king, ace, or joker in either
 // first 3 or last 3 marker Positions.
 let specialCards = [13, 12, 11, 1, 2];
 function generateHand() {
@@ -114,7 +114,7 @@ function renderBoard() {
   cards.innerHTML = handStr;
 
   const elem = document.getElementById("scrollToBottom");
-  elem.scroll(0, document.documentElement.scrollHeight);
+  elem.scroll(0, elem.scrollHeight);
 }
 
 let prompts = [
@@ -149,11 +149,11 @@ function markerClick({ target }) {
   movesRemaining--;
   if (movesRemaining === 0 && visibleMarkerCount > 1) {
     movePlayer(secondDieValue, markerChoice);
-    updateMarkers();
+    updateMarkerPositions();
     showRollView();
   } else {
     movePlayer(firstDieValue, markerChoice);
-    updateMarkers();
+    updateMarkerPositions();
     if (visibleMarkerCount === 1) {
       showRollView();
     }
@@ -164,7 +164,7 @@ function markerClick({ target }) {
 
 function showRollView() {
   console.log("running showRollView");
-  displayMarkers();
+  showMarkerChoices();
   sentence.classList.add("hidden");
   document.querySelector(".markers").classList.add("hidden");
   document.querySelector(".black-die").classList.add("dim");
@@ -174,13 +174,13 @@ function showRollView() {
 }
 
 function switchUser() {
+  console.log(players);
   userCards = [];
   console.log("running switchUser");
   ++currentPlayer;
   currentPlayer = currentPlayer % players.length;
   movesRemaining = 2;
 
-  // need to keep this from running when we activate cards
   rollBtn.innerHTML = `${players[currentPlayer].name}<br/>Roll The Dice`;
 
   for (let i = 0; i < players.length; i++) {
@@ -198,6 +198,10 @@ function switchUser() {
   document.querySelectorAll(`.p${currentPlayer + 1}`).forEach(li => {
     li.classList.add("row-highlight");
   });
+
+  if (players[currentPlayer].isFinished) {
+    switchUser();
+  }
 }
 
 let sentence = document.getElementById("prompts");
@@ -218,13 +222,13 @@ beginBtn.addEventListener("click", () => {
 function movePlayer(dieMove, markerChoice) {
   switch (markerChoice) {
     case "red-marker":
-      markerToMove = "markerAPos";
+      markerToMove = "markerA";
       break;
     case "green-marker":
-      markerToMove = "markerBPos";
+      markerToMove = "markerB";
       break;
     case "blue-marker":
-      markerToMove = "markerCPos";
+      markerToMove = "markerC";
       break;
   }
 
@@ -246,21 +250,6 @@ function movePlayer(dieMove, markerChoice) {
     }
     stopValue = redDieValue + blackDieValue + 2;
     moveCount++;
-    // console.clear();
-    console.log(
-      "Previous Marker position: ",
-      previousMarkerPosition,
-      "\nCurrent player",
-      players[currentPlayer].name,
-      "\nMarker to move",
-      markerToMove,
-      "\nStop value",
-      stopValue,
-      "\nCurrent die value",
-      dieMove,
-      "\nMove count",
-      moveCount
-    );
 
     currentCard = hand[i];
     currentCardValue = (hand[i] % 100) % 14;
@@ -277,12 +266,27 @@ function movePlayer(dieMove, markerChoice) {
     }
   }
 
+  console.log(
+    "Previous Marker position: ",
+    previousMarkerPosition,
+    "\nCurrent player",
+    players[currentPlayer].name,
+    "\nMarker to move >",
+    markerToMove,
+    "\nStop value",
+    stopValue,
+    "\nChosen die value",
+    dieMove,
+    "\nMove count",
+    moveCount
+  );
+
   //check status if good do nothng else come back with previousMarkerPosition
-  checkMarkerStatus(dieMove, previousMarkerPosition, currentCard);
+  hasValidMove(dieMove, previousMarkerPosition, currentCard);
 }
 
-function updateMarkers() {
-  console.log("running updateMarkers");
+function updateMarkerPositions() {
+  console.log("running updateMarkerPositions");
   players.forEach((player, playerIndex) => {
     let row = "";
     switch (playerIndex) {
@@ -305,21 +309,21 @@ function updateMarkers() {
     });
 
     spaces = document.querySelectorAll(row);
-    if (players[playerIndex].markerAPos > -1) {
+    if (players[playerIndex].markerA > -1) {
       spaces[
-        players[playerIndex].markerAPos
+        players[playerIndex].markerA
       ].innerHTML += `<span class="marker-a">•</span>`;
     }
-    if (players[playerIndex].markerBPos > -1) {
+    if (players[playerIndex].markerB > -1) {
       spaces[
-        players[playerIndex].markerBPos
+        players[playerIndex].markerB
       ].innerHTML += `<span class="marker-b">${String.fromCodePoint(
         9650
       )}</span>`;
     }
-    if (players[playerIndex].markerCPos > -1) {
+    if (players[playerIndex].markerC > -1) {
       spaces[
-        players[playerIndex].markerCPos
+        players[playerIndex].markerC
       ].innerHTML += `<span class="marker-c">${String.fromCodePoint(
         9632
       )}</span>`;
@@ -330,7 +334,7 @@ function updateMarkers() {
   });
 }
 
-function checkMarkerStatus(dieMove, previousMarkerPosition, currentCard) {
+function hasValidMove(dieMove, previousMarkerPosition, currentCard) {
   let handLength = hand.length - 1;
   // first do all the things that should just return
   // remember moves have already been made, just not displayed yet
@@ -346,10 +350,11 @@ function checkMarkerStatus(dieMove, previousMarkerPosition, currentCard) {
   }
   if (previousMarkerPosition + dieMove === handLength) {
     if (
-      players[currentPlayer].markerAPos === handLength &&
-      players[currentPlayer].markerBPos === handLength &&
-      players[currentPlayer].markerCPos === handLength
+      players[currentPlayer].markerA === handLength &&
+      players[currentPlayer].markerB === handLength &&
+      players[currentPlayer].markerC === handLength
     ) {
+      players[currentPlayer].isFinished = true;
       alert(players[currentPlayer].name + " wins!");
       return;
     }
@@ -392,7 +397,7 @@ function processSpecialCards() {
   }
 
   function pauseBtnClick() {
-    updateMarkers();
+    updateMarkerPositions();
     rollBtn.removeEventListener("click", pauseBtnClick);
     rollBtn.removeEventListener("click", specialBtnClick, { once: true });
     sentence.classList.add("hidden");
@@ -456,14 +461,14 @@ function processSpecialCards() {
     let posA = -1;
     let posB = -1;
     let posC = -1;
-    if (userCards.includes(hand[players[currentPlayer].markerAPos])) {
-      posA = players[currentPlayer].markerAPos;
+    if (userCards.includes(hand[players[currentPlayer].markerA])) {
+      posA = players[currentPlayer].markerA;
     }
-    if (userCards.includes(hand[players[currentPlayer].markerBPos])) {
-      posB = players[currentPlayer].markerBPos;
+    if (userCards.includes(hand[players[currentPlayer].markerB])) {
+      posB = players[currentPlayer].markerB;
     }
-    if (userCards.includes(hand[players[currentPlayer].markerCPos])) {
-      posC = players[currentPlayer].markerCPos;
+    if (userCards.includes(hand[players[currentPlayer].markerC])) {
+      posC = players[currentPlayer].markerC;
     }
     let furthestCardIndex = Math.max(posA, posB, posC);
     let furthestSpecialCard = hand[furthestCardIndex];
@@ -483,13 +488,13 @@ function checkForAttack() {
     if (i === currentPlayer) {
       break;
     }
-    players[currentPlayer][markerToMove] === players[i].markerAPos
+    players[currentPlayer][markerToMove] === players[i].markerA
       ? collisions.push(`Red marker `)
       : collisions;
-    players[currentPlayer][markerToMove] === players[i].markerBPos
+    players[currentPlayer][markerToMove] === players[i].markerB
       ? collisions.push(`Green marker `)
       : collisions;
-    players[currentPlayer][markerToMove] === players[i].markerCPos
+    players[currentPlayer][markerToMove] === players[i].markerC
       ? collisions.push(`Blue marker `)
       : collisions;
   }
@@ -510,7 +515,7 @@ function initializePage() {
 
   document
     .getElementById("bg-image")
-    .setAttribute("style", "background-image: url(./dice2.jpg)");
+    .setAttribute("style", "background-image: url(../images/dice2.jpg)");
   document
     .getElementById("hand")
     .setAttribute("style", "background-color: #fff;");
@@ -531,7 +536,9 @@ function initializePage() {
   ><span id="blue-marker">${String.fromCodePoint(9632)}</span>`;
   document.getElementById("markers").innerHTML = headerMarkers;
 
-  getPlayerNames();
+  let playersInfo = document.getElementById("players").value;
+  playersArr = playersInfo.split(", ");
+  getPlayerNames(playersArr);
 
   document
     .getElementById("dice")
@@ -547,24 +554,21 @@ function rollBtnClick() {
   rollDice();
 }
 
-let playersInfo = "";
-function getPlayerNames() {
-  playersInfo = document.getElementById("players").value;
-  playerStr = playersInfo.split(", ");
-
+function getPlayerNames(playersArr) {
   class Player {
     constructor(name) {
-      this.markerAPos = -1;
-      this.markerBPos = -1;
-      this.markerCPos = -1;
+      this.markerA = 48; //-1;
+      this.markerB = 48; //-1;
+      this.markerC = 48; //-1;
+      this.isFinished = false;
       this.name = name;
       players.push(this);
     }
   }
 
   (function() {
-    for (let i = 0; i < playerStr.length; i++) {
-      new Player(playerStr[i]);
+    for (let i = 0; i < playersArr.length; i++) {
+      new Player(playersArr[i]);
     }
   })();
 
@@ -573,6 +577,10 @@ function getPlayerNames() {
 
   renderPlayers();
   renderBoard();
+
+  document.querySelectorAll(".marker-row").forEach(li => {
+    li.innerHTML += "";
+  });
 
   let playerRow = "";
   playerRow += `<ul class="p">`;
@@ -637,18 +645,22 @@ function applyPenalty(furthestMarker, winningDieColor) {
 
   function ladder() {
     sentence.innerHTML = `${winningDieColor.toUpperCase()} die wins. King is activated<br>
-    — moving up 1 row —`;
+      — moving up 1 row —`;
     sentence.classList.remove("hidden");
     players[currentPlayer][furthestMarker] += forwardSpacesToMove;
-    players[currentPlayer][furthestMarker] =
-      players[currentPlayer][furthestMarker] > hand.length - 1
-        ? hand.length - 1
-        : players[currentPlayer][furthestMarker];
+    players[currentPlayer][furthestMarker] > hand.length - 1
+      ? ((players[currentPlayer][furthestMarker] = hand.length - 1),
+        sentence.classList.add("hidden"),
+        (sentence.innerHTML = `${winningDieColor.toUpperCase()} die wins. King is activated<br>
+      — Your marker has finished —`),
+        sentence.classList.remove("hidden"))
+      : (players[currentPlayer][furthestMarker] =
+          players[currentPlayer][furthestMarker]);
   }
 
   function pullForwards() {
     sentence.innerHTML = `${winningDieColor.toUpperCase()} die wins. Queen is activated<br>
-    — pulling your nearest marker forward —`;
+    — pulling players' nearest marker ahead —`;
     sentence.classList.remove("hidden");
     currentPosition = players[currentPlayer][furthestMarker];
     let sortedMarkers = sortPlayerMarkers();
@@ -660,7 +672,7 @@ function applyPenalty(furthestMarker, winningDieColor) {
       players[currentPlayer][markerToMove] = currentPosition;
     } else {
       sentence.innerHTML = `${winningDieColor.toUpperCase()} die wins. Queen is activated<br>
-      — but you have no marker to pull forward —`;
+      — but you have no marker to pull ahead —`;
       sentence.classList.remove("hidden");
     }
   }
@@ -674,7 +686,6 @@ function applyPenalty(furthestMarker, winningDieColor) {
     let markerList = sortedMarkers.filter(marker => {
       return marker[2] > currentPosition;
     });
-    console.log(sortedMarkers, markerList);
     if (markerList.length > 0) {
       closestPlayer = markerList[markerList.length - 1];
       players.forEach((player, i) => {
@@ -744,7 +755,6 @@ function applyPenalty(furthestMarker, winningDieColor) {
 function rollDice() {
   console.log("running rollDice");
   movesRemaining = 2;
-
   redDieValue = Math.floor(Math.random() * 6);
   let dice1 = dieStr[redDieValue];
   blackDieValue = Math.floor(Math.random() * 6);
@@ -758,13 +768,13 @@ function rollDice() {
 
   diceContainer.innerHTML = dice;
   rollBtn.classList.add("hidden");
-  displayMarkers();
+  showMarkerChoices();
   diceEvents();
 }
 
 let visibleMarkerCount = 3;
-function displayMarkers() {
-  console.log("running displayMarkers");
+function showMarkerChoices() {
+  console.log("running showMarkerChoices");
 
   document
     .getElementById("green-marker")
@@ -777,16 +787,16 @@ function displayMarkers() {
     .removeEventListener("click", markerClick);
 
   visibleMarkerCount = 3;
-  players[currentPlayer].markerAPos < hand.length - 1
+  players[currentPlayer].markerA < hand.length - 1
     ? document.getElementById("red-marker").classList.remove("hidden")
     : (document.getElementById("red-marker").classList.add("hidden"),
       visibleMarkerCount--);
 
-  players[currentPlayer].markerBPos < hand.length - 1
+  players[currentPlayer].markerB < hand.length - 1
     ? document.getElementById("green-marker").classList.remove("hidden")
     : (document.getElementById("green-marker").classList.add("hidden"),
       visibleMarkerCount--);
-  players[currentPlayer].markerCPos < hand.length - 1
+  players[currentPlayer].markerC < hand.length - 1
     ? document.getElementById("blue-marker").classList.remove("hidden")
     : (document.getElementById("blue-marker").classList.add("hidden"),
       visibleMarkerCount--);
@@ -839,7 +849,7 @@ function dieClick({ target }) {
 }
 
 function sortOpponentMarkers(players) {
-  updateMarkers();
+  updateMarkerPositions();
   opponents = players.filter((player, i) => {
     return i !== currentPlayer;
   });
@@ -858,7 +868,7 @@ function sortOpponentMarkers(players) {
 }
 
 function sortPlayerMarkers() {
-  updateMarkers();
+  updateMarkerPositions();
   let sorted = [];
   for (let marker in players[currentPlayer]) {
     if (!(marker === "name" || marker === "index")) {
