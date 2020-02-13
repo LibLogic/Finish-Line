@@ -1,0 +1,417 @@
+body {
+  height: 100%;
+  margin: 0 3%;
+  background-color: #ededed;
+  background-image: url("../images/dice.jpg");
+  background-size: 40%;
+  user-select: none;
+}
+
+ul {
+  list-style: none;
+  padding-left: 0;
+}
+
+.hidden {
+  display: none;
+}
+
+#header {
+  height: 46%;
+  width: 100%;
+  text-align: center;
+  background-image: linear-gradient(
+    rgba(160, 160, 160, 1),
+    rgba(200, 200, 200, 0.8),
+    rgba(255, 255, 255, 1)
+  );
+  box-shadow: 4px 4px 8px gray;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 2;
+}
+
+#game-wrap {
+  margin-top: 21%;
+}
+
+input {
+  width: 620px;
+  font-size: 132%;
+}
+
+#dice h1 {
+  font-size: 400%;
+  margin-bottom: 1%;
+}
+
+.bullet {
+  display: inline-block;
+  cursor: pointer;
+  color: green;
+  font-size: 1000%;
+  vertical-align: text-bottom;
+  line-height: 53%;
+}
+
+#content {
+  margin-top: 0;
+}
+
+.red-die {
+  display: inline-block;
+  cursor: pointer;
+  font-size: 650%;
+  color: red;
+}
+
+.black-die {
+  display: inline-block;
+  cursor: pointer;
+  font-size: 650%;
+}
+
+.markers {
+  padding-left: 27px;
+  line-height: 0.5em;
+}
+
+.markers span {
+  cursor: pointer;
+  font-size: 320%;
+  letter-spacing: 0.3em;
+}
+
+#red-marker {
+  color: tomato;
+  margin-right: -0.2em;
+  font-size: 4.42em;
+  line-height: 0.4em;
+  vertical-align: top;
+}
+
+#green-marker {
+  color: mediumseagreen;
+  font-size: 1.7em;
+  line-height: 1em;
+  vertical-align: top;
+}
+
+#blue-marker {
+  color: mediumpurple;
+  font-size: 2.4em;
+  line-height: 0.5em;
+  vertical-align: top;
+}
+
+.marker-a {
+  color: tomato;
+  font-size: 1.9em;
+  line-height: 0.4em;
+}
+
+.marker-b {
+  color: mediumseagreen;
+  font-size: 0.7em;
+  line-height: 1em;
+  vertical-align: top;
+}
+
+.marker-c {
+  color: mediumpurple;
+  font-size: 1em;
+  line-height: 0.45;
+  vertical-align: top;
+}
+
+.btn {
+  font-size: 16px;
+  padding: 7px 18px 7px 18px;
+}
+
+#game-wrap {
+  display: grid;
+  grid-template-columns: 60px 1fr 60px;
+  grid-template-rows: 1fr;
+  padding: 8% 0;
+}
+
+#dummy {
+  visibility: hidden;
+}
+
+#hand {
+  display: grid;
+  /* margin: 0 0 0 0; */
+  grid-template-columns: repeat(10, auto);
+}
+
+.container9,
+.container27,
+.container45 {
+  grid-column: 2;
+}
+
+.container26,
+.container44 {
+  grid-column: 1;
+}
+
+.container8,
+.container17,
+.container26,
+.container35,
+.container44,
+.container53 {
+  position: relative;
+  top: -5.8em;
+}
+
+.card {
+  font-size: 800%;
+  text-align: center;
+  line-height: 1em;
+  background-color: #fff;
+  text-shadow: 1px 1px 4px rgba(200, 200, 200, 1);
+}
+
+.red {
+  color: red;
+}
+
+.black {
+  color: black;
+}
+
+.dim {
+  color: rgba(255, 255, 255, 0.4);
+}
+
+ul {
+  margin: -0.2em 0 0.2em 0;
+}
+
+.d li {
+  height: 1.2em;
+  line-height: 1.2em;
+  color: #aaa;
+}
+
+.player-names-left .container:nth-child(odd) {
+  visibility: hidden;
+}
+
+.player-names-right .container:nth-child(even) {
+  visibility: hidden;
+}
+
+.player-names-left {
+  margin-top: -4px;
+  margin-right: -8em;
+  text-align: right;
+  z-index: 1;
+}
+
+.player-names-right {
+  margin-top: -4px;
+  margin-left: -8em;
+  text-align: left;
+  z-index: 1;
+}
+
+.p {
+  font-size: 200%;
+  text-align: center;
+}
+
+.p li {
+  height: 0.6em;
+  line-height: 0.6em;
+  padding-left: 9%;
+  letter-spacing: 0.3em;
+  box-sizing: border-box;
+  border-bottom: 1px solid #ccc;
+  background-color: #f7f5f7;
+}
+
+.faded {
+  opacity: 0.3;
+}
+
+.p li.row-highlight {
+  background-color: rgb(36, 207, 107, 0.1);
+}
+
+.d li.highlight {
+  font-weight: 600;
+  color: green;
+}
+
+.container0 {
+  order: 53;
+}
+.container1 {
+  order: 52;
+}
+.container2 {
+  order: 51;
+}
+.container3 {
+  order: 50;
+}
+.container4 {
+  order: 49;
+}
+.container5 {
+  order: 48;
+}
+.container6 {
+  order: 47;
+}
+.container7 {
+  order: 46;
+}
+.container8 {
+  order: 45;
+}
+
+.container9 {
+  order: 36;
+}
+.container10 {
+  order: 37;
+}
+.container11 {
+  order: 38;
+}
+.container12 {
+  order: 39;
+}
+.container13 {
+  order: 40;
+}
+.container14 {
+  order: 41;
+}
+.container15 {
+  order: 42;
+}
+.container16 {
+  order: 43;
+}
+.container17 {
+  order: 44;
+}
+
+.container18 {
+  order: 35;
+}
+.container19 {
+  order: 34;
+}
+.container20 {
+  order: 33;
+}
+.container21 {
+  order: 32;
+}
+.container22 {
+  order: 31;
+}
+.container23 {
+  order: 30;
+}
+.container24 {
+  order: 29;
+}
+.container25 {
+  order: 28;
+}
+.container26 {
+  order: 27;
+}
+
+.container27 {
+  order: 18;
+}
+.container28 {
+  order: 19;
+}
+.container29 {
+  order: 20;
+}
+.container30 {
+  order: 21;
+}
+.container31 {
+  order: 22;
+}
+.container32 {
+  order: 23;
+}
+.container33 {
+  order: 24;
+}
+.container34 {
+  order: 25;
+}
+.container35 {
+  order: 26;
+}
+
+.container36 {
+  order: 17;
+}
+.container37 {
+  order: 16;
+}
+.container38 {
+  order: 15;
+}
+.container39 {
+  order: 14;
+}
+.container40 {
+  order: 13;
+}
+.container41 {
+  order: 12;
+}
+.container42 {
+  order: 11;
+}
+.container43 {
+  order: 10;
+}
+.container44 {
+  order: 9;
+}
+
+.container45 {
+  order: 0;
+}
+.container46 {
+  order: 1;
+}
+.container47 {
+  order: 2;
+}
+.container48 {
+  order: 3;
+}
+.container49 {
+  order: 4;
+}
+.container50 {
+  order: 5;
+}
+.container51 {
+  order: 6;
+}
+.container52 {
+  order: 7;
+}
+.container53 {
+  order: 8;
+}
