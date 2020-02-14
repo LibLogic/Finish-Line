@@ -358,12 +358,16 @@ function hasValidMove(dieMove, previousMarkerPosition, currentCard) {
       alert(players[currentPlayer].name + " wins!");
       return;
     }
+    if (userCards.length > 0 && movesRemaining < 1) {
+      processSpecialCards();
+    }
     alert("Your Marker Has Finished");
     return;
   } else {
+    console.log(userCards.length, movesRemaining);
+    alert("Move Not Allowed");
     players[currentPlayer][markerToMove] = previousMarkerPosition;
     currentPlayer += players.length % players.length;
-    alert("Move Not Allowed");
     return;
   }
 }
@@ -440,6 +444,14 @@ function processSpecialCards() {
 
     if (winningDieColor === furthestCardColor) {
       applyPenalty(furthestMarker, winningDieColor);
+      if (
+        players[currentPlayer].markerA === hand.length - 1 &&
+        players[currentPlayer].markerB === hand.length - 1 &&
+        players[currentPlayer].markerC === hand.length - 1
+      ) {
+        players[currentPlayer].isFinished = true;
+        alert(players[currentPlayer].name + " wins! yoooooooooo");
+      }
     } else {
       sentence.innerHTML = `Card not activated<br>${furthestCardColor.toUpperCase()} die didn't win.`;
       sentence.classList.remove("hidden");
@@ -557,9 +569,9 @@ function rollBtnClick() {
 function getPlayerNames(playersArr) {
   class Player {
     constructor(name) {
-      this.markerA = 48; //-1;
-      this.markerB = 48; //-1;
-      this.markerC = 48; //-1;
+      this.markerA = -1;
+      this.markerB = -1;
+      this.markerC = -1;
       this.isFinished = false;
       this.name = name;
       players.push(this);
@@ -648,19 +660,51 @@ function applyPenalty(furthestMarker, winningDieColor) {
       — moving up 1 row —`;
     sentence.classList.remove("hidden");
     players[currentPlayer][furthestMarker] += forwardSpacesToMove;
-    players[currentPlayer][furthestMarker] > hand.length - 1
-      ? ((players[currentPlayer][furthestMarker] = hand.length - 1),
-        sentence.classList.add("hidden"),
-        (sentence.innerHTML = `${winningDieColor.toUpperCase()} die wins. King is activated<br>
-      — Your marker has finished —`),
-        sentence.classList.remove("hidden"))
-      : (players[currentPlayer][furthestMarker] =
-          players[currentPlayer][furthestMarker]);
+
+    if (players[currentPlayer][furthestMarker] > hand.length - 1) {
+      players[currentPlayer][furthestMarker] = hand.length - 1;
+      if (
+        !(
+          players[currentPlayer].markerA === hand.length - 1 &&
+          players[currentPlayer].markerB === hand.length - 1 &&
+          players[currentPlayer].markerC === hand.length - 1
+        )
+      ) {
+        sentence.classList.add("hidden");
+        sentence.innerHTML = `${winningDieColor.toUpperCase()} die wins. King is activated<br>
+          — Your marker has finished —`;
+        sentence.classList.remove("hidden");
+      }
+    }
   }
+
+  // function ladder() {
+  //   sentence.innerHTML = `${winningDieColor.toUpperCase()} die wins. King is activated<br>
+  //     — moving up 1 row —`;
+  //   sentence.classList.remove("hidden");
+  //   players[currentPlayer][furthestMarker] += forwardSpacesToMove;
+
+  //   if (
+  //     !(
+  //       players[currentPlayer].markerA === hand.length - 1 &&
+  //       players[currentPlayer].markerB === hand.length - 1 &&
+  //       players[currentPlayer].markerC === hand.length - 1
+  //     )
+  //   ) {
+  //     players[currentPlayer][furthestMarker] > hand.length - 1
+  //       ? ((players[currentPlayer][furthestMarker] = hand.length - 1),
+  //         sentence.classList.add("hidden"),
+  //         (sentence.innerHTML = `${winningDieColor.toUpperCase()} die wins. King is activated<br>
+  //         — Your marker has finished —`),
+  //         sentence.classList.remove("hidden"))
+  //       : (players[currentPlayer][furthestMarker] =
+  //           players[currentPlayer][furthestMarker]);
+  //   }
+  // }
 
   function pullForwards() {
     sentence.innerHTML = `${winningDieColor.toUpperCase()} die wins. Queen is activated<br>
-    — pulling players' nearest marker ahead —`;
+    — pulling your nearest marker ahead —`;
     sentence.classList.remove("hidden");
     currentPosition = players[currentPlayer][furthestMarker];
     let sortedMarkers = sortPlayerMarkers();
@@ -714,10 +758,6 @@ function applyPenalty(furthestMarker, winningDieColor) {
       — moving back to beginning —`;
       sentence.classList.remove("hidden");
     }
-    // players[currentPlayer][furthestMarker] =
-    //   players[currentPlayer][furthestMarker] < 0
-    //     ? -1
-    //     : players[currentPlayer][furthestMarker];
   }
 
   function swap() {
