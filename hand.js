@@ -712,8 +712,33 @@ function applyPenalty(furthestMarker, winningDieColor) {
         }
       });
       players[opponentIndex][closestPlayer[1]] = currentPosition;
-      sentence.innerHTML = `${winningDieColor.toUpperCase()} die wins. Jack is activated<br>
-        — pulling ${players[opponentIndex].name}s' marker back —`;
+      // sentence.innerHTML = `${winningDieColor.toUpperCase()} die wins. Jack is activated<br>
+      //   — pulling ${players[opponentIndex].name}s' marker back —`;
+
+      sentence.innerHTML = `${winningDieColor.toUpperCase()} die wins.<br>— Jack is activated —<br>
+      Getting random opponent 3`;
+
+      setTimeout(
+        () =>
+          (sentence.innerHTML = `${winningDieColor.toUpperCase()} die wins.<br>— Jack is activated —<br>
+          Getting random opponent 2`),
+        1200
+      );
+
+      setTimeout(
+        () =>
+          (sentence.innerHTML = `${winningDieColor.toUpperCase()} die wins.<br>— Jack is activated —<br>
+          Getting random opponent 1`),
+        2400
+      );
+
+      setTimeout(
+        () =>
+          (sentence.innerHTML = `${winningDieColor.toUpperCase()} die wins.<br>— Jack is activated —<br>— swapping places with one of ${
+            players[opponentIndex].name
+          }s' markers —`),
+        3000
+      );
       sentence.classList.remove("hidden");
     } else {
       sentence.innerHTML = `The ${winningDieColor.toUpperCase()} die wins. Jack is activated<br> but there is nobody to pull back.`;
@@ -763,28 +788,28 @@ function applyPenalty(furthestMarker, winningDieColor) {
         players[opponentIndex][randomPlayer[1]];
       players[opponentIndex][randomPlayer[1]] = currentPosition;
 
-      sentence.innerHTML = `${winningDieColor.toUpperCase()} die wins.<br>Two is activated<br>
-      Getting random opponent`;
+      sentence.innerHTML = `${winningDieColor.toUpperCase()} die wins.<br>— Two is activated —<br>
+      Getting random swap 3`;
 
       setTimeout(
         () =>
-          (sentence.innerHTML = `${winningDieColor.toUpperCase()} die wins.<br>Two is activated<br>
-          Getting random opponent 3`),
-        1500
+          (sentence.innerHTML = `${winningDieColor.toUpperCase()} die wins.<br>— Two is activated —<br>
+          Getting random swap 2`),
+        1200
       );
 
       setTimeout(
         () =>
-          (sentence.innerHTML = `${winningDieColor.toUpperCase()} die wins.<br>Two is activated<br>
-          Getting random opponent 2`),
-        3000
+          (sentence.innerHTML = `${winningDieColor.toUpperCase()} die wins.<br>— Two is activated —<br>
+          Getting random swap 1`),
+        2400
       );
 
       setTimeout(
         () =>
           (sentence.innerHTML = `${winningDieColor.toUpperCase()} die wins.<br>— Two is activated —<br>— swapping places with one of ${
             players[opponentIndex].name
-          }'s markers —`),
+          }s' markers —`),
         3000
       );
 
