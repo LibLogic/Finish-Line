@@ -741,7 +741,7 @@ function applyPenalty(furthestMarker, winningDieColor) {
       );
       sentence.classList.remove("hidden");
     } else {
-      sentence.innerHTML = `The ${winningDieColor.toUpperCase()} die wins. Jack is activated<br> but there is nobody to pull back.`;
+      sentence.innerHTML = `The ${winningDieColor.toUpperCase()} die wins. <br>— Jack is activated —<br>But there's nobody to pull back.`;
       sentence.classList.remove("hidden");
     }
   }
@@ -815,7 +815,7 @@ function applyPenalty(furthestMarker, winningDieColor) {
 
       sentence.classList.remove("hidden");
     } else {
-      sentence.innerHTML = `${winningDieColor.toUpperCase()} die wins. Two is activated<br> But nobody to swap with.`;
+      sentence.innerHTML = `${winningDieColor.toUpperCase()} die wins. <br>— Two is activated —<br>But nobody to swap with.`;
       sentence.classList.remove("hidden");
     }
   }
