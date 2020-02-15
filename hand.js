@@ -174,7 +174,6 @@ function showRollView() {
 }
 
 function switchUser() {
-  console.log(players);
   userCards = [];
   console.log("running switchUser");
   ++currentPlayer;
@@ -572,8 +571,8 @@ function getPlayerNames(playersArr) {
       this.markerA = -1;
       this.markerB = -1;
       this.markerC = -1;
-      this.isFinished = false;
       this.name = name;
+      this.isFinished = false;
       players.push(this);
     }
   }
@@ -678,45 +677,23 @@ function applyPenalty(furthestMarker, winningDieColor) {
     }
   }
 
-  // function ladder() {
-  //   sentence.innerHTML = `${winningDieColor.toUpperCase()} die wins. King is activated<br>
-  //     — moving up 1 row —`;
-  //   sentence.classList.remove("hidden");
-  //   players[currentPlayer][furthestMarker] += forwardSpacesToMove;
-
-  //   if (
-  //     !(
-  //       players[currentPlayer].markerA === hand.length - 1 &&
-  //       players[currentPlayer].markerB === hand.length - 1 &&
-  //       players[currentPlayer].markerC === hand.length - 1
-  //     )
-  //   ) {
-  //     players[currentPlayer][furthestMarker] > hand.length - 1
-  //       ? ((players[currentPlayer][furthestMarker] = hand.length - 1),
-  //         sentence.classList.add("hidden"),
-  //         (sentence.innerHTML = `${winningDieColor.toUpperCase()} die wins. King is activated<br>
-  //         — Your marker has finished —`),
-  //         sentence.classList.remove("hidden"))
-  //       : (players[currentPlayer][furthestMarker] =
-  //           players[currentPlayer][furthestMarker]);
-  //   }
-  // }
-
   function pullForwards() {
     sentence.innerHTML = `${winningDieColor.toUpperCase()} die wins. Queen is activated<br>
-    — pulling your nearest marker ahead —`;
+    — pulling your nearest marker forward —`;
     sentence.classList.remove("hidden");
     currentPosition = players[currentPlayer][furthestMarker];
     let sortedMarkers = sortPlayerMarkers();
+    console.log(sortedMarkers);
     let markerToMove = sortedMarkers.filter(marker => {
       return marker[3] < currentPosition;
     });
+    console.log(markerToMove);
     if (markerToMove.length > 0 && markerToMove[0][3] !== -1) {
       markerToMove = markerToMove[0][2];
       players[currentPlayer][markerToMove] = currentPosition;
     } else {
       sentence.innerHTML = `${winningDieColor.toUpperCase()} die wins. Queen is activated<br>
-      — but you have no marker to pull ahead —`;
+      — but you have no marker to pull forward —`;
       sentence.classList.remove("hidden");
     }
   }
@@ -742,7 +719,7 @@ function applyPenalty(furthestMarker, winningDieColor) {
         — pulling ${players[opponentIndex].name}'s marker back —`;
       sentence.classList.remove("hidden");
     } else {
-      sentence.innerHTML = `The ${winningDieColor.toUpperCase()} die wins. Jack is activated<br> but there is nobody to send back.`;
+      sentence.innerHTML = `The ${winningDieColor.toUpperCase()} die wins. Jack is activated<br> but there is nobody to pull back.`;
       sentence.classList.remove("hidden");
     }
   }
@@ -765,8 +742,9 @@ function applyPenalty(furthestMarker, winningDieColor) {
     let opponentIndex = 0;
     let sortedMarkers = sortOpponentMarkers(players);
     let filteredMarkers = sortedMarkers.filter(player => {
-      return !(player[2] === currentPosition || player[2] === -1);
+      return player[2] !== currentPosition || player[2] !== -1;
     });
+    console.log(filteredMarkers);
     let randomIndex = Math.floor(Math.random() * filteredMarkers.length);
     let randomPlayer = [];
     randomPlayer = filteredMarkers[randomIndex];
@@ -893,35 +871,35 @@ function sortOpponentMarkers(players) {
   opponents = players.filter((player, i) => {
     return i !== currentPlayer;
   });
-  let sorted = [];
+  let markers = [];
   opponents.forEach(player => {
-    for (let marker in player) {
-      if (marker !== "name") {
-        sorted.push([player.name, marker, player[marker]]);
+    for (let key in player) {
+      if (key !== "name" && key !== "isFinished") {
+        markers.push([player.name, key, player[key]]);
       }
     }
-    sorted.sort((b, a) => {
-      return a[2] - b[2];
-    });
   });
-  return sorted;
+  let sortedMarkers = markers.sort((b, a) => {
+    return a[2] - b[2];
+  });
+  return sortedMarkers;
 }
 
 function sortPlayerMarkers() {
   updateMarkerPositions();
-  let sorted = [];
-  for (let marker in players[currentPlayer]) {
-    if (!(marker === "name" || marker === "index")) {
-      sorted.push([
+  let markers = [];
+  for (let key in players[currentPlayer]) {
+    if (key !== "name" && key !== "isFinished") {
+      markers.push([
         players[currentPlayer].index,
         players[currentPlayer].name,
-        marker,
-        players[currentPlayer][marker]
+        key,
+        players[currentPlayer][key]
       ]);
     }
   }
-  sorted.sort((b, a) => {
+  let sortedMarkers = markers.sort((b, a) => {
     return a[3] - b[3];
   });
-  return sorted;
+  return sortedMarkers;
 }
