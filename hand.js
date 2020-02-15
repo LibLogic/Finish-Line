@@ -363,7 +363,6 @@ function hasValidMove(dieMove, previousMarkerPosition, currentCard) {
     alert("Your Marker Has Finished");
     return;
   } else {
-    console.log(userCards.length, movesRemaining);
     alert("Move Not Allowed");
     players[currentPlayer][markerToMove] = previousMarkerPosition;
     currentPlayer += players.length % players.length;
@@ -683,11 +682,9 @@ function applyPenalty(furthestMarker, winningDieColor) {
     sentence.classList.remove("hidden");
     currentPosition = players[currentPlayer][furthestMarker];
     let sortedMarkers = sortPlayerMarkers();
-    console.log(sortedMarkers);
     let markerToMove = sortedMarkers.filter(marker => {
       return marker[3] < currentPosition;
     });
-    console.log(markerToMove);
     if (markerToMove.length > 0 && markerToMove[0][3] !== -1) {
       markerToMove = markerToMove[0][2];
       players[currentPlayer][markerToMove] = currentPosition;
@@ -716,7 +713,7 @@ function applyPenalty(furthestMarker, winningDieColor) {
       });
       players[opponentIndex][closestPlayer[1]] = currentPosition;
       sentence.innerHTML = `${winningDieColor.toUpperCase()} die wins. Jack is activated<br>
-        — pulling ${players[opponentIndex].name}'s marker back —`;
+        — pulling ${players[opponentIndex].name}s' marker back —`;
       sentence.classList.remove("hidden");
     } else {
       sentence.innerHTML = `The ${winningDieColor.toUpperCase()} die wins. Jack is activated<br> but there is nobody to pull back.`;
@@ -729,8 +726,10 @@ function applyPenalty(furthestMarker, winningDieColor) {
     — moving down 1 row —`;
     sentence.classList.remove("hidden");
     players[currentPlayer][furthestMarker] -= backwardSpacesToMove;
+    console.log(players[currentPlayer][furthestMarker], "chute1");
     if (players[currentPlayer][furthestMarker] < 0) {
-      players[currentPlayer][furthestMarker] == -1;
+      players[currentPlayer][furthestMarker] = 0;
+      console.log(players[currentPlayer][furthestMarker], "chute2");
       sentence.innerHTML = `${winningDieColor.toUpperCase()} die wins. Ace is activated<br>
       — moving back to beginning —`;
       sentence.classList.remove("hidden");
@@ -748,20 +747,47 @@ function applyPenalty(furthestMarker, winningDieColor) {
     let randomIndex = Math.floor(Math.random() * filteredMarkers.length);
     let randomPlayer = [];
     randomPlayer = filteredMarkers[randomIndex];
+    console.log(randomPlayer);
     if (filteredMarkers.length > 0) {
       players.forEach((player, i) => {
         if (player.name === randomPlayer[0]) {
           opponentIndex = i;
         }
       });
+      console.log(
+        players[opponentIndex][randomPlayer[1]],
+        currentPosition,
+        "swap"
+      );
       players[currentPlayer][furthestMarker] =
         players[opponentIndex][randomPlayer[1]];
       players[opponentIndex][randomPlayer[1]] = currentPosition;
 
-      sentence.innerHTML = `${winningDieColor.toUpperCase()} die wins. Two is activated<br>
-        — swapping places with one of ${
-          players[opponentIndex].name
-        }'s markers —`;
+      sentence.innerHTML = `${winningDieColor.toUpperCase()} die wins.<br>Two is activated<br>
+      Getting random opponent`;
+
+      setTimeout(
+        () =>
+          (sentence.innerHTML = `${winningDieColor.toUpperCase()} die wins.<br>Two is activated<br>
+          Getting random opponent 3`),
+        1500
+      );
+
+      setTimeout(
+        () =>
+          (sentence.innerHTML = `${winningDieColor.toUpperCase()} die wins.<br>Two is activated<br>
+          Getting random opponent 2`),
+        3000
+      );
+
+      setTimeout(
+        () =>
+          (sentence.innerHTML = `${winningDieColor.toUpperCase()} die wins.<br>— Two is activated —<br>— swapping places with one of ${
+            players[opponentIndex].name
+          }'s markers —`),
+        3000
+      );
+
       sentence.classList.remove("hidden");
     } else {
       sentence.innerHTML = `${winningDieColor.toUpperCase()} die wins. Two is activated<br> But nobody to swap with.`;
