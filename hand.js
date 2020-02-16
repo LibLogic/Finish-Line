@@ -174,6 +174,9 @@ function showRollView() {
 }
 
 function switchUser() {
+  document.querySelector(".show-header").addEventListener("mouseleave", () => {
+    document.querySelector(".show-header").setAttribute("style", "opacity: 0");
+  });
   userCards = [];
   console.log("running switchUser");
   ++currentPlayer;
@@ -448,7 +451,7 @@ function processSpecialCards() {
         players[currentPlayer].markerC === hand.length - 1
       ) {
         players[currentPlayer].isFinished = true;
-        alert(players[currentPlayer].name + " wins! yoooooooooo");
+        alert(players[currentPlayer].name + " wins!");
       }
     } else {
       sentence.innerHTML = `Card not activated<br>${furthestCardColor.toUpperCase()} die didn't win.`;
@@ -561,6 +564,17 @@ function initializePage() {
 }
 
 function rollBtnClick() {
+  document.querySelector(".show-header").addEventListener("mouseenter", () => {
+    document
+      .querySelector(".show-header")
+      .removeAttribute("style", "opacity: 1");
+  });
+  document.querySelector(".show-header").addEventListener("mouseleave", () => {
+    document
+      .querySelector(".show-header")
+      .removeAttribute("style", "opacity: .7");
+  });
+
   rollDice();
 }
 
@@ -689,8 +703,8 @@ function applyPenalty(furthestMarker, winningDieColor) {
       markerToMove = markerToMove[0][2];
       players[currentPlayer][markerToMove] = currentPosition;
     } else {
-      sentence.innerHTML = `${winningDieColor.toUpperCase()} die wins. Queen is activated<br>
-      — but you have no marker to pull forward —`;
+      sentence.innerHTML = `${winningDieColor.toUpperCase()} die wins. <br>— Queen is activated —<br>
+      But you have no marker to pull forward.`;
       sentence.classList.remove("hidden");
     }
   }
@@ -712,9 +726,6 @@ function applyPenalty(furthestMarker, winningDieColor) {
         }
       });
       players[opponentIndex][closestPlayer[1]] = currentPosition;
-      // sentence.innerHTML = `${winningDieColor.toUpperCase()} die wins. Jack is activated<br>
-      //   — pulling ${players[opponentIndex].name}s' marker back —`;
-
       sentence.innerHTML = `${winningDieColor.toUpperCase()} die wins.<br>— Jack is activated —<br>
       Getting random opponent 3`;
 
@@ -734,11 +745,12 @@ function applyPenalty(furthestMarker, winningDieColor) {
 
       setTimeout(
         () =>
-          (sentence.innerHTML = `${winningDieColor.toUpperCase()} die wins.<br>— Jack is activated —<br>— swapping places with one of ${
+          (sentence.innerHTML = `${winningDieColor.toUpperCase()} die wins.<br>— Jack is activated —<br>— pulling ${
             players[opponentIndex].name
-          }s' markers —`),
+          }s' nearest marker back —`),
         3000
       );
+
       sentence.classList.remove("hidden");
     } else {
       sentence.innerHTML = `The ${winningDieColor.toUpperCase()} die wins. <br>— Jack is activated —<br>But there's nobody to pull back.`;
@@ -747,7 +759,7 @@ function applyPenalty(furthestMarker, winningDieColor) {
   }
 
   function chute() {
-    sentence.innerHTML = `${winningDieColor.toUpperCase()} die wins. Ace is activated<br>
+    sentence.innerHTML = `${winningDieColor.toUpperCase()} die wins.<br>— Ace is activated —<br>
     — moving down 1 row —`;
     sentence.classList.remove("hidden");
     players[currentPlayer][furthestMarker] -= backwardSpacesToMove;
@@ -755,7 +767,7 @@ function applyPenalty(furthestMarker, winningDieColor) {
     if (players[currentPlayer][furthestMarker] < 0) {
       players[currentPlayer][furthestMarker] = 0;
       console.log(players[currentPlayer][furthestMarker], "chute2");
-      sentence.innerHTML = `${winningDieColor.toUpperCase()} die wins. Ace is activated<br>
+      sentence.innerHTML = `${winningDieColor.toUpperCase()} die wins.<br>— Ace is activated —<br>
       — moving back to beginning —`;
       sentence.classList.remove("hidden");
     }
