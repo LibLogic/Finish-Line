@@ -528,7 +528,7 @@ function initializePage() {
 
   document
     .getElementById("bg-image")
-    .setAttribute("style", "background-image: url(../images/dice2.jpg)");
+    .setAttribute("style", "background-image: url(images/dice2.jpg)");
   document
     .getElementById("hand")
     .setAttribute("style", "background-color: #fff;");
