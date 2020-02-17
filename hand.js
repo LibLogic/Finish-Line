@@ -628,16 +628,20 @@ function specialCardRoll() {
   let dice1 = dieStr[redDieValue];
   blackDieValue = Math.floor(Math.random() * 6);
   let dice2 = dieStr[blackDieValue];
-  dice =
-    '<div class="red-die">' +
-    dice1 +
-    '</div><div class="bullet">•</div><div class="black-die">' +
-    dice2 +
-    "</div>";
+  document.querySelector(".red-die").classList.add("die-animate");
+  document.querySelector(".black-die").classList.add("die-animate");
 
-  diceContainer.innerHTML = dice;
-  document.querySelector(".black-die").classList.remove("dim");
-  document.querySelector(".red-die").classList.remove("dim");
+  setTimeout(() => {
+    dice =
+      '<div class="red-die">' +
+      dice1 +
+      '</div><div class="bullet dim">•</div><div class="black-die">' +
+      dice2 +
+      "</div>";
+    diceContainer.innerHTML = dice;
+    document.querySelector(".red-die").classList.remove("die-animate");
+    document.querySelector(".black-die").classList.remove("die-animate");
+  }, 800);
 }
 
 function applyPenalty(furthestMarker, winningDieColor) {
@@ -668,7 +672,7 @@ function applyPenalty(furthestMarker, winningDieColor) {
   }
 
   function ladder() {
-    sentence.innerHTML = `${winningDieColor.toUpperCase()} die wins. King is activated<br>
+    sentence.innerHTML = `${winningDieColor.toUpperCase()} die wins.<br>— King is activated —<br>
       — moving up 1 row —`;
     sentence.classList.remove("hidden");
     players[currentPlayer][furthestMarker] += forwardSpacesToMove;
@@ -683,7 +687,7 @@ function applyPenalty(furthestMarker, winningDieColor) {
         )
       ) {
         sentence.classList.add("hidden");
-        sentence.innerHTML = `${winningDieColor.toUpperCase()} die wins. King is activated<br>
+        sentence.innerHTML = `${winningDieColor.toUpperCase()} die wins.<br>— King is activated —<br>
           — Your marker has finished —`;
         sentence.classList.remove("hidden");
       }
@@ -691,7 +695,7 @@ function applyPenalty(furthestMarker, winningDieColor) {
   }
 
   function pullForwards() {
-    sentence.innerHTML = `${winningDieColor.toUpperCase()} die wins. Queen is activated<br>
+    sentence.innerHTML = `${winningDieColor.toUpperCase()} die wins.<br>— Queen is activated —<br>
     — pulling your nearest marker forward —`;
     sentence.classList.remove("hidden");
     currentPosition = players[currentPlayer][furthestMarker];
@@ -725,33 +729,40 @@ function applyPenalty(furthestMarker, winningDieColor) {
           opponentIndex = i;
         }
       });
-      players[opponentIndex][closestPlayer[1]] = currentPosition;
-      sentence.innerHTML = `${winningDieColor.toUpperCase()} die wins.<br>— Jack is activated —<br>
-      Getting random opponent 3`;
-
-      setTimeout(
-        () =>
-          (sentence.innerHTML = `${winningDieColor.toUpperCase()} die wins.<br>— Jack is activated —<br>
-          Getting random opponent 2`),
-        1200
+      console.log(
+        players,
+        players[opponentIndex].isFinished,
+        players[opponentIndex].name
       );
+      if (players[opponentIndex] === false) {
+        players[opponentIndex][closestPlayer[1]] = currentPosition;
+        sentence.innerHTML = `${winningDieColor.toUpperCase()} die wins.<br>— Jack is activated —<br>
+        Getting random opponent 3`;
 
-      setTimeout(
-        () =>
-          (sentence.innerHTML = `${winningDieColor.toUpperCase()} die wins.<br>— Jack is activated —<br>
-          Getting random opponent 1`),
-        2400
-      );
+        setTimeout(
+          () =>
+            (sentence.innerHTML = `${winningDieColor.toUpperCase()} die wins.<br>— Jack is activated —<br>
+            Getting random opponent 2`),
+          1200
+        );
 
-      setTimeout(
-        () =>
-          (sentence.innerHTML = `${winningDieColor.toUpperCase()} die wins.<br>— Jack is activated —<br>— pulling ${
-            players[opponentIndex].name
-          }s' nearest marker back —`),
-        3000
-      );
+        setTimeout(
+          () =>
+            (sentence.innerHTML = `${winningDieColor.toUpperCase()} die wins.<br>— Jack is activated —<br>
+            Getting random opponent 1`),
+          2400
+        );
 
-      sentence.classList.remove("hidden");
+        setTimeout(
+          () =>
+            (sentence.innerHTML = `${winningDieColor.toUpperCase()} die wins.<br>— Jack is activated —<br>— pulling ${
+              players[opponentIndex].name
+            }s' nearest marker back —`),
+          3000
+        );
+
+        sentence.classList.remove("hidden");
+      }
     } else {
       sentence.innerHTML = `The ${winningDieColor.toUpperCase()} die wins. <br>— Jack is activated —<br>But there's nobody to pull back.`;
       sentence.classList.remove("hidden");
@@ -840,17 +851,24 @@ function rollDice() {
   let dice1 = dieStr[redDieValue];
   blackDieValue = Math.floor(Math.random() * 6);
   let dice2 = dieStr[blackDieValue];
-  dice =
-    '<div class="red-die">' +
-    dice1 +
-    '</div><div class="bullet">•</div><div class="black-die">' +
-    dice2 +
-    "</div>";
-
-  diceContainer.innerHTML = dice;
-  rollBtn.classList.add("hidden");
-  showMarkerChoices();
-  diceEvents();
+  document.querySelector(".red-die").classList.add("die-animate");
+  document.querySelector(".black-die").classList.add("die-animate");
+  setTimeout(() => {
+    dice =
+      '<div class="red-die">' +
+      dice1 +
+      '</div><div class="bullet">•</div><div class="black-die">' +
+      dice2 +
+      "</div>";
+    diceContainer.innerHTML = dice;
+    document.querySelector(".red-die").classList.remove("dim");
+    document.querySelector(".black-die").classList.remove("dim");
+    document.querySelector(".red-die").classList.remove("die-animate");
+    document.querySelector(".black-die").classList.remove("die-animate");
+    rollBtn.classList.add("hidden");
+    showMarkerChoices();
+    diceEvents();
+  }, 800);
 }
 
 let visibleMarkerCount = 3;
