@@ -385,6 +385,9 @@ function hasValidMove(dieMove, previousMarkerPosition, currentCard) {
     alert("Move Not Allowed");
     players[currentPlayer][markerToMove] = previousMarkerPosition;
     currentPlayer += players.length % players.length;
+    if (userSpecialCards.length > 0 && movesRemaining < 1) {
+      processSpecialCards();
+    }
     return;
   }
 }
@@ -599,7 +602,7 @@ function getPlayerNames(playersArr) {
     constructor(name) {
       this.markerA = -1;
       this.markerB = -1;
-      this.markerC = -1;
+      this.markerC = 51;
       this.name = name;
       this.isFinished = false;
       players.push(this);
@@ -720,12 +723,6 @@ function applyPenalty(furthestMarker, winningDieColor) {
     });
     if (markerToMove.length > 0 && markerToMove[0][3] !== -1) {
       markerToMove = markerToMove[0][2];
-      // if (
-      //   userSpecialCards.indexOf(hand[players[currentPlayer][markerToMove]]) !==
-      //   -1
-      // ) {
-      //   userSpecialCards = [];
-      // }
       players[currentPlayer][markerToMove] = currentPosition;
     } else {
       sentence.innerHTML = `${winningDieColor.toUpperCase()} die wins. <br>— Queen is activated —<br>
