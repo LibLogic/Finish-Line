@@ -1,14 +1,23 @@
 let currentPlayer = 0,
   deck = [],
   newHand = [],
-  hand = [];
-wings = [];
+  hand = [],
+  wings = [],
+  jokerOnePosition = 0,
+  jokerTwoPosition = 0,
+  wingCardPositions = [-1, 8, 17, 26, 35, 44, 53];
 
 deck = createDeck(56);
 deck.pop();
 deck.pop();
 
 hand = generateHand();
+
+safetyCardPositions = [
+  ...wingCardPositions,
+  jokerOnePosition,
+  jokerTwoPosition
+];
 
 unicodeHand = hand.map(card => {
   card == 114 ? (card = 414) : card;
@@ -40,19 +49,26 @@ function drawCard(startPos = 0, fromEnd = deck.length) {
   return card;
 }
 
-// Generate layout" **Do not allow jack, queen, king, ace, or joker in either
+// Generate layout" **Do not allow jack, queen, king, ace, duece, or joker in either
 // first 3 or last 3 marker Positions.
-let specialCards = [13, 12, 11, 1, 2];
+let specialCards = [14, 13, 12, 11, 1, 2];
 function generateHand() {
   // Generate wing cards first (excluding J, Q, K, A, or 2)
   for (let i = 0; i < 6; i++) {
     wings.push(drawCard(8, 14));
   }
   // Put a wing card at the end of each row (every 9th card)
-  let deckSize = deck.length;
-  for (let col = 0; col < 6; col++) {
-    for (let row = 0; row < 8; row++) {
-      hand.push(drawCard());
+  // let deckSize = deck.length;
+  for (let row = 0; row < 6; row++) {
+    for (let col = 0; col < 8; col++) {
+      let drawnCard = drawCard();
+      hand.push(drawnCard);
+      if (drawnCard === 114) {
+        jokerOnePosition = hand.length - 1;
+      }
+      if (drawnCard === 214) {
+        jokerTwoPosition = hand.length - 1;
+      }
     }
     hand.push(wings.pop());
   }
@@ -177,7 +193,7 @@ function switchUser() {
   document.querySelector(".show-header").addEventListener("mouseleave", () => {
     document.querySelector(".show-header").setAttribute("style", "opacity: 0");
   });
-  userCards = [];
+  userSpecialCards = [];
   console.log("running switchUser");
   ++currentPlayer;
   currentPlayer = currentPlayer % players.length;
@@ -343,9 +359,9 @@ function hasValidMove(dieMove, previousMarkerPosition, currentCard) {
   if (players[currentPlayer][markerToMove] < handLength) {
     getSpecialCards(currentCard);
 
-    if (userCards.length > 0 && movesRemaining < 1) {
+    if (userSpecialCards.length > 0 && movesRemaining < 1) {
       processSpecialCards();
-    } else if (userCards.length === 0 && movesRemaining < 1) {
+    } else if (userSpecialCards.length === 0 && movesRemaining < 1) {
       // checkForAttack();
     }
     return;
@@ -360,7 +376,7 @@ function hasValidMove(dieMove, previousMarkerPosition, currentCard) {
       alert(players[currentPlayer].name + " wins!");
       return;
     }
-    if (userCards.length > 0 && movesRemaining < 1) {
+    if (userSpecialCards.length > 0 && movesRemaining < 1) {
       processSpecialCards();
     }
     alert("Your Marker Has Finished");
@@ -373,13 +389,13 @@ function hasValidMove(dieMove, previousMarkerPosition, currentCard) {
   }
 }
 
-let userCards = [];
+let userSpecialCards = [];
 function getSpecialCards(currentCard) {
   console.log("running getSpecialCards");
   currentCardValue = (currentCard % 100) % 14;
   specialCards.forEach(specialCard => {
     if (currentCardValue === specialCard) {
-      userCards.push(currentCard);
+      userSpecialCards.push(currentCard);
     }
   });
 }
@@ -406,14 +422,14 @@ function processSpecialCards() {
     rollBtn.removeEventListener("click", pauseBtnClick);
     rollBtn.removeEventListener("click", specialBtnClick, { once: true });
     sentence.classList.add("hidden");
-    userCards.forEach((card, i) => {
+    userSpecialCards.forEach((card, i) => {
       if (card === furthestSpecialCard) {
-        userCards.splice(i, 1);
+        userSpecialCards.splice(i, 1);
       }
     });
     document.querySelector(".black-die").classList.add("dim");
     document.querySelector(".red-die").classList.add("dim");
-    if (userCards.length === 0) {
+    if (userSpecialCards.length === 0) {
       rollBtn.addEventListener("click", rollBtnClick);
       // checkForAttack();
       showRollView();
@@ -421,7 +437,7 @@ function processSpecialCards() {
       specialCardFlag = false;
     } else {
       console.log("running recursive call");
-      if (userCards.length > 0 && movesRemaining < 1) {
+      if (userSpecialCards.length > 0 && movesRemaining < 1) {
         processSpecialCards();
       }
     }
@@ -463,7 +479,7 @@ function processSpecialCards() {
     let furthestMarkerEntry = ["", -1];
     let playerEntries = Object.entries(players[currentPlayer]);
     for (const [marker, position] of playerEntries) {
-      if (userCards.includes(hand[players[currentPlayer][marker]])) {
+      if (userSpecialCards.includes(hand[players[currentPlayer][marker]])) {
         if (position > furthestMarkerEntry[1]) {
           furthestMarkerEntry = [marker, position];
         }
@@ -474,13 +490,13 @@ function processSpecialCards() {
     let posA = -1;
     let posB = -1;
     let posC = -1;
-    if (userCards.includes(hand[players[currentPlayer].markerA])) {
+    if (userSpecialCards.includes(hand[players[currentPlayer].markerA])) {
       posA = players[currentPlayer].markerA;
     }
-    if (userCards.includes(hand[players[currentPlayer].markerB])) {
+    if (userSpecialCards.includes(hand[players[currentPlayer].markerB])) {
       posB = players[currentPlayer].markerB;
     }
-    if (userCards.includes(hand[players[currentPlayer].markerC])) {
+    if (userSpecialCards.includes(hand[players[currentPlayer].markerC])) {
       posC = players[currentPlayer].markerC;
     }
     let furthestCardIndex = Math.max(posA, posB, posC);
@@ -488,7 +504,7 @@ function processSpecialCards() {
     return furthestSpecialCard;
   }
 
-  if (userCards.length > 0) {
+  if (userSpecialCards.length > 0) {
     specialCardFlag = true;
   }
 }
@@ -630,7 +646,6 @@ function specialCardRoll() {
   let dice2 = dieStr[blackDieValue];
   document.querySelector(".red-die").classList.add("die-animate");
   document.querySelector(".black-die").classList.add("die-animate");
-
   setTimeout(() => {
     dice =
       '<div class="red-die">' +
@@ -705,6 +720,12 @@ function applyPenalty(furthestMarker, winningDieColor) {
     });
     if (markerToMove.length > 0 && markerToMove[0][3] !== -1) {
       markerToMove = markerToMove[0][2];
+      // if (
+      //   userSpecialCards.indexOf(hand[players[currentPlayer][markerToMove]]) !==
+      //   -1
+      // ) {
+      //   userSpecialCards = [];
+      // }
       players[currentPlayer][markerToMove] = currentPosition;
     } else {
       sentence.innerHTML = `${winningDieColor.toUpperCase()} die wins. <br>— Queen is activated —<br>
@@ -729,12 +750,8 @@ function applyPenalty(furthestMarker, winningDieColor) {
           opponentIndex = i;
         }
       });
-      console.log(
-        players,
-        players[opponentIndex].isFinished,
-        players[opponentIndex].name
-      );
-      if (players[opponentIndex] === false) {
+
+      if (players[opponentIndex].isFinished === false) {
         players[opponentIndex][closestPlayer[1]] = currentPosition;
         sentence.innerHTML = `${winningDieColor.toUpperCase()} die wins.<br>— Jack is activated —<br>
         Getting random opponent 3`;
@@ -760,7 +777,6 @@ function applyPenalty(furthestMarker, winningDieColor) {
             }s' nearest marker back —`),
           3000
         );
-
         sentence.classList.remove("hidden");
       }
     } else {
@@ -791,7 +807,6 @@ function applyPenalty(furthestMarker, winningDieColor) {
     let filteredMarkers = sortedMarkers.filter(player => {
       return player[2] !== currentPosition || player[2] !== -1;
     });
-    console.log(filteredMarkers);
     let randomIndex = Math.floor(Math.random() * filteredMarkers.length);
     let randomPlayer = [];
     randomPlayer = filteredMarkers[randomIndex];
@@ -960,7 +975,10 @@ function sortOpponentMarkers(players) {
       }
     }
   });
-  let sortedMarkers = markers.sort((b, a) => {
+  let filteredMarkers = markers.filter(marker => {
+    return safetyCardPositions.indexOf(marker[2]) === -1;
+  });
+  let sortedMarkers = filteredMarkers.sort((b, a) => {
     return a[2] - b[2];
   });
   return sortedMarkers;
@@ -979,7 +997,10 @@ function sortPlayerMarkers() {
       ]);
     }
   }
-  let sortedMarkers = markers.sort((b, a) => {
+  let filteredMarkers = markers.filter(marker => {
+    return safetyCardPositions.indexOf(marker[3]) === -1;
+  });
+  let sortedMarkers = filteredMarkers.sort((b, a) => {
     return a[3] - b[3];
   });
   return sortedMarkers;
