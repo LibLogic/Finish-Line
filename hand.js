@@ -602,7 +602,7 @@ function getPlayerNames(playersArr) {
     constructor(name) {
       this.markerA = -1;
       this.markerB = -1;
-      this.markerC = 51;
+      this.markerC = -1;
       this.name = name;
       this.isFinished = false;
       players.push(this);
