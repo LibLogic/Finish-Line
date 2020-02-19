@@ -37,16 +37,16 @@ cardFontHand = hand.map(card => {
   return result;
 });
 
-unicodeHand = hand.map(card => {
-  card == 114 ? (card = 414) : card;
-  let suit = Math.floor(card / 100);
-  let cardValue = card % 100;
-  let result = 127120;
-  cardValue > 11 ? cardValue++ : cardValue;
-  result = result + suit * 16 + cardValue;
-  result = result === 127167 ? 127199 : result; // fix for missing red joker on mac
-  return result;
-});
+// unicodeHand = hand.map(card => {
+//   card == 114 ? (card = 414) : card;
+//   let suit = Math.floor(card / 100);
+//   let cardValue = card % 100;
+//   let result = 127120;
+//   cardValue > 11 ? cardValue++ : cardValue;
+//   result = result + suit * 16 + cardValue;
+//   result = result === 127167 ? 127199 : result; // fix for missing red joker on mac
+//   return result;
+// });
 
 function createDeck(deckSize) {
   for (let i = 1; deck.length < deckSize; i++) {
@@ -145,16 +145,17 @@ function renderBoard() {
   // });
 
   cardFontHand.forEach((card, i) => {
-    if (card === 63 && jokerCount === 0) {
-      handStr += `<div class="marker-row container${i}"><div class="card red">${String.fromCodePoint(
-        card
-      )}</div></div>`;
-      jokerCount++;
-    } else if (card === 63 && jokerCount > 0) {
-      handStr += `<div class="marker-row container${i}"><div class="card black">${String.fromCodePoint(
-        card
-      )}</div></div>`;
-    } else if (card > 64 && card < 91) {
+    // if (card === 63 && jokerCount === 0) {
+    //   handStr += `<div class="marker-row container${i}"><div class="card red">${String.fromCodePoint(
+    //     card
+    //   )}</div></div>`;
+    //   jokerCount++;
+    // } else if (card === 63 && jokerCount > 0) {
+    //   handStr += `<div class="marker-row container${i}"><div class="card black">${String.fromCodePoint(
+    //     card
+    //   )}</div></div>`;
+    // } else
+    if (card > 64 && card < 91) {
       handStr += `<div class="marker-row container${i}"><div class="card red">${String.fromCodePoint(
         card
       )}</div></div>`;
