@@ -27,7 +27,7 @@ unicodeHand = hand.map(card => {
   cardValue > 11 ? cardValue++ : cardValue;
   result = result + suit * 16 + cardValue;
   // result = result === 127167 ? 127199 : result; // fix for missing red joker on mac
-    result = result === 127167 ? \u1f0bf : result;
+    result = result === 127167 ? \u1f000 : result;
   return result;
 });
 
