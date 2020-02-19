@@ -151,14 +151,14 @@ function renderBoard() {
       )}</div></div>`;
       jokerCount++;
     } else if (card === 63 && jokerCount > 0) {
-      handStr += `<div class="marker-row container${i}"><div class="card red">${String.fromCodePoint(
+      handStr += `<div class="marker-row container${i}"><div class="card black">${String.fromCodePoint(
         card
       )}</div></div>`;
     } else if (card > 64 && card < 91) {
       handStr += `<div class="marker-row container${i}"><div class="card red">${String.fromCodePoint(
         card
       )}</div></div>`;
-    } else {
+    } else if (card > 97) {
       handStr += `<div class="marker-row container${i}"><div class="card black">${String.fromCodePoint(
         card
       )}</div></div>`;
