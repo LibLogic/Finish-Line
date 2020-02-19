@@ -1,3 +1,11 @@
+@font-face {
+  font-family: "playing_cardsregular";
+  src: url("../fonts/cards-webfont.woff2") format("woff2"),
+    url("../fonts/cards-webfont.woff") format("woff");
+  font-weight: normal;
+  font-style: normal;
+}
+
 .die-animate {
   animation: shake 0.82s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
   transform: translate3d(0, 0, 0);
@@ -34,7 +42,6 @@ body {
   background-color: #ededed;
   background-image: url("../images/dice.jpg");
   background-size: 40%;
-  user-select: none;
 }
 
 ul {
@@ -175,6 +182,7 @@ input {
   display: grid;
   /* margin: 0 0 0 0; */
   grid-template-columns: repeat(10, auto);
+  font-family: "playing_cardsregular";
 }
 
 .container9,
@@ -199,9 +207,9 @@ input {
 }
 
 .card {
-  font-size: 800%;
+  font-size: 620%;
   text-align: center;
-  line-height: 1em;
+  /* line-height: 1em; */
   background-color: #fff;
   text-shadow: 1px 1px 4px rgba(200, 200, 200, 1);
 }
@@ -251,6 +259,7 @@ ul {
 }
 
 .p {
+  font-family: Arial, Helvetica, sans-serif;
   font-size: 200%;
   text-align: center;
 }

@@ -19,6 +19,24 @@ safetyCardPositions = [
   jokerTwoPosition
 ];
 
+cardFontHand = hand.map(card => {
+  let suit = Math.floor(card / 100);
+  let cardValue = card % 100;
+  result =
+    cardValue === 14
+      ? (cardValue = 63)
+      : suit === 1
+      ? (cardValue += 64)
+      : (result =
+          suit === 2
+            ? cardValue + 77
+            : (result =
+                suit === 3
+                  ? cardValue + 96
+                  : (result = suit === 4 ? cardValue + 109 : cardValue)));
+  return result;
+});
+
 unicodeHand = hand.map(card => {
   card == 114 ? (card = 414) : card;
   let suit = Math.floor(card / 100);
@@ -32,15 +50,15 @@ unicodeHand = hand.map(card => {
 
 function createDeck(deckSize) {
   for (let i = 1; deck.length < deckSize; i++) {
-    deck.push(100 + i); // clubs
-    deck.push(200 + i); // diamonds
-    deck.push(300 + i); // hearts
-    deck.push(400 + i); // spades
+    deck.push(100 + i);
+    deck.push(200 + i);
+    deck.push(300 + i);
+    deck.push(400 + i);
   }
   return deck;
 }
 
-// Draw random cards from deck. Negates need to shuffle deck.
+// Draw random cards from deck. No need to shuffle deck.
 function drawCard(startPos = 0, fromEnd = deck.length) {
   fromEnd !== deck.length ? (fromEnd = deck.length - fromEnd) : fromEnd;
   let random = Math.floor(Math.random() * (fromEnd - startPos)) + startPos;
@@ -109,13 +127,34 @@ function renderPlayers() {
 function renderBoard() {
   let handStr = "";
   let jokerCount = 0;
-  unicodeHand.forEach((card, i) => {
-    if (card === 127199 && jokerCount === 0) {
+  // unicodeHand.forEach((card, i) => {
+  //   if (card === 127199 && jokerCount === 0) {
+  //     handStr += `<div class="marker-row container${i}"><div class="card red">${String.fromCodePoint(
+  //       card
+  //     )}</div></div>`;
+  //     jokerCount++;
+  //   } else if (card > 127152 && card < 127184) {
+  //     handStr += `<div class="marker-row container${i}"><div class="card red">${String.fromCodePoint(
+  //       card
+  //     )}</div></div>`;
+  //   } else {
+  //     handStr += `<div class="marker-row container${i}"><div class="card black">${String.fromCodePoint(
+  //       card
+  //     )}</div></div>`;
+  //   }
+  // });
+
+  cardFontHand.forEach((card, i) => {
+    if (card === 63 && jokerCount === 0) {
       handStr += `<div class="marker-row container${i}"><div class="card red">${String.fromCodePoint(
         card
       )}</div></div>`;
       jokerCount++;
-    } else if (card > 127152 && card < 127184) {
+    } else if (card > 63 && jokerCount > 0) {
+      handStr += `<div class="marker-row container${i}"><div class="card red">${String.fromCodePoint(
+        card
+      )}</div></div>`;
+    } else if (card > 64 && card < 91) {
       handStr += `<div class="marker-row container${i}"><div class="card red">${String.fromCodePoint(
         card
       )}</div></div>`;
@@ -857,6 +896,8 @@ function applyPenalty(furthestMarker, winningDieColor) {
 }
 
 function rollDice() {
+  console.log(cardFontHand);
+  console.log(hand);
   console.log("running rollDice");
   movesRemaining = 2;
   redDieValue = Math.floor(Math.random() * 6);

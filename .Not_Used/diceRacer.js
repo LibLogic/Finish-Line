@@ -159,16 +159,6 @@ function game() {
     console.clear();
     console.log(hand);
     console.log("\n");
-    // let handStr = "";
-    // unicodeHand.forEach(card => {
-    //   if (card > 127152 && card < 127184) {
-    //     handStr += "\033[31;1;107m" + String.fromCodePoint(card) + "\033[0m" + " ";
-    //   } else {
-    //     handStr += "\033[30;1;107m" + String.fromCodePoint(card) + "\033[0m" + " ";
-    //   }
-    // });
-
-    // console.log(handStr);
 
     if (
       currentPlayer.markerA >= 8 - 1 &&
