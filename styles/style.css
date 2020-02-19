@@ -35,6 +35,7 @@ body {
   background-image: url("../images/dice.jpg");
   background-size: 40%;
   user-select: none;
+  Font-family: Arial;
 }
 
 ul {
