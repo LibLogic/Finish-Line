@@ -150,7 +150,7 @@ function renderBoard() {
         card
       )}</div></div>`;
       jokerCount++;
-    } else if (card > 63 && jokerCount > 0) {
+    } else if (card === 63 && jokerCount > 0) {
       handStr += `<div class="marker-row container${i}"><div class="card red">${String.fromCodePoint(
         card
       )}</div></div>`;
