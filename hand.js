@@ -3,6 +3,7 @@ let currentPlayer = 0,
   newHand = [],
   hand = [],
   wings = [],
+  jokerCount = 0,
   jokerOnePosition = 0,
   jokerTwoPosition = 0,
   wingCardPositions = [-1, 8, 17, 26, 35, 44, 53];
@@ -22,31 +23,22 @@ safetyCardPositions = [
 cardFontHand = hand.map(card => {
   let suit = Math.floor(card / 100);
   let cardValue = card % 100;
-  result =
-    cardValue === 14
-      ? (cardValue = 63)
-      : suit === 1
-      ? (cardValue += 64)
-      : (result =
-          suit === 2
-            ? cardValue + 77
-            : (result =
-                suit === 3
-                  ? cardValue + 96
-                  : (result = suit === 4 ? cardValue + 109 : cardValue)));
+  if (card !== 114 && card !== 214) {
+    result =
+      suit === 1
+        ? (cardValue += 64)
+        : (result =
+            suit === 2
+              ? (cardValue += 77)
+              : (result =
+                  suit === 3
+                    ? (cardValue += 96)
+                    : (result = suit === 4 ? (cardValue += 109) : cardValue)));
+  } else {
+    result = 63;
+  }
   return result;
 });
-
-// unicodeHand = hand.map(card => {
-//   card == 114 ? (card = 414) : card;
-//   let suit = Math.floor(card / 100);
-//   let cardValue = card % 100;
-//   let result = 127120;
-//   cardValue > 11 ? cardValue++ : cardValue;
-//   result = result + suit * 16 + cardValue;
-//   result = result === 127167 ? 127199 : result; // fix for missing red joker on mac
-//   return result;
-// });
 
 function createDeck(deckSize) {
   for (let i = 1; deck.length < deckSize; i++) {
@@ -126,40 +118,23 @@ function renderPlayers() {
 
 function renderBoard() {
   let handStr = "";
-  let jokerCount = 0;
-  // unicodeHand.forEach((card, i) => {
-  //   if (card === 127199 && jokerCount === 0) {
-  //     handStr += `<div class="marker-row container${i}"><div class="card red">${String.fromCodePoint(
-  //       card
-  //     )}</div></div>`;
-  //     jokerCount++;
-  //   } else if (card > 127152 && card < 127184) {
-  //     handStr += `<div class="marker-row container${i}"><div class="card red">${String.fromCodePoint(
-  //       card
-  //     )}</div></div>`;
-  //   } else {
-  //     handStr += `<div class="marker-row container${i}"><div class="card black">${String.fromCodePoint(
-  //       card
-  //     )}</div></div>`;
-  //   }
-  // });
-
+  console.log(hand, "hand");
+  console.log(cardFontHand);
   cardFontHand.forEach((card, i) => {
-    // if (card === 63 && jokerCount === 0) {
-    //   handStr += `<div class="marker-row container${i}"><div class="card red">${String.fromCodePoint(
-    //     card
-    //   )}</div></div>`;
-    //   jokerCount++;
-    // } else if (card === 63 && jokerCount > 0) {
-    //   handStr += `<div class="marker-row container${i}"><div class="card black">${String.fromCodePoint(
-    //     card
-    //   )}</div></div>`;
-    // } else
-    if (card > 64 && card < 91) {
+    if (card === 63 && jokerCount === 0) {
       handStr += `<div class="marker-row container${i}"><div class="card red">${String.fromCodePoint(
         card
       )}</div></div>`;
-    } else if (card > 97) {
+      jokerCount++;
+    } else if (card === 63 && jokerCount > 0) {
+      handStr += `<div class="marker-row container${i}"><div class="card black">${String.fromCodePoint(
+        card
+      )}</div></div>`;
+    } else if (card > 64 && card < 91) {
+      handStr += `<div class="marker-row container${i}"><div class="card red">${String.fromCodePoint(
+        card
+      )}</div></div>`;
+    } else if (card > 96) {
       handStr += `<div class="marker-row container${i}"><div class="card black">${String.fromCodePoint(
         card
       )}</div></div>`;
@@ -479,7 +454,6 @@ function processSpecialCards() {
       switchUser();
       specialCardFlag = false;
     } else {
-      console.log("running recursive call");
       if (userSpecialCards.length > 0 && movesRemaining < 1) {
         processSpecialCards();
       }
@@ -488,8 +462,8 @@ function processSpecialCards() {
 
   furthestSpecialCard = getFurthestSpecialCard();
   let furthestCardColor =
-    Math.floor(furthestSpecialCard / 100) === 2 ||
-    Math.floor(furthestSpecialCard / 100) === 3
+    Math.floor(furthestSpecialCard / 100) === 1 ||
+    Math.floor(furthestSpecialCard / 100) === 2
       ? "red"
       : "black";
 
