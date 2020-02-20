@@ -23,7 +23,9 @@ safetyCardPositions = [
 cardFontHand = hand.map(card => {
   let suit = Math.floor(card / 100);
   let cardValue = card % 100;
-  if (card !== 114 && card !== 214) {
+  if (card === 114 || card === 214) {
+    result = 63;
+  } else {
     result =
       suit === 1
         ? (cardValue += 64)
@@ -34,8 +36,6 @@ cardFontHand = hand.map(card => {
                   suit === 3
                     ? (cardValue += 96)
                     : (result = suit === 4 ? (cardValue += 109) : cardValue)));
-  } else {
-    result = 63;
   }
   return result;
 });
@@ -59,27 +59,41 @@ function drawCard(startPos = 0, fromEnd = deck.length) {
   return card;
 }
 
-// Generate layout" **Do not allow jack, queen, king, ace, duece, or joker in either
-// first 3 or last 3 marker Positions.
 let specialCards = [14, 13, 12, 11, 1, 2];
 function generateHand() {
-  // Generate wing cards first (excluding J, Q, K, A, or 2)
+  // Generate wing cards first (excluding Joker J, Q, K, A, or 2)
   for (let i = 0; i < 6; i++) {
     wings.push(drawCard(8, 14));
   }
-  // Put a wing card at the end of each row (every 9th card)
-  // let deckSize = deck.length;
+
+  // Generate layout" **Do not allow jack, queen, king, ace, duece, or joker in either
+  // first 3 or last 3 marker Positions.
+  let lastThree = [];
+  lastThree.push(drawCard(8, 14));
+  lastThree.push(drawCard(8, 14));
+  lastThree.push(drawCard(8, 14));
   for (let row = 0; row < 6; row++) {
     for (let col = 0; col < 8; col++) {
-      let drawnCard = drawCard();
-      hand.push(drawnCard);
-      if (drawnCard === 114) {
-        jokerOnePosition = hand.length - 1;
-      }
-      if (drawnCard === 214) {
-        jokerTwoPosition = hand.length - 1;
+      if (
+        (row + 1) * (col + 1) === 1 ||
+        (row + 1) * (col + 1) === 2 ||
+        (row + 1) * (col + 1) === 3
+      ) {
+        hand.push(drawCard(8, 14));
+      } else if (hand.length > 49 && hand.length < 53) {
+        hand.push(lastThree.pop());
+      } else {
+        let drawnCard = drawCard();
+        hand.push(drawnCard);
+        if (drawnCard === 114) {
+          jokerOnePosition = hand.length - 1;
+        }
+        if (drawnCard === 214) {
+          jokerTwoPosition = hand.length - 1;
+        }
       }
     }
+    // Put a wing card at the end of each row (every 9th card)
     hand.push(wings.pop());
   }
   return hand;
@@ -118,8 +132,6 @@ function renderPlayers() {
 
 function renderBoard() {
   let handStr = "";
-  console.log(hand, "hand");
-  console.log(cardFontHand);
   cardFontHand.forEach((card, i) => {
     if (card === 63 && jokerCount === 0) {
       handStr += `<div class="marker-row container${i}"><div class="card red">${String.fromCodePoint(
@@ -871,8 +883,6 @@ function applyPenalty(furthestMarker, winningDieColor) {
 }
 
 function rollDice() {
-  console.log(cardFontHand);
-  console.log(hand);
   console.log("running rollDice");
   movesRemaining = 2;
   redDieValue = Math.floor(Math.random() * 6);
