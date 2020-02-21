@@ -244,7 +244,7 @@ function switchUser() {
     li.classList.add("row-highlight");
   });
 
-  if (players[currentPlayer].isFinished) {
+  if (players[currentPlayer].isFinished && players.length > 1) {
     switchUser();
   }
 }
@@ -771,8 +771,7 @@ function applyPenalty(furthestMarker, winningDieColor) {
     let closestPlayer = [];
     let opponentIndex = 0;
 
-    let sortedMarkers = sortOpponentMarkers(players);
-    let markerList = sortedMarkers.filter(marker => {
+    let markerList = sortOpponentMarkers(players).filter(marker => {
       return marker[2] > currentPosition;
     });
     if (markerList.length > 0) {
@@ -782,6 +781,19 @@ function applyPenalty(furthestMarker, winningDieColor) {
           opponentIndex = i;
         }
       });
+
+      let markerClass =
+        closestPlayer[1] === "markerA"
+          ? "marker-a"
+          : closestPlayer[1] === "markerB"
+          ? "marker-b"
+          : closestPlayer[1] === "markerC"
+          ? "marker-c"
+          : markerClass;
+
+      let blinkSelector = `.p${opponentIndex + 1} .${markerClass}`;
+      let blinkMarker = document.querySelectorAll(blinkSelector);
+      blinkMarker[0].classList.add("blinking");
 
       if (players[opponentIndex].isFinished === false) {
         players[opponentIndex][closestPlayer[1]] = currentPosition;
@@ -849,6 +861,19 @@ function applyPenalty(furthestMarker, winningDieColor) {
       players[currentPlayer][furthestMarker] =
         players[opponentIndex][randomPlayer[1]];
       players[opponentIndex][randomPlayer[1]] = currentPosition;
+
+      markerClass =
+        randomPlayer[1] === "markerA"
+          ? "marker-a"
+          : randomPlayer[1] === "markerB"
+          ? "marker-b"
+          : randomPlayer[1] === "markerC"
+          ? "marker-c"
+          : markerClass;
+
+      let blinkSelector = `.p${opponentIndex + 1} .${markerClass}`;
+      let blinkMarker = document.querySelectorAll(blinkSelector);
+      blinkMarker[0].classList.add("blinking");
 
       sentence.innerHTML = `${winningDieColor.toUpperCase()} die wins.<br>— Two is activated —<br>
       Getting random swap 3`;
