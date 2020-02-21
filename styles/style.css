@@ -54,6 +54,7 @@ ul {
 }
 
 #header {
+  user-select: none;
   height: 46%;
   width: 100%;
   text-align: center;
@@ -144,22 +145,21 @@ input {
 
 .marker-a {
   color: tomato;
-  font-size: 1.9em;
+  font-size: 1.1em;
   line-height: 0.4em;
+  vertical-align: top;
 }
 
 .marker-b {
+  font-size: 0.68em;
+  line-height: 0.85em;
   color: mediumseagreen;
-  font-size: 0.7em;
-  line-height: 1em;
-  vertical-align: top;
 }
 
 .marker-c {
+  font-size: 0.9em;
+  line-height: 0.48em;
   color: mediumpurple;
-  font-size: 1em;
-  line-height: 0.45;
-  vertical-align: top;
 }
 
 .btn {
@@ -266,9 +266,9 @@ ul {
 
 .p li {
   height: 0.6em;
-  line-height: 0.6em;
+  line-height: 0;
   padding-left: 9%;
-  letter-spacing: 0.3em;
+  letter-spacing: 0.03em;
   box-sizing: border-box;
   border-bottom: 1px solid #ccc;
   background-color: #f7f5f7;
