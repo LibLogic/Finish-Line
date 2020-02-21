@@ -36,6 +36,27 @@
   }
 }
 
+.blinking {
+  animation: blinkingText 0.8s infinite;
+}
+@keyframes blinkingText {
+  0% {
+    opacity: 1;
+  }
+  49% {
+    color: 1;
+  }
+  60% {
+    opacity: 0;
+  }
+  85 % {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
 body {
   height: 100%;
   margin: 0 3%;
@@ -180,7 +201,6 @@ input {
 
 #hand {
   display: grid;
-  /* margin: 0 0 0 0; */
   grid-template-columns: repeat(10, auto);
   font-family: "playing_cardsregular";
 }
