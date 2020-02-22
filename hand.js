@@ -847,8 +847,9 @@ function applyPenalty(furthestMarker, winningDieColor) {
     let opponentIndex = 0;
     let sortedMarkers = sortOpponentMarkers(players);
     let filteredMarkers = sortedMarkers.filter(player => {
-      return player[2] !== currentPosition || player[2] !== -1;
+      return player[2] !== currentPosition && player[2] !== -1;
     });
+
     let randomIndex = Math.floor(Math.random() * filteredMarkers.length);
     let randomPlayer = [];
     randomPlayer = filteredMarkers[randomIndex];
@@ -858,6 +859,7 @@ function applyPenalty(furthestMarker, winningDieColor) {
           opponentIndex = i;
         }
       });
+
       players[currentPlayer][furthestMarker] =
         players[opponentIndex][randomPlayer[1]];
       players[opponentIndex][randomPlayer[1]] = currentPosition;
