@@ -49,7 +49,7 @@
   60% {
     opacity: 0;
   }
-  85 % {
+  85% {
     opacity: 0;
   }
   100% {
@@ -68,6 +68,7 @@ body {
 ul {
   list-style: none;
   padding-left: 0;
+  margin: 0;
 }
 
 .hidden {
@@ -76,7 +77,8 @@ ul {
 
 #header {
   user-select: none;
-  height: 46%;
+  height: 28%;
+  padding-bottom: 5%;
   width: 100%;
   text-align: center;
   background-image: linear-gradient(
@@ -98,6 +100,7 @@ ul {
 input {
   width: 620px;
   font-size: 132%;
+  margin-bottom: 5%;
 }
 
 #dice h1 {
@@ -121,14 +124,14 @@ input {
 .red-die {
   display: inline-block;
   cursor: pointer;
-  font-size: 650%;
+  font-size: 7em;
   color: red;
 }
 
 .black-die {
   display: inline-block;
   cursor: pointer;
-  font-size: 650%;
+  font-size: 7em;
 }
 
 .markers {
@@ -145,41 +148,41 @@ input {
 #red-marker {
   color: tomato;
   margin-right: -0.2em;
-  font-size: 4.42em;
-  line-height: 0.4em;
+  font-size: 150px;
+  line-height: 0.28em;
   vertical-align: top;
 }
 
 #green-marker {
   color: mediumseagreen;
-  font-size: 1.7em;
-  line-height: 1em;
+  font-size: 57px;
+  line-height: 0.85em;
   vertical-align: top;
 }
 
 #blue-marker {
   color: mediumpurple;
-  font-size: 2.4em;
-  line-height: 0.5em;
+  font-size: 80px;
+  line-height: 0.4em;
   vertical-align: top;
 }
 
 .marker-a {
   color: tomato;
-  font-size: 1.1em;
-  line-height: 0.4em;
+  font-size: 38px;
+  line-height: 0.38em;
   vertical-align: top;
 }
 
 .marker-b {
-  font-size: 0.68em;
-  line-height: 0.85em;
+  font-size: 23px;
+  line-height: 0.8em;
   color: mediumseagreen;
 }
 
 .marker-c {
-  font-size: 0.9em;
-  line-height: 0.48em;
+  font-size: 33px;
+  line-height: 0.36em;
   color: mediumpurple;
 }
 
@@ -200,6 +203,7 @@ input {
 }
 
 #hand {
+  margin: 0 -40px;
   display: grid;
   grid-template-columns: repeat(10, auto);
   font-family: "playing_cardsregular";
@@ -227,9 +231,11 @@ input {
 }
 
 .card {
+  margin: 12px 0 3px 0;
+  height: 74px;
+  overflow: hidden;
   font-size: 620%;
   text-align: center;
-  /* line-height: 1em; */
   background-color: #fff;
   text-shadow: 1px 1px 4px rgba(200, 200, 200, 1);
 }
@@ -244,10 +250,6 @@ input {
 
 .dim {
   color: rgba(255, 255, 255, 0.4);
-}
-
-ul {
-  margin: -0.2em 0 0.2em 0;
 }
 
 .d li {
@@ -265,15 +267,13 @@ ul {
 }
 
 .player-names-left {
-  margin-top: -4px;
-  margin-right: -8em;
+  margin-right: -5.5em;
   text-align: right;
   z-index: 1;
 }
 
 .player-names-right {
-  margin-top: -4px;
-  margin-left: -8em;
+  margin-left: -5.5em;
   text-align: left;
   z-index: 1;
 }
@@ -287,7 +287,7 @@ ul {
 .p li {
   height: 0.6em;
   line-height: 0;
-  padding-left: 9%;
+  padding-left: 4px;
   letter-spacing: 0.03em;
   box-sizing: border-box;
   border-bottom: 1px solid #ccc;

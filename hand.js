@@ -1,3 +1,12 @@
+let goFS = document.getElementById("begin-btn");
+goFS.addEventListener(
+  "click",
+  function() {
+    document.documentElement.requestFullscreen();
+  },
+  false
+);
+
 let currentPlayer = 0,
   deck = [],
   newHand = [],
@@ -161,7 +170,7 @@ function renderBoard() {
 }
 
 let prompts = [
-  `Enter a Comma Separated List of Players Names`,
+  `Enter a Comma Separated List of Players' Names`,
   `Marker to Move?`,
   `Select a Die`,
   `Which Marker Now?`

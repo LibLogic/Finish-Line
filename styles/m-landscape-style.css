@@ -1,0 +1,40 @@
+#header {
+  visibility: hidden;
+  height: 58%;
+  padding-bottom: 0;
+}
+
+h2#prompts {
+  font-size: 0.95em;
+}
+
+input {
+  width: 85%;
+  margin-bottom: 2%;
+}
+
+.btn {
+  margin: 0 auto;
+  font-size: 12px;
+  padding: 5px 14px 5px 14px;
+}
+
+button[type="submit"] {
+  display: block;
+}
+
+#dice h1 {
+  font-size: 200%;
+}
+
+#game-wrap {
+  zoom: 50%;
+}
+
+.player-names-left {
+  margin-right: -4em;
+}
+
+.player-names-right {
+  margin-left: -4em;
+}

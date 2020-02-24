@@ -1,0 +1,81 @@
+body {
+  height: 100%;
+  margin: 0 3%;
+  background-color: #ededed;
+  background-image: url("../images/dice.jpg");
+  background-size: 40%;
+}
+
+#header {
+  visibility: initial;
+  height: 35%;
+}
+
+input {
+  width: 80%;
+}
+
+#dice {
+  margin-bottom: 2%;
+}
+
+h2#prompts {
+  font-size: 0.8em;
+}
+
+.bullet {
+  font-size: 6em;
+}
+
+.red-die {
+  height: 0;
+  font-size: 4em;
+}
+
+.black-die {
+  height: 0;
+  font-size: 4em;
+}
+
+#game-wrap {
+  zoom: 30%;
+  margin-top: 70%;
+}
+
+#red-marker {
+  font-size: 3.42em;
+}
+
+#green-marker {
+  line-height: 0.5em;
+}
+
+#hand {
+  margin: 0 -40px;
+}
+
+.card {
+  height: 117px;
+  padding-top: 4px;
+  font-size: 620%;
+}
+
+.red {
+  color: red;
+}
+
+.black {
+  color: black;
+}
+
+.dim {
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.player-names-left {
+  margin-right: -4.5em;
+}
+
+.player-names-right {
+  margin-left: -4.5em;
+}
