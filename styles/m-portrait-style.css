@@ -79,3 +79,15 @@ h2#prompts {
 .player-names-right {
   margin-left: -4.5em;
 }
+
+.players-left {
+  padding-top: 351px;
+}
+
+.players-right {
+  margin-top: -925px;
+}
+
+.names-spacer {
+  height: 349px;
+}

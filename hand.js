@@ -1,12 +1,3 @@
-let goFS = document.getElementById("begin-btn");
-goFS.addEventListener(
-  "click",
-  function() {
-    document.documentElement.requestFullscreen();
-  },
-  false
-);
-
 let currentPlayer = 0,
   deck = [],
   newHand = [],
@@ -119,28 +110,28 @@ let dieStr = [
 ];
 
 function renderPlayers() {
-  let playerNames1 = document.querySelector(".player-names-left");
-  let playerNames2 = document.querySelector(".player-names-right");
-  let playerList = "";
-  for (let i = 0; i < 6; i++) {
-    playerList += `<div id="place-holder" class="container"><div id="dummy" class="card">${String.fromCodePoint(
-      127153
-    )}</div><ul class="d">`;
-    players.forEach((player, i) => {
-      playerList += `<li class="player${i}">${player.name}</li>`;
-    });
-    playerList += `</ul></div>`;
-  }
-  playerNames1.innerHTML = playerList;
-  playerNames2.innerHTML = playerList;
-
-  document.querySelectorAll(".player0").forEach(player => {
-    player.classList.add("highlight");
-  });
+  // let playerNames1 = document.querySelector(".player-names-left");
+  // let playerNames2 = document.querySelector(".player-names-right");
+  // let playerList = "";
+  // for (let i = 0; i < 6; i++) {
+  //   playerList += `<div id="place-holder" class="container"><div id="dummy" class="card">${String.fromCodePoint(
+  //     127153
+  //   )}</div><ul class="d">`;
+  //   players.forEach((player, i) => {
+  //     playerList += `<li class="player${i}">${player.name}</li>`;
+  //   });
+  //   playerList += `</ul></div>`;
+  // }
+  // playerNames1.innerHTML = playerList;
+  // playerNames2.innerHTML = playerList;
+  // document.querySelectorAll(".player0").forEach(player => {
+  //   player.classList.add("highlight");
+  // });
 }
 
 function renderBoard() {
   let handStr = "";
+  handStr += `<div class="players-left"></div>`;
   cardFontHand.forEach((card, i) => {
     if (card === 63 && jokerCount === 0) {
       handStr += `<div class="marker-row container${i}"><div class="card red">${String.fromCodePoint(
@@ -161,9 +152,27 @@ function renderBoard() {
       )}</div></div>`;
     }
   });
+  handStr += `<div class="container54 players-right"></div>`;
 
   let cards = document.getElementById("hand");
   cards.innerHTML = handStr;
+
+  let playerNames1 = document.querySelector(".players-left");
+  let playerNames2 = document.querySelector(".players-right");
+  let playerList = "";
+  for (let i = 0; i < 3; i++) {
+    playerList += `<ul class="d">`;
+    players.forEach((player, i) => {
+      playerList += `<li class="player${i}">${player.name}</li>`;
+    });
+    playerList += `</ul><div class="names-spacer"></div>`;
+  }
+  playerNames1.innerHTML = playerList;
+  playerNames2.innerHTML = playerList;
+
+  document.querySelectorAll(".player0").forEach(player => {
+    player.classList.add("highlight");
+  });
 
   const elem = document.getElementById("scrollToBottom");
   elem.scroll(0, elem.scrollHeight);
@@ -237,21 +246,21 @@ function switchUser() {
 
   rollBtn.innerHTML = `${players[currentPlayer].name}<br/>Roll The Dice`;
 
-  for (let i = 0; i < players.length; i++) {
-    document.querySelectorAll(`.player${i}`).forEach(player => {
-      player.classList.remove("highlight");
-    });
-    document.querySelectorAll(`.p${i + 1}`).forEach(row => {
-      row.classList.remove("row-highlight");
-    });
-  }
+  // for (let i = 0; i < players.length; i++) {
+  //   document.querySelectorAll(`.player${i}`).forEach(player => {
+  //     player.classList.remove("highlight");
+  //   });
+  //   document.querySelectorAll(`.p${i + 1}`).forEach(row => {
+  //     row.classList.remove("row-highlight");
+  //   });
+  // }
 
-  document.querySelectorAll(`.player${currentPlayer}`).forEach(player => {
-    player.classList.add("highlight");
-  });
-  document.querySelectorAll(`.p${currentPlayer + 1}`).forEach(li => {
-    li.classList.add("row-highlight");
-  });
+  // document.querySelectorAll(`.player${currentPlayer}`).forEach(player => {
+  //   player.classList.add("highlight");
+  // });
+  // document.querySelectorAll(`.p${currentPlayer + 1}`).forEach(li => {
+  //   li.classList.add("row-highlight");
+  // });
 
   if (players[currentPlayer].isFinished && players.length > 1) {
     switchUser();
@@ -466,7 +475,6 @@ function processSpecialCards() {
     userSpecialCards.forEach((card, i) => {
       if (card === furthestSpecialCard) {
         userSpecialCards.splice(i, 1);
-        // userSpecialCards.pop();
       }
     });
     document.querySelector(".black-die").classList.add("dim");
@@ -656,7 +664,6 @@ function getPlayerNames(playersArr) {
   playersNames.classList.add("hidden");
   document.getElementById("prompts").classList.add("hidden");
 
-  renderPlayers();
   renderBoard();
 
   document.querySelectorAll(".marker-row").forEach(li => {
@@ -921,6 +928,23 @@ function applyPenalty(furthestMarker, winningDieColor) {
 
 function rollDice() {
   console.log("running rollDice");
+
+  for (let i = 0; i < players.length; i++) {
+    document.querySelectorAll(`.player${i}`).forEach(player => {
+      player.classList.remove("highlight");
+    });
+    document.querySelectorAll(`.p${i + 1}`).forEach(row => {
+      row.classList.remove("row-highlight");
+    });
+  }
+
+  document.querySelectorAll(`.player${currentPlayer}`).forEach(player => {
+    player.classList.add("highlight");
+  });
+  document.querySelectorAll(`.p${currentPlayer + 1}`).forEach(li => {
+    li.classList.add("row-highlight");
+  });
+
   movesRemaining = 2;
   redDieValue = Math.floor(Math.random() * 6);
   let dice1 = dieStr[redDieValue];
