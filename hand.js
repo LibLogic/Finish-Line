@@ -109,26 +109,6 @@ let dieStr = [
   String.fromCodePoint(9861)
 ];
 
-function renderPlayers() {
-  // let playerNames1 = document.querySelector(".player-names-left");
-  // let playerNames2 = document.querySelector(".player-names-right");
-  // let playerList = "";
-  // for (let i = 0; i < 6; i++) {
-  //   playerList += `<div id="place-holder" class="container"><div id="dummy" class="card">${String.fromCodePoint(
-  //     127153
-  //   )}</div><ul class="d">`;
-  //   players.forEach((player, i) => {
-  //     playerList += `<li class="player${i}">${player.name}</li>`;
-  //   });
-  //   playerList += `</ul></div>`;
-  // }
-  // playerNames1.innerHTML = playerList;
-  // playerNames2.innerHTML = playerList;
-  // document.querySelectorAll(".player0").forEach(player => {
-  //   player.classList.add("highlight");
-  // });
-}
-
 function renderBoard() {
   let handStr = "";
   handStr += `<div class="players-left"></div>`;
@@ -160,13 +140,17 @@ function renderBoard() {
   let playerNames1 = document.querySelector(".players-left");
   let playerNames2 = document.querySelector(".players-right");
   let playerList = "";
-  for (let i = 0; i < 3; i++) {
-    playerList += `<ul class="d">`;
+
+  for (let i = 0; i < 6; i++) {
+    playerList += `<div id="place-holder" class="container"><div id="dummy" class="card">${String.fromCodePoint(
+      127153
+    )}</div><ul class="d">`;
     players.forEach((player, i) => {
       playerList += `<li class="player${i}">${player.name}</li>`;
     });
-    playerList += `</ul><div class="names-spacer"></div>`;
+    playerList += `</ul></div>`;
   }
+
   playerNames1.innerHTML = playerList;
   playerNames2.innerHTML = playerList;
 
@@ -245,22 +229,6 @@ function switchUser() {
   movesRemaining = 2;
 
   rollBtn.innerHTML = `${players[currentPlayer].name}<br/>Roll The Dice`;
-
-  // for (let i = 0; i < players.length; i++) {
-  //   document.querySelectorAll(`.player${i}`).forEach(player => {
-  //     player.classList.remove("highlight");
-  //   });
-  //   document.querySelectorAll(`.p${i + 1}`).forEach(row => {
-  //     row.classList.remove("row-highlight");
-  //   });
-  // }
-
-  // document.querySelectorAll(`.player${currentPlayer}`).forEach(player => {
-  //   player.classList.add("highlight");
-  // });
-  // document.querySelectorAll(`.p${currentPlayer + 1}`).forEach(li => {
-  //   li.classList.add("row-highlight");
-  // });
 
   if (players[currentPlayer].isFinished && players.length > 1) {
     switchUser();

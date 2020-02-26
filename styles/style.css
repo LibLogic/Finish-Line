@@ -77,7 +77,7 @@ ul {
 
 #header {
   user-select: none;
-  height: 28%;
+  height: 32%;
   padding-bottom: 5%;
   width: 100%;
   text-align: center;
@@ -258,37 +258,18 @@ input {
   color: #aaa;
 }
 
-/* .player-names-left .container:nth-child(odd) {
-  visibility: hidden;
-}
-
-.player-names-right .container:nth-child(even) {
-  visibility: hidden;
-} */
-
-/* .player-names-left {
-  margin-right: -5.5em;
-  text-align: right;
-  z-index: 1;
-}
-
-.player-names-right {
-  margin-left: -5.5em;
-  text-align: left;
-  z-index: 1;
-} */
-
 .players-left {
   position: absolute;
   width: 9%;
-  padding-top: 254px;
   font-family: Arial, Helvetica, sans-serif;
   font-size: 16px;
   text-align: right;
 }
 
 .players-right {
-  margin-top: -739px;
+  position: absolute;
+  width: 13.5%;
+  right: 0%;
   font-family: Arial, Helvetica, sans-serif;
   font-size: 16px;
   text-align: left;
@@ -296,6 +277,14 @@ input {
 
 .names-spacer {
   height: 256px;
+}
+
+.players-left .container:nth-child(odd) {
+  visibility: hidden;
+}
+
+.players-right .container:nth-child(even) {
+  visibility: hidden;
 }
 
 .p {
@@ -311,7 +300,7 @@ input {
   letter-spacing: 0.03em;
   box-sizing: border-box;
   border-bottom: 1px solid #ccc;
-  background-color: #f7f5f7;
+  background-color: #eef0e2;
 }
 
 .faded {
@@ -319,7 +308,7 @@ input {
 }
 
 .p li.row-highlight {
-  background-color: rgb(36, 207, 107, 0.1);
+  background-color: #b0d3b2ce;
 }
 
 .d li.highlight {

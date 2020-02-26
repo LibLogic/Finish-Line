@@ -13,6 +13,20 @@ input {
   margin-bottom: 2%;
 }
 
+#red-marker {
+  font-size: 110px;
+  line-height: 0.23em;
+}
+
+#green-marker {
+  font-size: 59px;
+  line-height: 0.35em;
+}
+
+#blue-marker {
+  font-size: 67px;
+}
+
 .btn {
   margin: 0 auto;
   font-size: 12px;
@@ -31,10 +45,19 @@ button[type="submit"] {
   zoom: 50%;
 }
 
-.player-names-left {
-  margin-right: -4em;
+.marker-a {
+  font-size: 35px;
+  line-height: 0.49em;
 }
 
-.player-names-right {
-  margin-left: -4em;
+.marker-b {
+  font-size: 26px;
+  line-height: 0.65em;
+  letter-spacing: 5em;
+  padding-right: 0 0.2em 0 0;
+}
+
+.marker-c {
+  font-size: 23px;
+  line-height: 0.85em;
 }

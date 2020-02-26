@@ -42,14 +42,6 @@ h2#prompts {
   margin-top: 70%;
 }
 
-#red-marker {
-  font-size: 3.42em;
-}
-
-#green-marker {
-  line-height: 0.5em;
-}
-
 #hand {
   margin: 0 -40px;
 }
@@ -70,22 +62,6 @@ h2#prompts {
 
 .dim {
   color: rgba(255, 255, 255, 0.4);
-}
-
-.player-names-left {
-  margin-right: -4.5em;
-}
-
-.player-names-right {
-  margin-left: -4.5em;
-}
-
-.players-left {
-  padding-top: 351px;
-}
-
-.players-right {
-  margin-top: -925px;
 }
 
 .names-spacer {
