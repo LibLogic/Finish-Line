@@ -1,3 +1,93 @@
+let cs = new WebSocket("ws://localhost:5500");
+
+cs.onmessage = e => {
+  let obj = JSON.parse(e.data);
+  switch (obj.type) {
+    case "switchUser":
+      currentPlayer = obj.data.currentPlayer;
+      switchUser();
+      break;
+    case "updateMarkerPositions":
+      players = obj.data.players;
+      currentPlayerUser = obj.data.currentPlayer;
+      updateMarkerPositions();
+      break;
+    case "renderRollDice":
+      redDieValue = obj.data.redDieValue;
+      blackDieValue = obj.data.blackDieValue;
+      dice1 = obj.data.dice1;
+      dice2 = obj.data.dice2;
+      renderRollDice(dice1, dice2);
+      break;
+    case "sendClassEvents":
+      target = obj.data.target[0];
+      sendClassEvents(target);
+      break;
+    case "sendMarkerClick":
+      target = obj.data.target;
+      markerClick(target);
+      break;
+  }
+};
+
+function doUpdateMarkerPositions(players) {
+  setTimeout(() => {
+    cs.send(
+      JSON.stringify({
+        type: "updateMarkerPositions",
+        data: { players: players, currentPlayer: currentPlayer }
+      })
+    );
+  }, 15);
+}
+
+function doSwitchUser() {
+  console.log("doingSwitchUser");
+  cs.send(
+    JSON.stringify({
+      type: "switchUser",
+      data: { currentPlayer: currentPlayer }
+    })
+  );
+}
+
+function doRenderRollDice(dice1, dice2, redDieValue, blackDieValue) {
+  cs.send(
+    JSON.stringify({
+      type: "renderRollDice",
+      data: {
+        redDieValue: redDieValue,
+        blackDieValue: blackDieValue,
+        dice1: dice1,
+        dice2: dice2
+      }
+    })
+  );
+}
+
+function doSendClassEvents(target) {
+  cs.send(
+    JSON.stringify({
+      type: "sendClassEvents",
+      data: {
+        target: target
+      }
+    })
+  );
+}
+
+function doSendMarkerClick(target, movesRemaining) {
+  cs.send(
+    JSON.stringify({
+      type: "sendMarkerClick",
+      data: {
+        target: target,
+        movesRemaining: movesRemaining
+      }
+    })
+  );
+}
+
 let currentPlayer = 0,
   deck = [],
   newHand = [],
@@ -110,6 +200,7 @@ let dieStr = [
 ];
 
 function renderBoard() {
+  console.log("running renderBoard");
   let handStr = "";
   handStr += `<div class="players-left"></div>`;
   cardFontHand.forEach((card, i) => {
@@ -177,34 +268,44 @@ document.getElementById("players").addEventListener("keyup", e => {
 });
 
 function markerEvents() {
+  console.log("adding markerEvents");
   document
     .getElementById("green-marker")
-    .addEventListener("click", markerClick);
-  document.getElementById("red-marker").addEventListener("click", markerClick);
-  document.getElementById("blue-marker").addEventListener("click", markerClick);
+    .addEventListener("click", doMarkerClick);
+  document
+    .getElementById("red-marker")
+    .addEventListener("click", doMarkerClick);
+  document
+    .getElementById("blue-marker")
+    .addEventListener("click", doMarkerClick);
 }
 
 let movesRemaining = 2;
 let firstDieValue = 0;
 let secondDieValue = 0;
-function markerClick({ target }) {
-  let markerChoice = target.id;
-  console.clear();
+
+function doMarkerClick({ target }) {
+  doSendMarkerClick(target.id);
+}
+
+function markerClick(markerChoice) {
+  console.log("running doMarkerClick");
   sortOpponentMarkers(players);
   movesRemaining--;
   if (movesRemaining === 0 && visibleMarkerCount > 1) {
     movePlayer(secondDieValue, markerChoice);
-    updateMarkerPositions();
+    doUpdateMarkerPositions(players, currentPlayer);
     showRollView();
   } else {
     movePlayer(firstDieValue, markerChoice);
-    updateMarkerPositions();
+    doUpdateMarkerPositions(players, currentPlayer);
     if (visibleMarkerCount === 1) {
       showRollView();
     }
   }
+  target = document.getElementById(markerChoice);
   target.classList.add("hidden");
-  sentence.innerHTML = prompts[3];
+  sentence.innerHTML = prompts[3]; // Which Marker Now?
 }
 
 function showRollView() {
@@ -231,16 +332,13 @@ function switchUser() {
   rollBtn.innerHTML = `${players[currentPlayer].name}<br/>Roll The Dice`;
 
   if (players[currentPlayer].isFinished && players.length > 1) {
-    switchUser();
+    doSwitchUser();
   }
 }
 
 let sentence = document.getElementById("prompts");
-
 let diceContainer = document.getElementById("dice");
-
 let beginBtn = document.getElementById("begin-btn");
-
 let playersNames = document.getElementById("players-names");
 
 beginBtn.addEventListener("click", () => {
@@ -251,6 +349,7 @@ beginBtn.addEventListener("click", () => {
 });
 
 function movePlayer(dieMove, markerChoice) {
+  console.log("move player");
   switch (markerChoice) {
     case "red-marker":
       markerToMove = "markerA";
@@ -362,12 +461,13 @@ function updateMarkerPositions() {
       )}</span>`;
     }
     if (specialCardFlag === false && movesRemaining < 1) {
-      switchUser();
+      doSwitchUser();
     }
   });
 }
 
 function hasValidMove(dieMove, previousMarkerPosition, currentCard) {
+  console.log("running hasValidMove");
   let handLength = hand.length - 1;
   // first do all the things that should just return
   // remember moves have already been made, just not displayed yet
@@ -436,7 +536,7 @@ function processSpecialCards() {
   }
 
   function pauseBtnClick() {
-    updateMarkerPositions();
+    doUpdateMarkerPositions(players, currentPlayer);
     rollBtn.removeEventListener("click", pauseBtnClick);
     rollBtn.removeEventListener("click", specialBtnClick, { once: true });
     sentence.classList.add("hidden");
@@ -451,7 +551,7 @@ function processSpecialCards() {
       rollBtn.addEventListener("click", rollBtnClick);
       // checkForAttack();
       showRollView();
-      switchUser();
+      doSwitchUser();
       specialCardFlag = false;
     } else {
       if (userSpecialCards.length > 0 && movesRemaining < 1) {
@@ -493,6 +593,7 @@ function processSpecialCards() {
   }
 
   function getFurthestSpecialCard() {
+    console.log("running getFurthestSpecialCard");
     let furthestMarkerEntry = ["", -1];
     let playerEntries = Object.entries(players[currentPlayer]);
     for (const [marker, position] of playerEntries) {
@@ -552,6 +653,7 @@ function checkForAttack() {
 }
 
 function initializePage() {
+  console.log("running initialize page");
   document.querySelector(".show-header").addEventListener("mouseenter", () => {
     document.querySelector(".show-header").setAttribute("style", "opacity: 1");
   });
@@ -608,10 +710,11 @@ function rollBtnClick() {
       .removeAttribute("style", "opacity: .7");
   });
 
-  rollDice();
+  getRollDice();
 }
 
 function getPlayerNames(playersArr) {
+  console.log("running getPlayerNames");
   class Player {
     constructor(name) {
       this.markerA = -1;
@@ -633,7 +736,10 @@ function getPlayerNames(playersArr) {
   document.getElementById("prompts").classList.add("hidden");
 
   renderBoard();
+  renderInitialPlayerGrid();
+}
 
+function renderInitialPlayerGrid() {
   document.querySelectorAll(".marker-row").forEach(li => {
     li.innerHTML += "";
   });
@@ -660,8 +766,8 @@ function specialCardRoll() {
   let dice1 = dieStr[redDieValue];
   blackDieValue = Math.floor(Math.random() * 6);
   let dice2 = dieStr[blackDieValue];
-  document.querySelector(".red-die").classList.add("die-animate");
-  document.querySelector(".black-die").classList.add("die-animate");
+  document.querySelector(".red-die").classList.add("die-shake");
+  document.querySelector(".black-die").classList.add("die-shake");
   setTimeout(() => {
     dice =
       '<div class="red-die">' +
@@ -670,8 +776,8 @@ function specialCardRoll() {
       dice2 +
       "</div>";
     diceContainer.innerHTML = dice;
-    document.querySelector(".red-die").classList.remove("die-animate");
-    document.querySelector(".black-die").classList.remove("die-animate");
+    document.querySelector(".red-die").classList.remove("die-shake");
+    document.querySelector(".black-die").classList.remove("die-shake");
   }, 800);
 }
 
@@ -894,9 +1000,17 @@ function applyPenalty(furthestMarker, winningDieColor) {
   }
 }
 
-function rollDice() {
-  console.log("running rollDice");
+function getRollDice() {
+  movesRemaining = 2;
+  let redDieValue = Math.floor(Math.random() * 6);
+  let dice1 = dieStr[redDieValue];
+  let blackDieValue = Math.floor(Math.random() * 6);
+  let dice2 = dieStr[blackDieValue];
+  doRenderRollDice(dice1, dice2, redDieValue, blackDieValue);
+}
 
+function renderRollDice(dice1, dice2) {
+  console.log("running rollDice");
   for (let i = 0; i < players.length; i++) {
     document.querySelectorAll(`.player${i}`).forEach(player => {
       player.classList.remove("highlight");
@@ -913,13 +1027,6 @@ function rollDice() {
     li.classList.add("row-highlight");
   });
 
-  movesRemaining = 2;
-  redDieValue = Math.floor(Math.random() * 6);
-  let dice1 = dieStr[redDieValue];
-  blackDieValue = Math.floor(Math.random() * 6);
-  let dice2 = dieStr[blackDieValue];
-  document.querySelector(".red-die").classList.add("die-animate");
-  document.querySelector(".black-die").classList.add("die-animate");
   setTimeout(() => {
     dice =
       '<div class="red-die">' +
@@ -928,10 +1035,13 @@ function rollDice() {
       dice2 +
       "</div>";
     diceContainer.innerHTML = dice;
+
+    document.querySelector(".red-die").classList.add("die-shake");
+    document.querySelector(".black-die").classList.add("die-shake");
     document.querySelector(".red-die").classList.remove("dim");
     document.querySelector(".black-die").classList.remove("dim");
-    document.querySelector(".red-die").classList.remove("die-animate");
-    document.querySelector(".black-die").classList.remove("die-animate");
+    document.querySelector(".red-die").classList.remove("die-shake");
+    document.querySelector(".black-die").classList.remove("die-shake");
     rollBtn.classList.add("hidden");
     showMarkerChoices();
     diceEvents();
@@ -944,13 +1054,13 @@ function showMarkerChoices() {
 
   document
     .getElementById("green-marker")
-    .removeEventListener("click", markerClick);
+    .removeEventListener("click", doMarkerClick);
   document
     .getElementById("red-marker")
-    .removeEventListener("click", markerClick);
+    .removeEventListener("click", doMarkerClick);
   document
     .getElementById("blue-marker")
-    .removeEventListener("click", markerClick);
+    .removeEventListener("click", doMarkerClick);
 
   visibleMarkerCount = 3;
   players[currentPlayer].markerA < hand.length - 1
@@ -974,6 +1084,7 @@ function showMarkerChoices() {
 }
 
 function diceEvents() {
+  console.log("adding dice events");
   sentence.innerHTML = prompts[2]; // select a die
   sentence.classList.remove("hidden");
 
@@ -986,7 +1097,6 @@ function dieClick({ target }) {
   if (target.className === "bullet") {
     secondDieValue = redDieValue + blackDieValue + 2;
     movesRemaining = 1;
-    target.classList.add("dim");
     target.classList.add("dim");
     document.querySelector(".red-die").removeEventListener("click", dieClick);
     document.querySelector(".black-die").removeEventListener("click", dieClick);
@@ -1007,15 +1117,22 @@ function dieClick({ target }) {
     document.querySelector(".bullet").removeEventListener("click", dieClick);
     document.querySelector(".red-die").removeEventListener("click", dieClick);
   }
-  sentence.innerHTML = prompts[1];
+  sentence.innerHTML = prompts[1]; // Marker To Move
   sentence.classList.remove("hidden");
-  target.removeEventListener("click", dieClick);
   target.classList.add("dim");
+  target.removeEventListener("click", dieClick);
+  doSendClassEvents(target.classList);
   markerEvents();
 }
 
+function sendClassEvents(selector) {
+  console.log("running sendClassEvents");
+  elem = document.getElementsByClassName(selector);
+  elem[0].click();
+}
+
 function sortOpponentMarkers(players) {
-  updateMarkerPositions();
+  updateMarkerPositions(players);
   opponents = players.filter((player, i) => {
     return i !== currentPlayer;
   });
@@ -1037,7 +1154,7 @@ function sortOpponentMarkers(players) {
 }
 
 function sortPlayerMarkers() {
-  updateMarkerPositions();
+  updateMarkerPositions(players);
   let markers = [];
   for (let key in players[currentPlayer]) {
     if (key !== "name" && key !== "isFinished") {
