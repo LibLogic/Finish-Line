@@ -1,8 +1,89 @@
+let cs = new WebSocket("ws://localhost:5500");
+
+cs.onmessage = e => {
+  let obj = JSON.parse(e.data);
+  switch (obj.type) {
+    case "playerName":
+      let playerStr = "";
+      playerList = obj.data.playerList;
+      playersArr = playerList;
+      playerList.forEach(player => {
+        playerStr += `<button class="btn">${player}</button>`;
+      });
+      document.getElementById("player-names").innerHTML = playerStr;
+      break;
+    case "clientCount":
+      clientCount = obj.data.clientCount;
+      break;
+    case "gameLength":
+      gameLength = obj.data.gameLength;
+      if (playerList.length == gameLength) {
+        document.getElementById("player-names").classList.add("hidden");
+        initializePage();
+      }
+      break;
+
+    case "switchUser":
+      currentPlayer = obj.data.currentPlayer;
+      switchUser();
+      break;
+    case "updateMarkerPositions":
+      players = obj.data.players;
+      currentPlayerUser = obj.data.currentPlayer;
+      updateMarkerPositions();
+      break;
+    case "renderRollDice":
+      redDieValue = obj.data.redDieValue;
+      blackDieValue = obj.data.blackDieValue;
+      dice1 = obj.data.dice1;
+      dice2 = obj.data.dice2;
+      renderRollDice(dice1, dice2);
+      break;
+    case "sendClassEvents":
+      target = obj.data.target[0];
+      sendClassEvents(target);
+      break;
+    case "sendMarkerClick":
+      target = obj.data.target;
+      markerClick(target);
+      break;
+  }
+};
+
+function getGameLength() {
+  let radioBtn = document.getElementsByName("game-length");
+  for (i = 0; i < radioBtn.length; i++) {
+    if (radioBtn[i].checked) {
+      gameLength = radioBtn[i].value;
+    }
+  }
+  (document.getElementById("prompts").innerHTML = prompts[4]), // opponents
+    document
+      .querySelector(".game-length-input-container")
+      .classList.add("hidden"),
+    document.querySelector("#player-names").classList.remove("hidden");
+  sendGameLength();
+}
+
+function sendGameLength() {
+  cs.send(
+    JSON.stringify({
+      type: "gameLength",
+      data: {
+        gameLength: gameLength
+      }
+    })
+  );
+}
+
 let currentPlayer = 0,
   deck = [],
   newHand = [],
   hand = [],
   wings = [],
+  playerList = [],
+  gameLength = -1,
+  clientCount = 0,
   jokerCount = 0,
   jokerOnePosition = 0,
   jokerTwoPosition = 0,
@@ -166,7 +247,9 @@ let prompts = [
   `Enter a Comma Separated List of Players' Names`,
   `Marker to Move?`,
   `Select a Die`,
-  `Which Marker Now?`
+  `Which Marker Now?`,
+  `WAITING FOR OPPONENT(S)`,
+  `How many Players?`
 ];
 
 let players = [];
@@ -244,7 +327,7 @@ let beginBtn = document.getElementById("begin-btn");
 let playersNames = document.getElementById("players-names");
 
 beginBtn.addEventListener("click", () => {
-  sentence.innerHTML = prompts[0];
+  sentence.innerHTML = prompts[0]; // Enter a Comma Separated List of Players' Names
   sentence.classList.remove("hidden");
   playersNames.classList.remove("hidden");
   beginBtn.classList.add("hidden");
@@ -551,20 +634,75 @@ function checkForAttack() {
   }
 }
 
+function playerQueue() {
+  let playersInfo = document.getElementById("players").value;
+  playersArr = playersInfo.split(", ");
+  playersArr.length > 1 ? initializePage() : addPlayerToQueue();
+}
+
+function decidePlayersPrompt() {
+  if (clientCount === 1) {
+    playersNames.classList.add("hidden"),
+      document.getElementById("prompts").classList.add("hidden"),
+      playersNames.classList.remove("hidden"),
+      (document.getElementById("prompts").innerHTML = prompts[5]), // how many players
+      document.getElementById("prompts").classList.remove("hidden"),
+      document.querySelector("#player-names").classList.add("hidden"),
+      document
+        .querySelector(".game-length-input-container")
+        .classList.remove("hidden"),
+      playersNames.classList.add("hidden");
+  } else {
+    playersNames.classList.add("hidden"),
+      document.getElementById("prompts").classList.add("hidden"),
+      playersNames.classList.remove("hidden"),
+      (document.getElementById("prompts").innerHTML = prompts[4]), // how many players
+      document.getElementById("prompts").classList.remove("hidden"),
+      playersNames.classList.add("hidden");
+    sendGameLength();
+  }
+}
+
+function addPlayerToQueue() {
+  cs.send(
+    JSON.stringify({
+      type: "playerName",
+      data: {
+        playerName: playersArr[0]
+      }
+    })
+  );
+  decidePlayersPrompt();
+}
+
 function initializePage() {
+  getPlayerNames(playersArr);
+
+  renderBoard();
+
+  renderInitialHeader();
+
+  renderInitialPlayerGrid();
+}
+
+function renderInitialHeader() {
+  document.getElementById("player-names").classList.add("hidden");
   document.querySelector(".show-header").addEventListener("mouseenter", () => {
     document.querySelector(".show-header").setAttribute("style", "opacity: 1");
   });
+
   document.querySelector(".show-header").addEventListener("mouseleave", () => {
     document.querySelector(".show-header").setAttribute("style", "opacity: .7");
   });
-
   document
     .getElementById("bg-image")
     .setAttribute("style", "background-image: url(images/dice2.jpg)");
   document
     .getElementById("hand")
     .setAttribute("style", "background-color: #fff;");
+
+  playersNames.classList.add("hidden");
+  document.getElementById("prompts").classList.add("hidden");
 
   let dice1 = dieStr[(redDieValue = 3)];
   let dice2 = dieStr[(blackDieValue = 4)];
@@ -582,10 +720,6 @@ function initializePage() {
   ><span id="blue-marker">${String.fromCodePoint(9632)}</span>`;
   document.getElementById("markers").innerHTML = headerMarkers;
 
-  let playersInfo = document.getElementById("players").value;
-  playersArr = playersInfo.split(", ");
-  getPlayerNames(playersArr);
-
   document
     .getElementById("dice")
     .insertAdjacentHTML(
@@ -594,6 +728,23 @@ function initializePage() {
     );
 
   document.getElementById("rollBtn").addEventListener("click", rollBtnClick);
+}
+
+function renderInitialPlayerGrid() {
+  let playerRow = "";
+  playerRow += `<ul class="p">`;
+  players.forEach((player, i) => {
+    playerRow += `<li class="li p${i + 1}"></li>`;
+  });
+  playerRow += `</ul>`;
+
+  document.querySelectorAll(".marker-row").forEach(li => {
+    li.innerHTML += playerRow;
+  });
+
+  document.querySelectorAll(`.p1`).forEach(li => {
+    li.classList.add("row-highlight");
+  });
 }
 
 function rollBtnClick() {
@@ -628,30 +779,6 @@ function getPlayerNames(playersArr) {
       new Player(playersArr[i]);
     }
   })();
-
-  playersNames.classList.add("hidden");
-  document.getElementById("prompts").classList.add("hidden");
-
-  renderBoard();
-
-  document.querySelectorAll(".marker-row").forEach(li => {
-    li.innerHTML += "";
-  });
-
-  let playerRow = "";
-  playerRow += `<ul class="p">`;
-  players.forEach((player, i) => {
-    playerRow += `<li class="li p${i + 1}"></li>`;
-  });
-  playerRow += `</ul>`;
-
-  document.querySelectorAll(".marker-row").forEach(li => {
-    li.innerHTML += playerRow;
-  });
-
-  document.querySelectorAll(`.p1`).forEach(li => {
-    li.classList.add("row-highlight");
-  });
 }
 
 function specialCardRoll() {

@@ -15,6 +15,24 @@
         <div id="dice"><h1>Finish Line</h1></div>
         <button id="begin-btn" class="btn">Click To Begin</button>
         <h2 id="prompts" class="hidden"></h2>
+        <div class="game-length-input-container hidden">
+          <div class="game-length-input">
+            <input type="radio" id="one" name="game-length" value="1" onchange="getGameLength()">
+            <label for="one">One Player</label>
+          </div>
+          <div class="game-length-input">
+            <input type="radio" id="two" name="game-length" value="2" onchange="getGameLength()">
+            <label for="two">Two Players</label>
+          </div>
+          <div class="game-length-input">
+            <input type="radio" id="three" name="game-length" value="3" onchange="getGameLength()">
+            <label for="three">Three Players</label>
+          </div>
+          <div class="game-length-input">
+            <input type="radio" id="four" name="game-length" value="4" onchange="getGameLength()">
+            <label for="four">Four Players</label>
+          </div>
+        </div>
         <div id="players-names" class="hidden">
           <input
             id="players"
@@ -22,10 +40,11 @@
             name="user-names"
             autofocus
           />
-          <button type="submit" class="btn" onclick="initializePage()">
+          <button type="submit" class="btn" onclick="playerQueue()">
             Submit
           </button>
         </div>
+        <div id="player-names"></div>
         <h1 id="markers" class="markers hidden"></h1>
       </div>
     </section>

@@ -97,6 +97,24 @@ ul {
   margin-top: 21%;
 }
 
+input[name="game-length"] {
+  width: 60%;
+  display: inline-block;
+}
+
+.game-length-input-container {
+  width: 60%;
+  border-radius: 3px;
+  opacity: 0.85;
+  margin: 0 auto 1% auto;
+  background-color: rgb(223, 236, 236);
+}
+
+.game-length-input {
+  margin: 2% 3% 2% 3%;
+  display: inline-block;
+}
+
 input {
   width: 620px;
   font-size: 132%;
