@@ -51,6 +51,21 @@ ss.on("connection", ws => {
         );
       });
     }
+    if (obj.type === "getRollData") {
+      ss.clients.forEach(client => {
+        client.send(
+          JSON.stringify({
+            type: "getRollData",
+            data: {
+              redDieValue: obj.data.redDieValue,
+              blackDieValue: obj.data.blackDieValue,
+              dice1: obj.data.dice1,
+              dice2: obj.data.dice2
+            }
+          })
+        );
+      });
+    }
   });
 
   ws.on("close", ws => {

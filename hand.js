@@ -28,6 +28,13 @@ cs.onmessage = e => {
         renderBoard();
       }
       break;
+    case "getRollData":
+      redDieValue = obj.data.redDieValue;
+      blackDieValue = obj.data.blackDieValue;
+      dice1 = obj.data.dice1;
+      dice2 = obj.data.dice2;
+      renderDiceRoll(dice1, dice2);
+      break;
 
     //   case "switchUser":
     //     currentPlayer = obj.data.currentPlayer;
@@ -37,13 +44,6 @@ cs.onmessage = e => {
     //     players = obj.data.players;
     //     currentPlayerUser = obj.data.currentPlayer;
     //     updateMarkerPositions();
-    //     break;
-    //   case "renderRollDice":
-    //     redDieValue = obj.data.redDieValue;
-    //     blackDieValue = obj.data.blackDieValue;
-    //     dice1 = obj.data.dice1;
-    //     dice2 = obj.data.dice2;
-    //     renderRollDice(dice1, dice2);
     //     break;
     //   case "sendClassEvents":
     //     target = obj.data.target[0];
@@ -206,6 +206,61 @@ function getHand() {
   }
 }
 
+let sentence = document.getElementById("prompts");
+let diceContainer = document.getElementById("dice");
+let beginBtn = document.getElementById("begin-btn");
+let playersNames = document.getElementById("players-names");
+
+beginBtn.addEventListener("click", () => {
+  sentence.innerHTML = prompts[0]; // Enter a Comma Separated List of Players' Names
+  sentence.classList.remove("hidden");
+  playersNames.classList.remove("hidden");
+  beginBtn.classList.add("hidden");
+});
+
+function playerQueue() {
+  let playersInfo = document.getElementById("players").value;
+  playersArr = playersInfo.split(", ");
+  getHand();
+  playersArr.length > 1 ? renderBoard() : addPlayerToQueue();
+}
+
+function decidePlayersPrompt() {
+  if (clientCount === 1) {
+    playersNames.classList.add("hidden"),
+      document.getElementById("prompts").classList.add("hidden"),
+      playersNames.classList.remove("hidden"),
+      (document.getElementById("prompts").innerHTML = prompts[5]), // how many players
+      document.getElementById("prompts").classList.remove("hidden"),
+      document.querySelector("#player-names").classList.add("hidden"),
+      document
+        .querySelector(".game-length-input-container")
+        .classList.remove("hidden"),
+      playersNames.classList.add("hidden");
+  } else {
+    playersNames.classList.add("hidden"),
+      document.getElementById("prompts").classList.add("hidden"),
+      playersNames.classList.remove("hidden"),
+      (document.getElementById("prompts").innerHTML = prompts[4]), // how many players
+      document.getElementById("prompts").classList.remove("hidden"),
+      playersNames.classList.add("hidden");
+    sendGameLength();
+  }
+}
+
+function addPlayerToQueue() {
+  cs.send(
+    JSON.stringify({
+      type: "gameData",
+      data: {
+        playerName: playersArr[0],
+        gameHand: [hand, cardFontHand]
+      }
+    })
+  );
+  decidePlayersPrompt();
+}
+
 function renderCards() {
   let handStr = "";
   handStr += `<div class="players-left"></div>`;
@@ -260,21 +315,11 @@ function renderCards() {
   renderInitialPlayerGrid();
 }
 
-// let prompts = [
-//   `Enter a Comma Separated List of Players' Names`,
-//   `Marker to Move?`,
-//   `Select a Die`,
-//   `Which Marker Now?`,
-//   `WAITING FOR OPPONENT(S)`,
-//   `How many Players?`
-// ];
-
-// let players = [];
-document.getElementById("players").addEventListener("keyup", e => {
-  if (e.keyCode === 13) {
-    renderBoard();
-  }
-});
+// document.getElementById("players").addEventListener("keyup", e => {
+//   if (e.keyCode === 13) {
+//     renderBoard();
+//   }
+// });
 
 function markerEvents() {
   document
@@ -335,20 +380,17 @@ function switchUser() {
   }
 }
 
-let sentence = document.getElementById("prompts");
+// let sentence = document.getElementById("prompts");
+// let diceContainer = document.getElementById("dice");
+// let beginBtn = document.getElementById("begin-btn");
+// let playersNames = document.getElementById("players-names");
 
-let diceContainer = document.getElementById("dice");
-
-let beginBtn = document.getElementById("begin-btn");
-
-let playersNames = document.getElementById("players-names");
-
-beginBtn.addEventListener("click", () => {
-  sentence.innerHTML = prompts[0]; // Enter a Comma Separated List of Players' Names
-  sentence.classList.remove("hidden");
-  playersNames.classList.remove("hidden");
-  beginBtn.classList.add("hidden");
-});
+// beginBtn.addEventListener("click", () => {
+//   sentence.innerHTML = prompts[0]; // Enter a Comma Separated List of Players' Names
+//   sentence.classList.remove("hidden");
+//   playersNames.classList.remove("hidden");
+//   beginBtn.classList.add("hidden");
+// });
 
 function movePlayer(dieMove, markerChoice) {
   switch (markerChoice) {
@@ -366,17 +408,8 @@ function movePlayer(dieMove, markerChoice) {
   let moveCount = 0;
   let stopValue = 0;
   let currentCardValue = 0;
-
-  // let wingCards = [
-  //   (hand[8] % 100) % 14,
-  //   (hand[17] % 100) % 14,
-  //   (hand[26] % 100) % 14,
-  //   (hand[35] % 100) % 14,
-  //   (hand[44] % 100) % 14,
-  //   (hand[53] % 100) % 14
-  // ];
-
   let previousMarkerPosition = players[currentPlayer][markerToMove];
+
   for (let i = players[currentPlayer][markerToMove] + 1; i < hand.length; i++) {
     if (dieMove === 0) {
       break;
@@ -653,48 +686,48 @@ function checkForAttack() {
   }
 }
 
-function playerQueue() {
-  let playersInfo = document.getElementById("players").value;
-  playersArr = playersInfo.split(", ");
-  getHand();
-  playersArr.length > 1 ? renderBoard() : addPlayerToQueue();
-}
+// function playerQueue() {
+//   let playersInfo = document.getElementById("players").value;
+//   playersArr = playersInfo.split(", ");
+//   getHand();
+//   playersArr.length > 1 ? renderBoard() : addPlayerToQueue();
+// }
 
-function decidePlayersPrompt() {
-  if (clientCount === 1) {
-    playersNames.classList.add("hidden"),
-      document.getElementById("prompts").classList.add("hidden"),
-      playersNames.classList.remove("hidden"),
-      (document.getElementById("prompts").innerHTML = prompts[5]), // how many players
-      document.getElementById("prompts").classList.remove("hidden"),
-      document.querySelector("#player-names").classList.add("hidden"),
-      document
-        .querySelector(".game-length-input-container")
-        .classList.remove("hidden"),
-      playersNames.classList.add("hidden");
-  } else {
-    playersNames.classList.add("hidden"),
-      document.getElementById("prompts").classList.add("hidden"),
-      playersNames.classList.remove("hidden"),
-      (document.getElementById("prompts").innerHTML = prompts[4]), // how many players
-      document.getElementById("prompts").classList.remove("hidden"),
-      playersNames.classList.add("hidden");
-    sendGameLength();
-  }
-}
+// function decidePlayersPrompt() {
+//   if (clientCount === 1) {
+//     playersNames.classList.add("hidden"),
+//       document.getElementById("prompts").classList.add("hidden"),
+//       playersNames.classList.remove("hidden"),
+//       (document.getElementById("prompts").innerHTML = prompts[5]), // how many players
+//       document.getElementById("prompts").classList.remove("hidden"),
+//       document.querySelector("#player-names").classList.add("hidden"),
+//       document
+//         .querySelector(".game-length-input-container")
+//         .classList.remove("hidden"),
+//       playersNames.classList.add("hidden");
+//   } else {
+//     playersNames.classList.add("hidden"),
+//       document.getElementById("prompts").classList.add("hidden"),
+//       playersNames.classList.remove("hidden"),
+//       (document.getElementById("prompts").innerHTML = prompts[4]), // how many players
+//       document.getElementById("prompts").classList.remove("hidden"),
+//       playersNames.classList.add("hidden");
+//     sendGameLength();
+//   }
+// }
 
-function addPlayerToQueue() {
-  cs.send(
-    JSON.stringify({
-      type: "gameData",
-      data: {
-        playerName: playersArr[0],
-        gameHand: [hand, cardFontHand]
-      }
-    })
-  );
-  decidePlayersPrompt();
-}
+// function addPlayerToQueue() {
+//   cs.send(
+//     JSON.stringify({
+//       type: "gameData",
+//       data: {
+//         playerName: playersArr[0],
+//         gameHand: [hand, cardFontHand]
+//       }
+//     })
+//   );
+//   decidePlayersPrompt();
+// }
 
 function renderBoard() {
   getPlayerNames(playersArr);
@@ -775,8 +808,7 @@ function rollBtnClick() {
       .querySelector(".show-header")
       .removeAttribute("style", "opacity: .7");
   });
-
-  rollDice();
+  getDiceRoll();
 }
 
 function getPlayerNames(playersArr) {
@@ -1038,9 +1070,30 @@ function applyPenalty(furthestMarker, winningDieColor) {
   }
 }
 
-function rollDice() {
-  console.log("running rollDice");
+function getDiceRoll() {
+  console.log("running getDiceRoll");
+  movesRemaining = 2;
+  let redDieValue = Math.floor(Math.random() * 6);
+  let blackDieValue = Math.floor(Math.random() * 6);
+  let dice1 = dieStr[redDieValue];
+  let dice2 = dieStr[blackDieValue];
 
+  let rollData = [redDieValue, blackDieValue, dice1, dice2];
+
+  cs.send(
+    JSON.stringify({
+      type: "getRollData",
+      data: {
+        redDieValue: rollData[0],
+        blackDieValue: rollData[1],
+        dice1: rollData[2],
+        dice2: rollData[3]
+      }
+    })
+  );
+}
+
+function renderDiceRoll(dice1, dice2) {
   for (let i = 0; i < players.length; i++) {
     document.querySelectorAll(`.player${i}`).forEach(player => {
       player.classList.remove("highlight");
@@ -1057,11 +1110,6 @@ function rollDice() {
     li.classList.add("row-highlight");
   });
 
-  movesRemaining = 2;
-  redDieValue = Math.floor(Math.random() * 6);
-  let dice1 = dieStr[redDieValue];
-  blackDieValue = Math.floor(Math.random() * 6);
-  let dice2 = dieStr[blackDieValue];
   document.querySelector(".red-die").classList.add("die-animate");
   document.querySelector(".black-die").classList.add("die-animate");
   setTimeout(() => {
