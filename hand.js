@@ -15,38 +15,43 @@ cs.onmessage = e => {
     case "clientCount":
       clientCount = obj.data.clientCount;
       break;
-    case "gameLength":
+    case "gameData":
       gameLength = obj.data.gameLength;
+      if (clientCount > gameLength) {
+        console.log("exceeded");
+        renderBoard();
+      }
       if (playerList.length == gameLength) {
         document.getElementById("player-names").classList.add("hidden");
-        initializePage();
+        cardFontHand = obj.data.gameHand[0];
+        renderBoard();
       }
       break;
 
-    case "switchUser":
-      currentPlayer = obj.data.currentPlayer;
-      switchUser();
-      break;
-    case "updateMarkerPositions":
-      players = obj.data.players;
-      currentPlayerUser = obj.data.currentPlayer;
-      updateMarkerPositions();
-      break;
-    case "renderRollDice":
-      redDieValue = obj.data.redDieValue;
-      blackDieValue = obj.data.blackDieValue;
-      dice1 = obj.data.dice1;
-      dice2 = obj.data.dice2;
-      renderRollDice(dice1, dice2);
-      break;
-    case "sendClassEvents":
-      target = obj.data.target[0];
-      sendClassEvents(target);
-      break;
-    case "sendMarkerClick":
-      target = obj.data.target;
-      markerClick(target);
-      break;
+    //   case "switchUser":
+    //     currentPlayer = obj.data.currentPlayer;
+    //     switchUser();
+    //     break;
+    //   case "updateMarkerPositions":
+    //     players = obj.data.players;
+    //     currentPlayerUser = obj.data.currentPlayer;
+    //     updateMarkerPositions();
+    //     break;
+    //   case "renderRollDice":
+    //     redDieValue = obj.data.redDieValue;
+    //     blackDieValue = obj.data.blackDieValue;
+    //     dice1 = obj.data.dice1;
+    //     dice2 = obj.data.dice2;
+    //     renderRollDice(dice1, dice2);
+    //     break;
+    //   case "sendClassEvents":
+    //     target = obj.data.target[0];
+    //     sendClassEvents(target);
+    //     break;
+    //   case "sendMarkerClick":
+    //     target = obj.data.target;
+    //     markerClick(target);
+    //     break;
   }
 };
 
@@ -68,20 +73,19 @@ function getGameLength() {
 function sendGameLength() {
   cs.send(
     JSON.stringify({
-      type: "gameLength",
-      data: {
-        gameLength: gameLength
-      }
+      type: "gameData",
+      data: { gameLength: gameLength, gameHand: cardFontHand }
     })
   );
 }
 
 let currentPlayer = 0,
   deck = [],
-  newHand = [],
+  // newHand = [],
   hand = [],
   wings = [],
   playerList = [],
+  players = [],
   gameLength = -1,
   clientCount = 0,
   jokerCount = 0,
@@ -190,7 +194,7 @@ let dieStr = [
   String.fromCodePoint(9861)
 ];
 
-function renderBoard() {
+function renderCards() {
   let handStr = "";
   handStr += `<div class="players-left"></div>`;
   cardFontHand.forEach((card, i) => {
@@ -241,6 +245,7 @@ function renderBoard() {
 
   const elem = document.getElementById("scrollToBottom");
   elem.scroll(0, elem.scrollHeight);
+  renderInitialPlayerGrid();
 }
 
 let prompts = [
@@ -252,10 +257,10 @@ let prompts = [
   `How many Players?`
 ];
 
-let players = [];
+// let players = [];
 document.getElementById("players").addEventListener("keyup", e => {
   if (e.keyCode === 13) {
-    initializePage();
+    renderBoard();
   }
 });
 
@@ -637,7 +642,7 @@ function checkForAttack() {
 function playerQueue() {
   let playersInfo = document.getElementById("players").value;
   playersArr = playersInfo.split(", ");
-  playersArr.length > 1 ? initializePage() : addPlayerToQueue();
+  playersArr.length > 1 ? renderBoard() : addPlayerToQueue();
 }
 
 function decidePlayersPrompt() {
@@ -675,15 +680,16 @@ function addPlayerToQueue() {
   decidePlayersPrompt();
 }
 
-function initializePage() {
+function renderBoard() {
   getPlayerNames(playersArr);
-
-  renderBoard();
-
+  console.log(playersArr);
   renderInitialHeader();
-
-  renderInitialPlayerGrid();
+  renderCards();
 }
+
+// function initializePage() {
+//   renderInitialPlayerGrid();
+// }
 
 function renderInitialHeader() {
   document.getElementById("player-names").classList.add("hidden");

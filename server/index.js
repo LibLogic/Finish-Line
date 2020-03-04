@@ -6,6 +6,8 @@ const ss = new server({
 
 let playerList = [];
 let gameLength = [];
+let gameHand = [];
+let length = "";
 ss.on("connection", ws => {
   let clientCount = 0;
   ss.clients.forEach(client => {
@@ -18,9 +20,10 @@ ss.on("connection", ws => {
     );
   });
   console.log("New Connection");
-  console.log(clientCount);
+
   ws.on("message", message => {
     let obj = JSON.parse(message);
+
     if (obj.type === "playerName") {
       ws.playerName = obj.data.playerName;
       playerList.push(ws.playerName);
@@ -29,20 +32,21 @@ ss.on("connection", ws => {
         client.send(JSON.stringify(obj));
       });
     }
-
-    if (obj.type === "gameLength") {
-      if (obj.type === "gameLength") {
+    if (obj.type === "gameData") {
+      if (obj.type === "gameData") {
         ws.gameLength = obj.data.gameLength;
+        ws.gameHand = obj.data.gameHand;
         gameLength.push(ws.gameLength);
+        gameHand.push(ws.gameHand);
       }
-      let length = gameLength.filter(length => {
+      length = gameLength.filter(length => {
         return length !== -1;
       });
       ss.clients.forEach(client => {
         client.send(
           JSON.stringify({
-            type: "gameLength",
-            data: { gameLength: length }
+            type: "gameData",
+            data: { gameLength: length, gameHand: gameHand }
           })
         );
       });
@@ -51,6 +55,8 @@ ss.on("connection", ws => {
 
   ws.on("close", ws => {
     playerList = [];
+    gameLength = [];
+    gamehand = [];
     clientCount = 0;
     ss.clients.forEach(client => {
       clientCount++;
