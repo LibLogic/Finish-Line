@@ -3,7 +3,7 @@ let cs = new WebSocket("ws://localhost:5500");
 cs.onmessage = e => {
   let obj = JSON.parse(e.data);
   switch (obj.type) {
-    case "playerName":
+    case "gameData":
       let playerStr = "";
       playerList = obj.data.playerList;
       playersArr = playerList;
@@ -11,19 +11,20 @@ cs.onmessage = e => {
         playerStr += `<button class="btn">${player}</button>`;
       });
       document.getElementById("player-names").innerHTML = playerStr;
+      hand = obj.data.gameHand[0];
+      cardFontHand = obj.data.gameHand[1];
       break;
     case "clientCount":
       clientCount = obj.data.clientCount;
       break;
-    case "gameData":
+    case "gameLength":
       gameLength = obj.data.gameLength;
       if (clientCount > gameLength) {
-        console.log("exceeded");
+        // this is too many clients
         renderBoard();
       }
       if (playerList.length == gameLength) {
         document.getElementById("player-names").classList.add("hidden");
-        cardFontHand = obj.data.gameHand[0];
         renderBoard();
       }
       break;
@@ -73,15 +74,14 @@ function getGameLength() {
 function sendGameLength() {
   cs.send(
     JSON.stringify({
-      type: "gameData",
-      data: { gameLength: gameLength, gameHand: cardFontHand }
+      type: "gameLength",
+      data: { gameLength: gameLength }
     })
   );
 }
 
 let currentPlayer = 0,
   deck = [],
-  // newHand = [],
   hand = [],
   wings = [],
   playerList = [],
@@ -91,13 +91,8 @@ let currentPlayer = 0,
   jokerCount = 0,
   jokerOnePosition = 0,
   jokerTwoPosition = 0,
-  wingCardPositions = [-1, 8, 17, 26, 35, 44, 53];
-
-deck = createDeck(56);
-deck.pop();
-deck.pop();
-
-hand = generateHand();
+  wingCardPositions = [-1, 8, 17, 26, 35, 44, 53],
+  specialCards = [14, 13, 12, 11, 1, 2];
 
 safetyCardPositions = [
   ...wingCardPositions,
@@ -105,25 +100,28 @@ safetyCardPositions = [
   jokerTwoPosition
 ];
 
-cardFontHand = hand.map(card => {
-  let suit = Math.floor(card / 100);
-  let cardValue = card % 100;
-  if (card === 114 || card === 214) {
-    result = 63;
-  } else {
-    result =
-      suit === 1
-        ? (cardValue += 64)
-        : (result =
-            suit === 2
-              ? (cardValue += 77)
-              : (result =
-                  suit === 3
-                    ? (cardValue += 96)
-                    : (result = suit === 4 ? (cardValue += 109) : cardValue)));
-  }
-  return result;
-});
+let prompts = [
+  `Enter a Comma Separated List of Players' Names`,
+  `Marker to Move?`,
+  `Select a Die`,
+  `Which Marker Now?`,
+  `WAITING FOR OPPONENT(S)`,
+  `How many Players?`
+];
+
+// Array for six sided die
+let dieStr = [
+  String.fromCodePoint(9856),
+  String.fromCodePoint(9857),
+  String.fromCodePoint(9858),
+  String.fromCodePoint(9859),
+  String.fromCodePoint(9860),
+  String.fromCodePoint(9861)
+];
+
+deck = createDeck(56);
+deck.pop();
+deck.pop();
 
 function createDeck(deckSize) {
   for (let i = 1; deck.length < deckSize; i++) {
@@ -135,64 +133,78 @@ function createDeck(deckSize) {
   return deck;
 }
 
-// Draw random cards from deck. No need to shuffle deck.
-function drawCard(startPos = 0, fromEnd = deck.length) {
-  fromEnd !== deck.length ? (fromEnd = deck.length - fromEnd) : fromEnd;
-  let random = Math.floor(Math.random() * (fromEnd - startPos)) + startPos;
-  let card = deck[random];
-  deck.splice(random, 1);
-  return card;
-}
+function getHand() {
+  hand = generateHand();
 
-let specialCards = [14, 13, 12, 11, 1, 2];
-function generateHand() {
-  // Generate wing cards first (excluding Joker J, Q, K, A, or 2)
-  for (let i = 0; i < 6; i++) {
-    wings.push(drawCard(8, 14));
+  cardFontHand = hand.map(card => {
+    let suit = Math.floor(card / 100);
+    let cardValue = card % 100;
+    if (card === 114 || card === 214) {
+      result = 63;
+    } else {
+      result =
+        suit === 1
+          ? (cardValue += 64)
+          : (result =
+              suit === 2
+                ? (cardValue += 77)
+                : (result =
+                    suit === 3
+                      ? (cardValue += 96)
+                      : (result =
+                          suit === 4 ? (cardValue += 109) : cardValue)));
+    }
+    return result;
+  });
+
+  // Draw random cards from deck. No need to shuffle deck.
+  function drawCard(startPos = 0, fromEnd = deck.length) {
+    fromEnd !== deck.length ? (fromEnd = deck.length - fromEnd) : fromEnd;
+    let random = Math.floor(Math.random() * (fromEnd - startPos)) + startPos;
+    let card = deck[random];
+    deck.splice(random, 1);
+    return card;
   }
 
-  // Generate layout" **Do not allow jack, queen, king, ace, duece, or joker in either
-  // first 3 or last 3 marker Positions.
-  let lastThree = [];
-  lastThree.push(drawCard(8, 14));
-  lastThree.push(drawCard(8, 14));
-  lastThree.push(drawCard(8, 14));
-  for (let row = 0; row < 6; row++) {
-    for (let col = 0; col < 8; col++) {
-      if (
-        (row + 1) * (col + 1) === 1 ||
-        (row + 1) * (col + 1) === 2 ||
-        (row + 1) * (col + 1) === 3
-      ) {
-        hand.push(drawCard(8, 14));
-      } else if (hand.length > 49 && hand.length < 53) {
-        hand.push(lastThree.pop());
-      } else {
-        let drawnCard = drawCard();
-        hand.push(drawnCard);
-        if (drawnCard === 114) {
-          jokerOnePosition = hand.length - 1;
-        }
-        if (drawnCard === 214) {
-          jokerTwoPosition = hand.length - 1;
+  function generateHand() {
+    // Generate wing cards first (excluding Joker J, Q, K, A, or 2)
+    for (let i = 0; i < 6; i++) {
+      wings.push(drawCard(8, 14));
+    }
+
+    // Generate layout" **Do not allow jack, queen, king, ace, duece, or joker in either
+    // first 3 or last 3 marker Positions.
+    let lastThree = [];
+    lastThree.push(drawCard(8, 14));
+    lastThree.push(drawCard(8, 14));
+    lastThree.push(drawCard(8, 14));
+    for (let row = 0; row < 6; row++) {
+      for (let col = 0; col < 8; col++) {
+        if (
+          (row + 1) * (col + 1) === 1 ||
+          (row + 1) * (col + 1) === 2 ||
+          (row + 1) * (col + 1) === 3
+        ) {
+          hand.push(drawCard(8, 14));
+        } else if (hand.length > 49 && hand.length < 53) {
+          hand.push(lastThree.pop());
+        } else {
+          let drawnCard = drawCard();
+          hand.push(drawnCard);
+          if (drawnCard === 114) {
+            jokerOnePosition = hand.length - 1;
+          }
+          if (drawnCard === 214) {
+            jokerTwoPosition = hand.length - 1;
+          }
         }
       }
+      // Put a wing card at the end of each row (every 9th card)
+      hand.push(wings.pop());
     }
-    // Put a wing card at the end of each row (every 9th card)
-    hand.push(wings.pop());
+    return hand;
   }
-  return hand;
 }
-
-// Array for six sided die
-let dieStr = [
-  String.fromCodePoint(9856),
-  String.fromCodePoint(9857),
-  String.fromCodePoint(9858),
-  String.fromCodePoint(9859),
-  String.fromCodePoint(9860),
-  String.fromCodePoint(9861)
-];
 
 function renderCards() {
   let handStr = "";
@@ -248,14 +260,14 @@ function renderCards() {
   renderInitialPlayerGrid();
 }
 
-let prompts = [
-  `Enter a Comma Separated List of Players' Names`,
-  `Marker to Move?`,
-  `Select a Die`,
-  `Which Marker Now?`,
-  `WAITING FOR OPPONENT(S)`,
-  `How many Players?`
-];
+// let prompts = [
+//   `Enter a Comma Separated List of Players' Names`,
+//   `Marker to Move?`,
+//   `Select a Die`,
+//   `Which Marker Now?`,
+//   `WAITING FOR OPPONENT(S)`,
+//   `How many Players?`
+// ];
 
 // let players = [];
 document.getElementById("players").addEventListener("keyup", e => {
@@ -354,14 +366,16 @@ function movePlayer(dieMove, markerChoice) {
   let moveCount = 0;
   let stopValue = 0;
   let currentCardValue = 0;
-  let wingCards = [
-    (hand[8] % 100) % 14,
-    (hand[17] % 100) % 14,
-    (hand[26] % 100) % 14,
-    (hand[35] % 100) % 14,
-    (hand[44] % 100) % 14,
-    (hand[53] % 100) % 14
-  ];
+
+  // let wingCards = [
+  //   (hand[8] % 100) % 14,
+  //   (hand[17] % 100) % 14,
+  //   (hand[26] % 100) % 14,
+  //   (hand[35] % 100) % 14,
+  //   (hand[44] % 100) % 14,
+  //   (hand[53] % 100) % 14
+  // ];
+
   let previousMarkerPosition = players[currentPlayer][markerToMove];
   for (let i = players[currentPlayer][markerToMove] + 1; i < hand.length; i++) {
     if (dieMove === 0) {
@@ -642,6 +656,7 @@ function checkForAttack() {
 function playerQueue() {
   let playersInfo = document.getElementById("players").value;
   playersArr = playersInfo.split(", ");
+  getHand();
   playersArr.length > 1 ? renderBoard() : addPlayerToQueue();
 }
 
@@ -671,9 +686,10 @@ function decidePlayersPrompt() {
 function addPlayerToQueue() {
   cs.send(
     JSON.stringify({
-      type: "playerName",
+      type: "gameData",
       data: {
-        playerName: playersArr[0]
+        playerName: playersArr[0],
+        gameHand: [hand, cardFontHand]
       }
     })
   );
@@ -682,14 +698,9 @@ function addPlayerToQueue() {
 
 function renderBoard() {
   getPlayerNames(playersArr);
-  console.log(playersArr);
   renderInitialHeader();
   renderCards();
 }
-
-// function initializePage() {
-//   renderInitialPlayerGrid();
-// }
 
 function renderInitialHeader() {
   document.getElementById("player-names").classList.add("hidden");

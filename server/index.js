@@ -24,20 +24,20 @@ ss.on("connection", ws => {
   ws.on("message", message => {
     let obj = JSON.parse(message);
 
-    if (obj.type === "playerName") {
+    if (obj.type === "gameData") {
       ws.playerName = obj.data.playerName;
       playerList.push(ws.playerName);
+      ws.gameHand = obj.data.gameHand;
+      gameHand.push(ws.gameHand);
       obj.data.playerList = playerList;
       ss.clients.forEach(client => {
         client.send(JSON.stringify(obj));
       });
     }
-    if (obj.type === "gameData") {
-      if (obj.type === "gameData") {
+    if (obj.type === "gameLength") {
+      if (obj.type === "gameLength") {
         ws.gameLength = obj.data.gameLength;
-        ws.gameHand = obj.data.gameHand;
         gameLength.push(ws.gameLength);
-        gameHand.push(ws.gameHand);
       }
       length = gameLength.filter(length => {
         return length !== -1;
@@ -45,8 +45,8 @@ ss.on("connection", ws => {
       ss.clients.forEach(client => {
         client.send(
           JSON.stringify({
-            type: "gameData",
-            data: { gameLength: length, gameHand: gameHand }
+            type: "gameLength",
+            data: { gameLength: length }
           })
         );
       });
