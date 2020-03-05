@@ -4,14 +4,14 @@ const ss = new server({
   port: 5500
 });
 
+let clientCount = 0;
 let playerList = [];
 let gameLength = [];
 let gameHand = [];
-let length = "";
+let length = [];
 ss.on("connection", ws => {
-  let clientCount = 0;
+  clientCount++;
   ss.clients.forEach(client => {
-    clientCount++;
     client.send(
       JSON.stringify({
         type: "clientCount",
@@ -20,6 +20,7 @@ ss.on("connection", ws => {
     );
   });
   console.log("New Connection");
+  console.log(clientCount);
 
   ws.on("message", message => {
     let obj = JSON.parse(message);
@@ -35,32 +36,55 @@ ss.on("connection", ws => {
       });
     }
     if (obj.type === "gameLength") {
-      if (obj.type === "gameLength") {
-        ws.gameLength = obj.data.gameLength;
-        gameLength.push(ws.gameLength);
-      }
-      length = gameLength.filter(length => {
-        return length !== -1;
+      ws.gameLength = obj.data.gameLength;
+      gameLength.push(ws.gameLength);
+      length = gameLength.filter(len => {
+        return len !== -1;
       });
       ss.clients.forEach(client => {
         client.send(
           JSON.stringify({
             type: "gameLength",
-            data: { gameLength: length }
+            data: { gameLength: length[0] }
           })
         );
       });
     }
-    if (obj.type === "getRollData") {
+
+    if (obj.type === "dieRoll") {
       ss.clients.forEach(client => {
         client.send(
           JSON.stringify({
-            type: "getRollData",
+            type: "dieRoll",
             data: {
               redDieValue: obj.data.redDieValue,
               blackDieValue: obj.data.blackDieValue,
               dice1: obj.data.dice1,
               dice2: obj.data.dice2
+            }
+          })
+        );
+      });
+    }
+    if (obj.type === "propagateClassEvents") {
+      ss.clients.forEach(client => {
+        client.send(
+          JSON.stringify({
+            type: "propagateClassEvents",
+            data: {
+              eventTarget: obj.data.eventTarget
+            }
+          })
+        );
+      });
+    }
+    if (obj.type === "propagateIdEvents") {
+      ss.clients.forEach(client => {
+        client.send(
+          JSON.stringify({
+            type: "propagateIdEvents",
+            data: {
+              eventTarget: obj.data.eventTarget
             }
           })
         );
@@ -75,21 +99,23 @@ ss.on("connection", ws => {
     clientCount = 0;
     ss.clients.forEach(client => {
       clientCount++;
-      playerList.push(client.playerName);
-      client.send(
-        JSON.stringify({
-          type: "playerName",
-          data: { playerList: playerList }
-        })
-      );
+    });
+    ss.clients.forEach(client => {
       client.send(
         JSON.stringify({
           type: "clientCount",
           data: { clientCount: clientCount }
         })
       );
-      console.log("Connection CLOSED");
-      console.log(clientCount);
+      playerList.push(ws.playerName);
+      client.send(
+        JSON.stringify({
+          type: "playerName",
+          data: { playerList: playerList }
+        })
+      );
     });
+    console.log("Connection CLOSED");
+    console.log(clientCount);
   });
 });

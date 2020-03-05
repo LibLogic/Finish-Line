@@ -28,12 +28,18 @@ cs.onmessage = e => {
         renderBoard();
       }
       break;
-    case "getRollData":
+    case "dieRoll":
       redDieValue = obj.data.redDieValue;
       blackDieValue = obj.data.blackDieValue;
       dice1 = obj.data.dice1;
       dice2 = obj.data.dice2;
       renderDiceRoll(dice1, dice2);
+      break;
+    case "propagateClassEvents":
+      document.querySelector(obj.data.eventTarget).click();
+      break;
+    case "propagateIdEvents":
+      markerClick(obj.data.eventTarget);
       break;
 
     //   case "switchUser":
@@ -315,26 +321,35 @@ function renderCards() {
   renderInitialPlayerGrid();
 }
 
-// document.getElementById("players").addEventListener("keyup", e => {
-//   if (e.keyCode === 13) {
-//     renderBoard();
-//   }
-// });
-
-function markerEvents() {
+function addMarkerEvents() {
   document
     .getElementById("green-marker")
-    .addEventListener("click", markerClick);
-  document.getElementById("red-marker").addEventListener("click", markerClick);
-  document.getElementById("blue-marker").addEventListener("click", markerClick);
+    .addEventListener("click", getMarkerClick);
+  document
+    .getElementById("red-marker")
+    .addEventListener("click", getMarkerClick);
+  document
+    .getElementById("blue-marker")
+    .addEventListener("click", getMarkerClick);
+}
+
+function getMarkerClick({ target }) {
+  cs.send(
+    JSON.stringify({
+      type: "propagateIdEvents",
+      data: {
+        eventTarget: `#${target.id}`
+      }
+    })
+  );
 }
 
 let movesRemaining = 2;
 let firstDieValue = 0;
 let secondDieValue = 0;
-function markerClick({ target }) {
-  let markerChoice = target.id;
-  console.clear();
+function markerClick(target) {
+  let elem = document.querySelector(target);
+  let markerChoice = target;
   sortOpponentMarkers(players);
   movesRemaining--;
   if (movesRemaining === 0 && visibleMarkerCount > 1) {
@@ -348,7 +363,7 @@ function markerClick({ target }) {
       showRollView();
     }
   }
-  target.classList.add("hidden");
+  elem.classList.add("hidden");
   sentence.innerHTML = prompts[3];
 }
 
@@ -380,27 +395,15 @@ function switchUser() {
   }
 }
 
-// let sentence = document.getElementById("prompts");
-// let diceContainer = document.getElementById("dice");
-// let beginBtn = document.getElementById("begin-btn");
-// let playersNames = document.getElementById("players-names");
-
-// beginBtn.addEventListener("click", () => {
-//   sentence.innerHTML = prompts[0]; // Enter a Comma Separated List of Players' Names
-//   sentence.classList.remove("hidden");
-//   playersNames.classList.remove("hidden");
-//   beginBtn.classList.add("hidden");
-// });
-
 function movePlayer(dieMove, markerChoice) {
   switch (markerChoice) {
-    case "red-marker":
+    case "#red-marker":
       markerToMove = "markerA";
       break;
-    case "green-marker":
+    case "#green-marker":
       markerToMove = "markerB";
       break;
-    case "blue-marker":
+    case "#blue-marker":
       markerToMove = "markerC";
       break;
   }
@@ -808,7 +811,7 @@ function rollBtnClick() {
       .querySelector(".show-header")
       .removeAttribute("style", "opacity: .7");
   });
-  getDiceRoll();
+  getDiceRoll("dieRoll");
 }
 
 function getPlayerNames(playersArr) {
@@ -836,8 +839,8 @@ function specialCardRoll() {
   let dice1 = dieStr[redDieValue];
   blackDieValue = Math.floor(Math.random() * 6);
   let dice2 = dieStr[blackDieValue];
-  document.querySelector(".red-die").classList.add("die-animate");
-  document.querySelector(".black-die").classList.add("die-animate");
+  document.querySelector(".red-die").classList.add("die-shake");
+  document.querySelector(".black-die").classList.add("die-shake");
   setTimeout(() => {
     dice =
       '<div class="red-die">' +
@@ -846,8 +849,8 @@ function specialCardRoll() {
       dice2 +
       "</div>";
     diceContainer.innerHTML = dice;
-    document.querySelector(".red-die").classList.remove("die-animate");
-    document.querySelector(".black-die").classList.remove("die-animate");
+    document.querySelector(".red-die").classList.remove("die-shake");
+    document.querySelector(".black-die").classList.remove("die-shake");
   }, 800);
 }
 
@@ -1070,7 +1073,7 @@ function applyPenalty(furthestMarker, winningDieColor) {
   }
 }
 
-function getDiceRoll() {
+function getDiceRoll(rollType) {
   console.log("running getDiceRoll");
   movesRemaining = 2;
   let redDieValue = Math.floor(Math.random() * 6);
@@ -1082,7 +1085,7 @@ function getDiceRoll() {
 
   cs.send(
     JSON.stringify({
-      type: "getRollData",
+      type: rollType, //rollType
       data: {
         redDieValue: rollData[0],
         blackDieValue: rollData[1],
@@ -1110,8 +1113,8 @@ function renderDiceRoll(dice1, dice2) {
     li.classList.add("row-highlight");
   });
 
-  document.querySelector(".red-die").classList.add("die-animate");
-  document.querySelector(".black-die").classList.add("die-animate");
+  document.querySelector(".red-die").classList.add("die-shake");
+  document.querySelector(".black-die").classList.add("die-shake");
   setTimeout(() => {
     dice =
       '<div class="red-die">' +
@@ -1122,11 +1125,11 @@ function renderDiceRoll(dice1, dice2) {
     diceContainer.innerHTML = dice;
     document.querySelector(".red-die").classList.remove("dim");
     document.querySelector(".black-die").classList.remove("dim");
-    document.querySelector(".red-die").classList.remove("die-animate");
-    document.querySelector(".black-die").classList.remove("die-animate");
+    document.querySelector(".red-die").classList.remove("die-shake");
+    document.querySelector(".black-die").classList.remove("die-shake");
     rollBtn.classList.add("hidden");
     showMarkerChoices();
-    diceEvents();
+    addDiceEvents();
   }, 800);
 }
 
@@ -1165,7 +1168,7 @@ function showMarkerChoices() {
   document.querySelector(".markers").classList.remove("hidden");
 }
 
-function diceEvents() {
+function addDiceEvents() {
   sentence.innerHTML = prompts[2]; // select a die
   sentence.classList.remove("hidden");
 
@@ -1203,7 +1206,17 @@ function dieClick({ target }) {
   sentence.classList.remove("hidden");
   target.removeEventListener("click", dieClick);
   target.classList.add("dim");
-  markerEvents();
+
+  cs.send(
+    JSON.stringify({
+      type: "propagateClassEvents",
+      data: {
+        eventTarget: `.${target.classList[0]}`
+      }
+    })
+  );
+
+  addMarkerEvents();
 }
 
 function sortOpponentMarkers(players) {
