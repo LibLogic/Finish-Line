@@ -35,30 +35,12 @@ cs.onmessage = e => {
       dice2 = obj.data.dice2;
       renderDiceRoll(dice1, dice2);
       break;
-    case "propagateClassEvents":
+    case "dieClick":
       document.querySelector(obj.data.eventTarget).click();
       break;
-    case "propagateIdEvents":
+    case "markerClick":
       markerClick(obj.data.eventTarget);
       break;
-
-    //   case "switchUser":
-    //     currentPlayer = obj.data.currentPlayer;
-    //     switchUser();
-    //     break;
-    //   case "updateMarkerPositions":
-    //     players = obj.data.players;
-    //     currentPlayerUser = obj.data.currentPlayer;
-    //     updateMarkerPositions();
-    //     break;
-    //   case "sendClassEvents":
-    //     target = obj.data.target[0];
-    //     sendClassEvents(target);
-    //     break;
-    //   case "sendMarkerClick":
-    //     target = obj.data.target;
-    //     markerClick(target);
-    //     break;
   }
 };
 
@@ -336,7 +318,7 @@ function addMarkerEvents() {
 function getMarkerClick({ target }) {
   cs.send(
     JSON.stringify({
-      type: "propagateIdEvents",
+      type: "markerClick",
       data: {
         eventTarget: `#${target.id}`
       }
@@ -348,6 +330,7 @@ let movesRemaining = 2;
 let firstDieValue = 0;
 let secondDieValue = 0;
 function markerClick(target) {
+  console.log("markerClick");
   let elem = document.querySelector(target);
   let markerChoice = target;
   sortOpponentMarkers(players);
@@ -435,20 +418,20 @@ function movePlayer(dieMove, markerChoice) {
     }
   }
 
-  console.log(
-    "Previous Marker position: ",
-    previousMarkerPosition,
-    "\nCurrent player",
-    players[currentPlayer].name,
-    "\nMarker to move >",
-    markerToMove,
-    "\nStop value",
-    stopValue,
-    "\nChosen die value",
-    dieMove,
-    "\nMove count",
-    moveCount
-  );
+  // console.log(
+  //   "Previous Marker position: ",
+  //   previousMarkerPosition,
+  //   "\nCurrent player",
+  //   players[currentPlayer].name,
+  //   "\nMarker to move >",
+  //   markerToMove,
+  //   "\nStop value",
+  //   stopValue,
+  //   "\nChosen die value",
+  //   dieMove,
+  //   "\nMove count",
+  //   moveCount
+  // );
 
   //check status if good do nothng else come back with previousMarkerPosition
   hasValidMove(dieMove, previousMarkerPosition, currentCard);
@@ -506,6 +489,7 @@ function updateMarkerPositions() {
 }
 
 function hasValidMove(dieMove, previousMarkerPosition, currentCard) {
+  console.log("running hasValidMove");
   let handLength = hand.length - 1;
   // first do all the things that should just return
   // remember moves have already been made, just not displayed yet
@@ -560,7 +544,7 @@ let specialCardFlag = false;
 let furthestMarker = "";
 function processSpecialCards() {
   console.log("running processSpecialCards");
-  rollBtn.removeEventListener("click", rollBtnClick);
+  rollBtn.removeEventListener("click", getDiceRoll);
   rollBtn.innerHTML = `${players[currentPlayer].name} Has Special Card(s)<br/>Roll For Activation`;
   rollBtn.addEventListener("click", specialBtnClick, { once: true });
 
@@ -586,7 +570,7 @@ function processSpecialCards() {
     document.querySelector(".black-die").classList.add("dim");
     document.querySelector(".red-die").classList.add("dim");
     if (userSpecialCards.length === 0) {
-      rollBtn.addEventListener("click", rollBtnClick);
+      rollBtn.addEventListener("click", getDiceRoll);
       // checkForAttack();
       showRollView();
       switchUser();
@@ -780,7 +764,7 @@ function renderInitialHeader() {
       `<button id="rollBtn" class="btn">${players[currentPlayer].name}<br/>Roll The Dice</button>`
     );
 
-  document.getElementById("rollBtn").addEventListener("click", rollBtnClick);
+  document.getElementById("rollBtn").addEventListener("click", getDiceRoll);
 }
 
 function renderInitialPlayerGrid() {
@@ -800,19 +784,19 @@ function renderInitialPlayerGrid() {
   });
 }
 
-function rollBtnClick() {
-  document.querySelector(".show-header").addEventListener("mouseenter", () => {
-    document
-      .querySelector(".show-header")
-      .removeAttribute("style", "opacity: 1");
-  });
-  document.querySelector(".show-header").addEventListener("mouseleave", () => {
-    document
-      .querySelector(".show-header")
-      .removeAttribute("style", "opacity: .7");
-  });
-  getDiceRoll("dieRoll");
-}
+// function rollBtnClick() {
+//   document.querySelector(".show-header").addEventListener("mouseenter", () => {
+//     document
+//       .querySelector(".show-header")
+//       .removeAttribute("style", "opacity: 1");
+//   });
+//   document.querySelector(".show-header").addEventListener("mouseleave", () => {
+//     document
+//       .querySelector(".show-header")
+//       .removeAttribute("style", "opacity: .7");
+//   });
+//   getDiceRoll();
+// }
 
 function getPlayerNames(playersArr) {
   class Player {
@@ -1073,8 +1057,19 @@ function applyPenalty(furthestMarker, winningDieColor) {
   }
 }
 
-function getDiceRoll(rollType) {
+function getDiceRoll() {
   console.log("running getDiceRoll");
+  //   document.querySelector(".show-header").addEventListener("mouseenter", () => {
+  //     document
+  //       .querySelector(".show-header")
+  //       .removeAttribute("style", "opacity: 1");
+  //   });
+  //   document.querySelector(".show-header").addEventListener("mouseleave", () => {
+  //     document
+  //       .querySelector(".show-header")
+  //       .removeAttribute("style", "opacity: .7");
+  //   });
+
   movesRemaining = 2;
   let redDieValue = Math.floor(Math.random() * 6);
   let blackDieValue = Math.floor(Math.random() * 6);
@@ -1085,7 +1080,7 @@ function getDiceRoll(rollType) {
 
   cs.send(
     JSON.stringify({
-      type: rollType, //rollType
+      type: "dieRoll",
       data: {
         redDieValue: rollData[0],
         blackDieValue: rollData[1],
@@ -1097,6 +1092,17 @@ function getDiceRoll(rollType) {
 }
 
 function renderDiceRoll(dice1, dice2) {
+  document.querySelector(".show-header").addEventListener("mouseenter", () => {
+    document
+      .querySelector(".show-header")
+      .removeAttribute("style", "opacity: 1");
+  });
+  document.querySelector(".show-header").addEventListener("mouseleave", () => {
+    document
+      .querySelector(".show-header")
+      .removeAttribute("style", "opacity: .7");
+  });
+
   for (let i = 0; i < players.length; i++) {
     document.querySelectorAll(`.player${i}`).forEach(player => {
       player.classList.remove("highlight");
@@ -1209,7 +1215,7 @@ function dieClick({ target }) {
 
   cs.send(
     JSON.stringify({
-      type: "propagateClassEvents",
+      type: "dieClick",
       data: {
         eventTarget: `.${target.classList[0]}`
       }

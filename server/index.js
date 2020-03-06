@@ -34,8 +34,7 @@ ss.on("connection", ws => {
       ss.clients.forEach(client => {
         client.send(JSON.stringify(obj));
       });
-    }
-    if (obj.type === "gameLength") {
+    } else if (obj.type === "gameLength") {
       ws.gameLength = obj.data.gameLength;
       gameLength.push(ws.gameLength);
       length = gameLength.filter(len => {
@@ -49,9 +48,7 @@ ss.on("connection", ws => {
           })
         );
       });
-    }
-
-    if (obj.type === "dieRoll") {
+    } else if (obj.type === "dieRoll") {
       ss.clients.forEach(client => {
         client.send(
           JSON.stringify({
@@ -65,24 +62,22 @@ ss.on("connection", ws => {
           })
         );
       });
-    }
-    if (obj.type === "propagateClassEvents") {
+    } else if (obj.type === "dieClick") {
       ss.clients.forEach(client => {
         client.send(
           JSON.stringify({
-            type: "propagateClassEvents",
+            type: "dieClick",
             data: {
               eventTarget: obj.data.eventTarget
             }
           })
         );
       });
-    }
-    if (obj.type === "propagateIdEvents") {
+    } else if (obj.type === "markerClick") {
       ss.clients.forEach(client => {
         client.send(
           JSON.stringify({
-            type: "propagateIdEvents",
+            type: "markerClick",
             data: {
               eventTarget: obj.data.eventTarget
             }
