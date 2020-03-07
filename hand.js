@@ -347,7 +347,7 @@ function markerClick(target) {
     }
   }
   elem.classList.add("hidden");
-  sentence.innerHTML = prompts[3];
+  sentence.innerHTML = prompts[3]; // Marker To Move?
 }
 
 function showRollView() {
@@ -549,26 +549,24 @@ function processSpecialCards() {
   rollBtn.addEventListener("click", specialBtnClick, { once: true });
 
   function specialBtnClick() {
-    rollBtn.removeEventListener("click", specialBtnClick, { once: true });
     specialCardRoll();
-    decideActivation();
-    document.querySelector(".bullet").classList.add("dim");
-    rollBtn.innerHTML = `Ok`;
-    rollBtn.addEventListener("click", pauseBtnClick);
+    decideActivation(); // either apply penalty or card not activated
   }
 
-  function pauseBtnClick() {
+  function okBtnClick() {
     updateMarkerPositions();
-    rollBtn.removeEventListener("click", pauseBtnClick);
+    rollBtn.removeEventListener("click", okBtnClick);
     rollBtn.removeEventListener("click", specialBtnClick, { once: true });
+    document.querySelector(".black-die").classList.add("dim");
+    document.querySelector(".red-die").classList.add("dim");
     sentence.classList.add("hidden");
+
     userSpecialCards.forEach((card, i) => {
       if (card === furthestSpecialCard) {
         userSpecialCards.splice(i, 1);
       }
     });
-    document.querySelector(".black-die").classList.add("dim");
-    document.querySelector(".red-die").classList.add("dim");
+
     if (userSpecialCards.length === 0) {
       rollBtn.addEventListener("click", getDiceRoll);
       // checkForAttack();
@@ -582,14 +580,14 @@ function processSpecialCards() {
     }
   }
 
-  furthestSpecialCard = getFurthestSpecialCard();
-  let furthestCardColor =
-    Math.floor(furthestSpecialCard / 100) === 1 ||
-    Math.floor(furthestSpecialCard / 100) === 2
-      ? "red"
-      : "black";
-
   function decideActivation() {
+    furthestSpecialCard = getFurthestSpecialCard();
+    let furthestCardColor =
+      Math.floor(furthestSpecialCard / 100) === 1 ||
+      Math.floor(furthestSpecialCard / 100) === 2
+        ? "red"
+        : "black";
+
     console.log("running decideActivation");
     let winningDieColor = "neither";
     if (blackDieValue + 1 > redDieValue + 1) {
@@ -612,6 +610,9 @@ function processSpecialCards() {
       sentence.innerHTML = `Card not activated<br>${furthestCardColor.toUpperCase()} die didn't win.`;
       sentence.classList.remove("hidden");
     }
+    rollBtn.removeEventListener("click", specialBtnClick, { once: true });
+    rollBtn.innerHTML = `Ok`;
+    rollBtn.addEventListener("click", okBtnClick);
   }
 
   function getFurthestSpecialCard() {
@@ -817,12 +818,14 @@ function getPlayerNames(playersArr) {
   })();
 }
 
+let dice1;
+let dice2;
 function specialCardRoll() {
   console.log("running specialCardRoll");
   redDieValue = Math.floor(Math.random() * 6);
-  let dice1 = dieStr[redDieValue];
+  dice1 = dieStr[redDieValue];
   blackDieValue = Math.floor(Math.random() * 6);
-  let dice2 = dieStr[blackDieValue];
+  dice2 = dieStr[blackDieValue];
   document.querySelector(".red-die").classList.add("die-shake");
   document.querySelector(".black-die").classList.add("die-shake");
   setTimeout(() => {
@@ -1059,16 +1062,6 @@ function applyPenalty(furthestMarker, winningDieColor) {
 
 function getDiceRoll() {
   console.log("running getDiceRoll");
-  //   document.querySelector(".show-header").addEventListener("mouseenter", () => {
-  //     document
-  //       .querySelector(".show-header")
-  //       .removeAttribute("style", "opacity: 1");
-  //   });
-  //   document.querySelector(".show-header").addEventListener("mouseleave", () => {
-  //     document
-  //       .querySelector(".show-header")
-  //       .removeAttribute("style", "opacity: .7");
-  //   });
 
   movesRemaining = 2;
   let redDieValue = Math.floor(Math.random() * 6);
@@ -1129,8 +1122,6 @@ function renderDiceRoll(dice1, dice2) {
       dice2 +
       "</div>";
     diceContainer.innerHTML = dice;
-    document.querySelector(".red-die").classList.remove("dim");
-    document.querySelector(".black-die").classList.remove("dim");
     document.querySelector(".red-die").classList.remove("die-shake");
     document.querySelector(".black-die").classList.remove("die-shake");
     rollBtn.classList.add("hidden");
@@ -1212,6 +1203,7 @@ function dieClick({ target }) {
   sentence.classList.remove("hidden");
   target.removeEventListener("click", dieClick);
   target.classList.add("dim");
+  addMarkerEvents();
 
   cs.send(
     JSON.stringify({
@@ -1221,8 +1213,6 @@ function dieClick({ target }) {
       }
     })
   );
-
-  addMarkerEvents();
 }
 
 function sortOpponentMarkers(players) {
