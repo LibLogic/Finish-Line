@@ -62,6 +62,29 @@ ss.on("connection", ws => {
           })
         );
       });
+    } else if (obj.type === "specialRoll") {
+      ss.clients.forEach(client => {
+        client.send(
+          JSON.stringify({
+            type: "specialRoll",
+            data: {
+              redDieValue: obj.data.redDieValue,
+              blackDieValue: obj.data.blackDieValue,
+              dice1: obj.data.dice1,
+              dice2: obj.data.dice2,
+              userSpecialCards: obj.data.userSpecialCards
+            }
+          })
+        );
+      });
+    } else if (obj.type === "okClick") {
+      ss.clients.forEach(client => {
+        client.send(
+          JSON.stringify({
+            type: "okClick"
+          })
+        );
+      });
     } else if (obj.type === "dieClick") {
       ss.clients.forEach(client => {
         client.send(

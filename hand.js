@@ -35,6 +35,18 @@ cs.onmessage = e => {
       dice2 = obj.data.dice2;
       renderDiceRoll(dice1, dice2);
       break;
+    case "specialRoll":
+      redDieValue = obj.data.redDieValue;
+      blackDieValue = obj.data.blackDieValue;
+      dice1 = obj.data.dice1;
+      dice2 = obj.data.dice2;
+      userSpecialCards = obj.data.userSpecialCards;
+      renderSpecialRoll(dice1, dice2);
+      decideActivation();
+      break;
+    case "okClick":
+      okBtnClick();
+      break;
     case "dieClick":
       document.querySelector(obj.data.eventTarget).click();
       break;
@@ -327,20 +339,20 @@ function getMarkerClick({ target }) {
 }
 
 let movesRemaining = 2;
-let firstDieValue = 0;
-let secondDieValue = 0;
+let firstChosenDieValue = 0;
+let secondChosenDieValue = 0;
 function markerClick(target) {
-  console.log("markerClick");
+  console.log("running markerClick");
   let elem = document.querySelector(target);
   let markerChoice = target;
   sortOpponentMarkers(players);
   movesRemaining--;
   if (movesRemaining === 0 && visibleMarkerCount > 1) {
-    movePlayer(secondDieValue, markerChoice);
+    movePlayer(secondChosenDieValue, markerChoice);
     updateMarkerPositions();
     showRollView();
   } else {
-    movePlayer(firstDieValue, markerChoice);
+    movePlayer(firstChosenDieValue, markerChoice);
     updateMarkerPositions();
     if (visibleMarkerCount === 1) {
       showRollView();
@@ -417,23 +429,6 @@ function movePlayer(dieMove, markerChoice) {
       break;
     }
   }
-
-  // console.log(
-  //   "Previous Marker position: ",
-  //   previousMarkerPosition,
-  //   "\nCurrent player",
-  //   players[currentPlayer].name,
-  //   "\nMarker to move >",
-  //   markerToMove,
-  //   "\nStop value",
-  //   stopValue,
-  //   "\nChosen die value",
-  //   dieMove,
-  //   "\nMove count",
-  //   moveCount
-  // );
-
-  //check status if good do nothng else come back with previousMarkerPosition
   hasValidMove(dieMove, previousMarkerPosition, currentCard);
 }
 
@@ -455,7 +450,6 @@ function updateMarkerPositions() {
         row = ".p4";
         break;
     }
-
     document.querySelectorAll(`.p${playerIndex + 1}`).forEach(li => {
       li.innerHTML = "";
     });
@@ -550,12 +544,19 @@ function processSpecialCards() {
 
   function specialBtnClick() {
     specialCardRoll();
-    decideActivation(); // either apply penalty or card not activated
   }
 
-  function okBtnClick() {
+  function sendOkBtnClick() {
+    cs.send(
+      JSON.stringify({
+        type: "okClick"
+      })
+    );
+  }
+
+  window.okBtnClick = function() {
     updateMarkerPositions();
-    rollBtn.removeEventListener("click", okBtnClick);
+    rollBtn.removeEventListener("click", sendOkBtnClick);
     rollBtn.removeEventListener("click", specialBtnClick, { once: true });
     document.querySelector(".black-die").classList.add("dim");
     document.querySelector(".red-die").classList.add("dim");
@@ -578,9 +579,80 @@ function processSpecialCards() {
         processSpecialCards();
       }
     }
+  };
+
+  function specialCardRoll() {
+    console.log("running specialCardRoll");
+    redDieValue = Math.floor(Math.random() * 6);
+    dice1 = dieStr[redDieValue];
+    blackDieValue = Math.floor(Math.random() * 6);
+    dice2 = dieStr[blackDieValue];
+
+    rollData = [redDieValue, blackDieValue, dice1, dice2];
+
+    cs.send(
+      JSON.stringify({
+        type: "specialRoll",
+        data: {
+          redDieValue: rollData[0],
+          blackDieValue: rollData[1],
+          dice1: rollData[2],
+          dice2: rollData[3],
+          userSpecialCards: userSpecialCards
+        }
+      })
+    );
+
+    cs.onmessage = e => {
+      let obj = JSON.parse(e.data);
+      switch (obj.type) {
+        case "specialRoll":
+          redDieValue = obj.data.redDieValue;
+          blackDieValue = obj.data.blackDieValue;
+          dice1 = obj.data.dice1;
+          dice2 = obj.data.dice2;
+          userSpecialCards = obj.data.userSpecialCards;
+          renderSpecialRoll(dice1, dice2);
+          decideActivation();
+          break;
+        case "dieRoll":
+          redDieValue = obj.data.redDieValue;
+          blackDieValue = obj.data.blackDieValue;
+          dice1 = obj.data.dice1;
+          dice2 = obj.data.dice2;
+          renderDiceRoll(dice1, dice2);
+          break;
+        case "okClick":
+          okBtnClick();
+          break;
+        case "dieClick":
+          document.querySelector(obj.data.eventTarget).click();
+          break;
+        case "markerClick":
+          markerClick(obj.data.eventTarget);
+          break;
+      }
+    };
   }
 
-  function decideActivation() {
+  window.renderSpecialRoll = function(dice1, dice2) {
+    console.log("inside renderSpecialRoll");
+    document.querySelector(".red-die").classList.add("die-shake");
+    document.querySelector(".black-die").classList.add("die-shake");
+    setTimeout(() => {
+      dice =
+        '<div class="red-die">' +
+        dice1 +
+        '</div><div class="bullet dim">•</div><div class="black-die">' +
+        dice2 +
+        "</div>";
+      diceContainer.innerHTML = dice;
+      document.querySelector(".red-die").classList.remove("die-shake");
+      document.querySelector(".black-die").classList.remove("die-shake");
+    }, 800);
+  };
+
+  window.decideActivation = function() {
     furthestSpecialCard = getFurthestSpecialCard();
     let furthestCardColor =
       Math.floor(furthestSpecialCard / 100) === 1 ||
@@ -612,8 +684,8 @@ function processSpecialCards() {
     }
     rollBtn.removeEventListener("click", specialBtnClick, { once: true });
     rollBtn.innerHTML = `Ok`;
-    rollBtn.addEventListener("click", okBtnClick);
-  }
+    rollBtn.addEventListener("click", sendOkBtnClick);
+  };
 
   function getFurthestSpecialCard() {
     let furthestMarkerEntry = ["", -1];
@@ -673,49 +745,6 @@ function checkForAttack() {
     );
   }
 }
-
-// function playerQueue() {
-//   let playersInfo = document.getElementById("players").value;
-//   playersArr = playersInfo.split(", ");
-//   getHand();
-//   playersArr.length > 1 ? renderBoard() : addPlayerToQueue();
-// }
-
-// function decidePlayersPrompt() {
-//   if (clientCount === 1) {
-//     playersNames.classList.add("hidden"),
-//       document.getElementById("prompts").classList.add("hidden"),
-//       playersNames.classList.remove("hidden"),
-//       (document.getElementById("prompts").innerHTML = prompts[5]), // how many players
-//       document.getElementById("prompts").classList.remove("hidden"),
-//       document.querySelector("#player-names").classList.add("hidden"),
-//       document
-//         .querySelector(".game-length-input-container")
-//         .classList.remove("hidden"),
-//       playersNames.classList.add("hidden");
-//   } else {
-//     playersNames.classList.add("hidden"),
-//       document.getElementById("prompts").classList.add("hidden"),
-//       playersNames.classList.remove("hidden"),
-//       (document.getElementById("prompts").innerHTML = prompts[4]), // how many players
-//       document.getElementById("prompts").classList.remove("hidden"),
-//       playersNames.classList.add("hidden");
-//     sendGameLength();
-//   }
-// }
-
-// function addPlayerToQueue() {
-//   cs.send(
-//     JSON.stringify({
-//       type: "gameData",
-//       data: {
-//         playerName: playersArr[0],
-//         gameHand: [hand, cardFontHand]
-//       }
-//     })
-//   );
-//   decidePlayersPrompt();
-// }
 
 function renderBoard() {
   getPlayerNames(playersArr);
@@ -785,20 +814,6 @@ function renderInitialPlayerGrid() {
   });
 }
 
-// function rollBtnClick() {
-//   document.querySelector(".show-header").addEventListener("mouseenter", () => {
-//     document
-//       .querySelector(".show-header")
-//       .removeAttribute("style", "opacity: 1");
-//   });
-//   document.querySelector(".show-header").addEventListener("mouseleave", () => {
-//     document
-//       .querySelector(".show-header")
-//       .removeAttribute("style", "opacity: .7");
-//   });
-//   getDiceRoll();
-// }
-
 function getPlayerNames(playersArr) {
   class Player {
     constructor(name) {
@@ -816,29 +831,6 @@ function getPlayerNames(playersArr) {
       new Player(playersArr[i]);
     }
   })();
-}
-
-let dice1;
-let dice2;
-function specialCardRoll() {
-  console.log("running specialCardRoll");
-  redDieValue = Math.floor(Math.random() * 6);
-  dice1 = dieStr[redDieValue];
-  blackDieValue = Math.floor(Math.random() * 6);
-  dice2 = dieStr[blackDieValue];
-  document.querySelector(".red-die").classList.add("die-shake");
-  document.querySelector(".black-die").classList.add("die-shake");
-  setTimeout(() => {
-    dice =
-      '<div class="red-die">' +
-      dice1 +
-      '</div><div class="bullet dim">•</div><div class="black-die">' +
-      dice2 +
-      "</div>";
-    diceContainer.innerHTML = dice;
-    document.querySelector(".red-die").classList.remove("die-shake");
-    document.querySelector(".black-die").classList.remove("die-shake");
-  }, 800);
 }
 
 function applyPenalty(furthestMarker, winningDieColor) {
@@ -1176,7 +1168,7 @@ function addDiceEvents() {
 
 function dieClick({ target }) {
   if (target.className === "bullet") {
-    secondDieValue = redDieValue + blackDieValue + 2;
+    secondChosenDieValue = redDieValue + blackDieValue + 2;
     movesRemaining = 1;
     target.classList.add("dim");
     target.classList.add("dim");
@@ -1184,16 +1176,16 @@ function dieClick({ target }) {
     document.querySelector(".black-die").removeEventListener("click", dieClick);
   }
   if (target.className === "red-die") {
-    firstDieValue = redDieValue + 1;
-    secondDieValue = blackDieValue + 1;
+    firstChosenDieValue = redDieValue + 1;
+    secondChosenDieValue = blackDieValue + 1;
     target.classList.add("dim");
     document.querySelector(".bullet").classList.add("dim");
     document.querySelector(".bullet").removeEventListener("click", dieClick);
     document.querySelector(".black-die").removeEventListener("click", dieClick);
   }
   if (target.className === "black-die") {
-    firstDieValue = blackDieValue + 1;
-    secondDieValue = redDieValue + 1;
+    firstChosenDieValue = blackDieValue + 1;
+    secondChosenDieValue = redDieValue + 1;
     target.classList.add("dim");
     document.querySelector(".bullet").classList.add("dim");
     document.querySelector(".bullet").removeEventListener("click", dieClick);
