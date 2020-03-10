@@ -106,7 +106,9 @@ let prompts = [
   `Select a Die`,
   `Which Marker Now?`,
   `WAITING FOR OPPONENT(S)`,
-  `How many Players?`
+  `How Many Players?`,
+  `Your Marker has Finished`,
+  `Move Not Allowed`
 ];
 
 // Array for six sided die
@@ -118,6 +120,9 @@ let dieStr = [
   String.fromCodePoint(9860),
   String.fromCodePoint(9861)
 ];
+
+let modal = document.getElementById("modal-window"),
+  modalMsg = document.querySelector(".modal-message");
 
 deck = createDeck(56);
 deck.pop();
@@ -374,9 +379,10 @@ function showRollView() {
 }
 
 function switchUser() {
-  document.querySelector(".show-header").addEventListener("mouseleave", () => {
-    document.querySelector(".show-header").setAttribute("style", "opacity: 0");
-  });
+  // document.querySelector(".show-header").addEventListener("mouseleave", () => {
+  //   document.querySelector(".show-header").setAttribute("style", "opacity: 0");
+  // });
+
   userSpecialCards = [];
   console.log("running switchUser");
   ++currentPlayer;
@@ -504,18 +510,42 @@ function hasValidMove(dieMove, previousMarkerPosition, currentCard) {
       players[currentPlayer].markerC === handLength
     ) {
       players[currentPlayer].isFinished = true;
-      alert(players[currentPlayer].name + " wins!");
+      modalMsg.innerHTML = ` ${players[currentPlayer].name} Wins!<br>Game Over `;
+      modal.classList.remove("hidden");
+      setTimeout(() => {
+        modal.classList.add("hidden");
+      }, 6000);
+
+      let winnerClass = document.querySelectorAll(`.p${currentPlayer + 1}`);
+      winnerClass.forEach(el => {
+        el.classList.add("winner");
+      });
+
+      let nameClass = document.querySelectorAll(".players-right .player0")[0];
+      nameClass.innerHTML = ` 😎 ${players[currentPlayer].name} Wins!`;
+
       return;
     }
     if (userSpecialCards.length > 0 && movesRemaining < 1) {
       processSpecialCards();
     }
-    alert("Your Marker Has Finished");
+    modalMsg.innerHTML = `${prompts[6]}`;
+    modal.classList.remove("hidden");
+    setTimeout(() => {
+      modal.classList.add("hidden");
+    }, 2000);
+
     return;
   } else {
-    alert("Move Not Allowed");
     players[currentPlayer][markerToMove] = previousMarkerPosition;
     currentPlayer += players.length % players.length;
+
+    modalMsg.innerHTML = `${prompts[7]}`;
+    modal.classList.remove("hidden");
+    setTimeout(() => {
+      modal.classList.add("hidden");
+    }, 1500);
+
     if (userSpecialCards.length > 0 && movesRemaining < 1) {
       processSpecialCards();
     }
@@ -754,13 +784,13 @@ function renderBoard() {
 
 function renderInitialHeader() {
   document.getElementById("player-names").classList.add("hidden");
-  document.querySelector(".show-header").addEventListener("mouseenter", () => {
-    document.querySelector(".show-header").setAttribute("style", "opacity: 1");
-  });
+  // document.querySelector(".show-header").addEventListener("mouseenter", () => {
+  //   document.querySelector(".show-header").setAttribute("style", "opacity: 1");
+  // });
 
-  document.querySelector(".show-header").addEventListener("mouseleave", () => {
-    document.querySelector(".show-header").setAttribute("style", "opacity: .7");
-  });
+  // document.querySelector(".show-header").addEventListener("mouseleave", () => {
+  //   document.querySelector(".show-header").setAttribute("style", "opacity: .7");
+  // });
   document
     .getElementById("bg-image")
     .setAttribute("style", "background-image: url(images/dice2.jpg)");

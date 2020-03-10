@@ -1,3 +1,30 @@
+#modal-window {
+  position: absolute;
+  top: 30%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 40%;
+  z-index: 2;
+}
+
+.modal-content {
+  padding: 3%;
+  background-color: #fff;
+  border: 1px solid #222;
+  border-radius: 4px;
+}
+
+.modal-message {
+  font-size: 22px;
+  text-align: center;
+}
+
+.modal-close {
+  font-size: 36px;
+  font-weight: 600;
+  float: right;
+}
+
 @font-face {
   font-family: "playing_cardsregular";
   src: url("../fonts/cards-webfont.woff2") format("woff2"),
@@ -90,7 +117,7 @@ ul {
   position: fixed;
   top: 0;
   left: 0;
-  z-index: 2;
+  z-index: 1;
 }
 
 #game-wrap {
@@ -327,6 +354,10 @@ input {
 
 .p li.row-highlight {
   background-color: #b0d3b2ce;
+}
+
+.p li.row-highlight.winner {
+  background-color: #000 !important;
 }
 
 .d li.highlight {
