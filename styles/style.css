@@ -104,8 +104,7 @@ ul {
 
 #header {
   user-select: none;
-  height: 32%;
-  padding-bottom: 5%;
+  padding-bottom: 2%;
   width: 100%;
   text-align: center;
   background-image: linear-gradient(
@@ -118,6 +117,39 @@ ul {
   top: 0;
   left: 0;
   z-index: 1;
+}
+
+#dice {
+  height: 0;
+}
+
+#elements-container {
+  margin-top: 7%;
+}
+
+#prompts {
+  margin-top: 10%;
+}
+
+#rollBtn {
+  margin: 4% auto 2% auto;
+}
+
+#markers {
+  margin-bottom: 0;
+}
+
+#players-names {
+  height: 0;
+  margin-bottom: 3%;
+}
+
+.ok-btn {
+  margin: 1% 0 0 0 !important;
+}
+
+.btn-hightlight {
+  background-color: rgba(252, 87, 11, 0.8);
 }
 
 #game-wrap {
@@ -145,7 +177,6 @@ input[name="game-length"] {
 input {
   width: 620px;
   font-size: 132%;
-  margin-bottom: 5%;
 }
 
 #dice h1 {
@@ -248,6 +279,7 @@ input {
 }
 
 #hand {
+  position: relative;
   margin: 0 -40px;
   display: grid;
   grid-template-columns: repeat(10, auto);
@@ -276,7 +308,7 @@ input {
 }
 
 .card {
-  margin: 12px 0 3px 0;
+  margin: 20% 0 3px 0;
   height: 74px;
   overflow: hidden;
   font-size: 620%;
@@ -305,19 +337,27 @@ input {
 
 .players-left {
   position: absolute;
-  width: 9%;
+  width: 10%;
   font-family: Arial, Helvetica, sans-serif;
   font-size: 16px;
   text-align: right;
 }
 
+.players-left li {
+  padding-right: 8%;
+}
+
 .players-right {
   position: absolute;
-  width: 13.5%;
-  right: 0%;
+  width: 10%;
+  left: 90%;
   font-family: Arial, Helvetica, sans-serif;
   font-size: 16px;
   text-align: left;
+}
+
+.players-right li {
+  padding-left: 8%;
 }
 
 .names-spacer {

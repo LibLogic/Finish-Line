@@ -4,23 +4,25 @@ const ss = new server({
   port: 5500
 });
 
-let clientCount = 0;
 let playerList = [];
 let gameLength = [];
 let gameHand = [];
 let length = [];
 ss.on("connection", ws => {
-  clientCount++;
   ss.clients.forEach(client => {
+    ws.clientId = ss._server._connections - 1;
     client.send(
       JSON.stringify({
         type: "clientCount",
-        data: { clientCount: clientCount }
+        data: {
+          clientCount: ss._server._connections,
+          clientId: ss._server._connections - 1
+        }
       })
     );
   });
   console.log("New Connection");
-  console.log(clientCount);
+  console.log(ss._server._connections);
 
   ws.on("message", message => {
     let obj = JSON.parse(message);
@@ -111,29 +113,30 @@ ss.on("connection", ws => {
   });
 
   ws.on("close", ws => {
-    playerList = [];
+    newPlayerList = [];
     gameLength = [];
     gamehand = [];
-    clientCount = 0;
     ss.clients.forEach(client => {
-      clientCount++;
+      newPlayerList.push(client.playerName);
     });
+    playerList = newPlayerList;
     ss.clients.forEach(client => {
       client.send(
         JSON.stringify({
           type: "clientCount",
-          data: { clientCount: clientCount }
+          data: { clientCount: ss._server._connections }
         })
       );
-      playerList.push(ws.playerName);
       client.send(
         JSON.stringify({
           type: "playerName",
-          data: { playerList: playerList }
+          data: {
+            playerList: playerList
+          }
         })
       );
     });
     console.log("Connection CLOSED");
-    console.log(clientCount);
+    console.log(ss._server._connections);
   });
 });
