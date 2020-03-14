@@ -28,6 +28,37 @@ cs.onmessage = e => {
         renderBoard();
       }
       break;
+    case "activatePlayerBtn":
+      document
+        .getElementById("rollBtn")
+        .removeEventListener("click", window.getDiceRoll);
+      document
+        .getElementById("rollBtn")
+        .removeEventListener("click", window.specialBtnClick, { once: true });
+      document
+        .getElementById("rollBtn")
+        .removeEventListener("click", window.sendOkBtnClick);
+      switch (obj.data.listenerType) {
+        case "getDiceRoll":
+          document
+            .getElementById("rollBtn")
+            .addEventListener("click", window.getDiceRoll);
+          document.getElementById("rollBtn").classList.add("active-btn");
+          break;
+        case "specialBtnClick":
+          document
+            .getElementById("rollBtn")
+            .addEventListener("click", window.specialBtnClick);
+          document.getElementById("rollBtn").classList.add("active-btn");
+          break;
+        case "sendOkBtnClick":
+          document
+            .getElementById("rollBtn")
+            .addEventListener("click", window.sendOkBtnClick);
+          document.getElementById("rollBtn").classList.add("active-btn");
+          break;
+      }
+      break;
     case "dieRoll":
       redDieValue = obj.data.redDieValue;
       blackDieValue = obj.data.blackDieValue;
@@ -88,6 +119,7 @@ let currentPlayer = 0,
   players = [],
   gameLength = -1,
   clientCount = 0,
+  clientId = 0,
   jokerCount = 0,
   jokerOnePosition = 0,
   jokerTwoPosition = 0,
@@ -382,7 +414,7 @@ function switchPlayer() {
   // document.querySelector(".show-header").addEventListener("mouseleave", () => {
   //   document.querySelector(".show-header").setAttribute("style", "opacity: 0");
   // });
-
+  document.getElementById("rollBtn").classList.remove("active-btn");
   userSpecialCards = [];
   console.log("running switchPlayer");
   ++currentPlayer;
@@ -484,6 +516,7 @@ function updateMarkerPositions() {
       )}</span>`;
     }
     if (specialCardFlag === false && movesRemaining < 1) {
+      sendActivatePlayerBtn("getDiceRoll");
       switchPlayer();
     }
   });
@@ -572,7 +605,9 @@ function processSpecialCards() {
   rollBtn.removeEventListener("click", window.getDiceRoll);
   rollBtn.classList.remove("ok-btn");
   rollBtn.innerHTML = `${players[currentPlayer].name} Has Special Card(s)<br/>Roll For Activation`;
-  rollBtn.addEventListener("click", window.specialBtnClick, { once: true });
+
+  sendActivatePlayerBtn("specialBtnClick");
+  // rollBtn.addEventListener("click", window.specialBtnClick, { once: true });
 
   window.specialBtnClick = function() {
     specialCardRoll();
@@ -603,7 +638,8 @@ function processSpecialCards() {
     });
 
     if (userSpecialCards.length === 0) {
-      rollBtn.addEventListener("click", window.getDiceRoll);
+      sendActivatePlayerBtn("getDiceRoll");
+      // rollBtn.addEventListener("click", window.getDiceRoll);
       // checkForAttack();
       showRollView();
       switchPlayer();
@@ -649,6 +685,41 @@ function processSpecialCards() {
           renderSpecialRoll(dice1, dice2);
           decideActivation();
           break;
+
+        case "activatePlayerBtn":
+          document
+            .getElementById("rollBtn")
+            .removeEventListener("click", window.getDiceRoll);
+          document
+            .getElementById("rollBtn")
+            .removeEventListener("click", window.specialBtnClick, {
+              once: true
+            });
+          document
+            .getElementById("rollBtn")
+            .removeEventListener("click", window.sendOkBtnClick);
+          switch (obj.data.listenerType) {
+            case "getDiceRoll":
+              document
+                .getElementById("rollBtn")
+                .addEventListener("click", window.getDiceRoll);
+              document.getElementById("rollBtn").classList.add("active-btn");
+              break;
+            case "specialBtnClick":
+              document
+                .getElementById("rollBtn")
+                .addEventListener("click", window.specialBtnClick);
+              document.getElementById("rollBtn").classList.add("active-btn");
+              break;
+            case "sendOkBtnClick":
+              document
+                .getElementById("rollBtn")
+                .addEventListener("click", window.sendOkBtnClick);
+              document.getElementById("rollBtn").classList.add("active-btn");
+              break;
+          }
+          break;
+
         case "dieRoll":
           redDieValue = obj.data.redDieValue;
           blackDieValue = obj.data.blackDieValue;
@@ -721,7 +792,9 @@ function processSpecialCards() {
     });
     rollBtn.classList.add("ok-btn");
     rollBtn.innerHTML = `Ok`;
-    rollBtn.addEventListener("click", window.sendOkBtnClick);
+
+    sendActivatePlayerBtn("sendOkBtnClick");
+    // rollBtn.addEventListener("click", window.sendOkBtnClick);
   };
 
   function getFurthestSpecialCard() {
@@ -828,24 +901,28 @@ function renderInitialHeader() {
     .getElementById("elements-container")
     .insertAdjacentHTML(
       "afterend",
-      `<button id="rollBtn" class="btn btn-hightlight">${players[currentPlayer].name}<br/>Roll The Dice</button>`
+      `<button id="rollBtn" class="btn">${players[currentPlayer].name}<br/>Roll The Dice</button>`
     );
 
-  activatePlayer(window.getDiceRoll);
+  sendActivatePlayerBtn("getDiceRoll");
   // document.getElementById("rollBtn").addEventListener("click", window.getDiceRoll);
 }
 
-function activatePlayer(listenerType) {
-  document
-    .getElementById("rollBtn")
-    .removeEventListener("click", window.specialBtnClick, { once: true });
-  document
-    .getElementById("rollBtn")
-    .removeEventListener("click", window.sendOkBtnClick);
+function sendActivatePlayerBtn(listenerType) {
   document
     .getElementById("rollBtn")
     .removeEventListener("click", window.getDiceRoll);
-  document.getElementById("rollBtn").addEventListener("click", listenerType);
+  document.getElementById("rollBtn").classList.remove("active-btn");
+  console.log("running sendActivatePlayerBtn");
+  cs.send(
+    JSON.stringify({
+      type: "activatePlayerBtn",
+      data: {
+        listenerType: listenerType,
+        currentPlayer: currentPlayer
+      }
+    })
+  );
 }
 
 function renderInitialPlayerGrid() {
@@ -1128,16 +1205,16 @@ window.getDiceRoll = function() {
 };
 
 function renderDiceRoll(dice1, dice2) {
-  document.querySelector(".show-header").addEventListener("mouseenter", () => {
-    document
-      .querySelector(".show-header")
-      .removeAttribute("style", "opacity: 1");
-  });
-  document.querySelector(".show-header").addEventListener("mouseleave", () => {
-    document
-      .querySelector(".show-header")
-      .removeAttribute("style", "opacity: .7");
-  });
+  // document.querySelector(".show-header").addEventListener("mouseenter", () => {
+  //   document
+  //     .querySelector(".show-header")
+  //     .removeAttribute("style", "opacity: 1");
+  // });
+  // document.querySelector(".show-header").addEventListener("mouseleave", () => {
+  //   document
+  //     .querySelector(".show-header")
+  //     .removeAttribute("style", "opacity: .7");
+  // });
 
   for (let i = 0; i < players.length; i++) {
     document.querySelectorAll(`.player${i}`).forEach(player => {

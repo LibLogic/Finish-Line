@@ -50,6 +50,19 @@ ss.on("connection", ws => {
           })
         );
       });
+    } else if (obj.type === "activatePlayerBtn") {
+      console.log(obj.data.currentPlayer, "currentPlayer");
+      ss.clients.forEach(client => {
+        client.send(
+          JSON.stringify({
+            type: "activatePlayerBtn",
+            data: {
+              listenerType: obj.data.listenerType,
+              currentPlayer: obj.data.currentPlayer
+            }
+          })
+        );
+      });
     } else if (obj.type === "dieRoll") {
       ss.clients.forEach(client => {
         client.send(
