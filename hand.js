@@ -117,9 +117,10 @@ let currentPlayer = 0,
   wings = [],
   playerList = [],
   players = [],
-  gameLength = -1,
+  activePlayer = 0,
   clientCount = 0,
   clientId = 0,
+  gameLength = -1,
   jokerCount = 0,
   jokerOnePosition = 0,
   jokerTwoPosition = 0,
@@ -606,7 +607,7 @@ function processSpecialCards() {
   rollBtn.classList.remove("ok-btn");
   rollBtn.innerHTML = `${players[currentPlayer].name} Has Special Card(s)<br/>Roll For Activation`;
 
-  sendActivatePlayerBtn("specialBtnClick");
+  sendActivatePlayerBtn("specialBtnClick", true);
   // rollBtn.addEventListener("click", window.specialBtnClick, { once: true });
 
   window.specialBtnClick = function() {
@@ -793,7 +794,7 @@ function processSpecialCards() {
     rollBtn.classList.add("ok-btn");
     rollBtn.innerHTML = `Ok`;
 
-    sendActivatePlayerBtn("sendOkBtnClick");
+    sendActivatePlayerBtn("sendOkBtnClick", true);
     // rollBtn.addEventListener("click", window.sendOkBtnClick);
   };
 
@@ -904,22 +905,27 @@ function renderInitialHeader() {
       `<button id="rollBtn" class="btn">${players[currentPlayer].name}<br/>Roll The Dice</button>`
     );
 
-  sendActivatePlayerBtn("getDiceRoll");
+  sendActivatePlayerBtn("getDiceRoll", true);
   // document.getElementById("rollBtn").addEventListener("click", window.getDiceRoll);
 }
 
-function sendActivatePlayerBtn(listenerType) {
+function sendActivatePlayerBtn(listenerType, stayOnCurrentPlayer = false) {
   document
     .getElementById("rollBtn")
     .removeEventListener("click", window.getDiceRoll);
   document.getElementById("rollBtn").classList.remove("active-btn");
   console.log("running sendActivatePlayerBtn");
+
+  activePlayer = currentPlayer;
+  if (!stayOnCurrentPlayer) {
+    activePlayer = (currentPlayer + 1) % gameLength;
+  }
   cs.send(
     JSON.stringify({
       type: "activatePlayerBtn",
       data: {
         listenerType: listenerType,
-        currentPlayer: currentPlayer
+        activePlayer: activePlayer
       }
     })
   );
