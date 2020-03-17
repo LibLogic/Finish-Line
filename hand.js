@@ -122,12 +122,28 @@ function droppedClient() {
   let activePlayers = players.filter(player => {
     return player.isDisconnected === false;
   });
+
   activePlayers.forEach(player => {
     if (playerList.indexOf(player.name) === -1) {
       player.isDisconnected = true;
+      let playerStr = playerList.join(" & ");
+      alert(
+        `${player.name} has disconnected. \r\nContinuing game with player(s) \r\n${playerStr}`
+      );
     }
   });
 }
+
+let namesInput = document.getElementById("players");
+namesInput.addEventListener("keyup", function(event) {
+  if (event.keyCode === 13) {
+    document.querySelector(".submit-btn").click();
+  }
+});
+
+document.getElementById("header").onmouseover = () => {
+  document.getElementById("header").style.opacity = 1;
+};
 
 let currentPlayer = 0,
   deck = [],
@@ -367,8 +383,8 @@ function renderCards() {
     player.classList.add("highlight");
   });
 
-  const elem = document.getElementById("scrollToBottom");
-  elem.scroll(0, elem.scrollHeight);
+  // const elem = document.getElementById("scrollToBottom");
+  // elem.scroll(0, elem.scrollHeight);
   renderInitialPlayerGrid();
 }
 
@@ -431,9 +447,6 @@ function showRollView() {
 }
 
 function switchPlayer() {
-  // document.querySelector(".show-header").addEventListener("mouseleave", () => {
-  //   document.querySelector(".show-header").setAttribute("style", "opacity: 0");
-  // });
   document.getElementById("rollBtn").classList.remove("active-btn");
   userSpecialCards = [];
   console.log("running switchPlayer");
@@ -443,6 +456,13 @@ function switchPlayer() {
 
   rollBtn.classList.remove("ok-btn");
   rollBtn.innerHTML = `${players[currentPlayer].name}<br/>Roll The Dice`;
+
+  if (players[currentPlayer].isDisconnected) {
+    rollBtn.classList.remove("ok-btn");
+    rollBtn.innerHTML = `${players[currentPlayer].name}<br/>Roll The Dice`;
+    sendActivatePlayerBtn("getDiceRoll");
+    switchPlayer();
+  }
 
   if (players[currentPlayer].isFinished && players.length > 1) {
     switchPlayer();
@@ -658,7 +678,6 @@ function processSpecialCards() {
 
     if (userSpecialCards.length === 0) {
       sendActivatePlayerBtn("getDiceRoll");
-      // rollBtn.addEventListener("click", window.getDiceRoll);
       // checkForAttack();
       showRollView();
       switchPlayer();
@@ -787,6 +806,24 @@ function processSpecialCards() {
         ? "red"
         : "black";
 
+    let activeCard = furthestSpecialCard % 100;
+    switch (activeCard) {
+      case 01:
+        activeCard = "Ace";
+        break;
+      case 02:
+        activeCard = "Duece";
+        break;
+      case 11:
+        activeCard = "Jack";
+        break;
+      case 12:
+        activeCard = "Queen";
+        break;
+      case 13:
+        activeCard = "King";
+        break;
+    }
     console.log("running decideActivation");
     let winningDieColor = "neither";
     if (blackDieValue + 1 > redDieValue + 1) {
@@ -806,7 +843,7 @@ function processSpecialCards() {
         alert(players[currentPlayer].name + " wins!");
       }
     } else {
-      sentence.innerHTML = `Card not activated<br>${furthestCardColor.toUpperCase()} die didn't win.`;
+      sentence.innerHTML = `${activeCard} not activated<br>${furthestCardColor.toUpperCase()} die didn't win.`;
       sentence.classList.remove("hidden");
     }
     rollBtn.removeEventListener("click", window.specialBtnClick, {
@@ -816,7 +853,6 @@ function processSpecialCards() {
     rollBtn.innerHTML = `Ok`;
 
     sendActivatePlayerBtn("sendOkBtnClick", true);
-    // rollBtn.addEventListener("click", window.sendOkBtnClick);
   };
 
   function getFurthestSpecialCard() {
@@ -886,13 +922,7 @@ function renderBoard() {
 
 function renderInitialHeader() {
   document.getElementById("player-names").classList.add("hidden");
-  // document.querySelector(".show-header").addEventListener("mouseenter", () => {
-  //   document.querySelector(".show-header").setAttribute("style", "opacity: 1");
-  // });
 
-  // document.querySelector(".show-header").addEventListener("mouseleave", () => {
-  //   document.querySelector(".show-header").setAttribute("style", "opacity: .7");
-  // });
   document
     .getElementById("bg-image")
     .setAttribute("style", "background-image: url(images/dice2.jpg)");
@@ -920,17 +950,29 @@ function renderInitialHeader() {
   document.getElementById("markers").innerHTML = headerMarkers;
 
   document
-    .getElementById("elements-container")
+    .getElementById("prompts")
     .insertAdjacentHTML(
       "afterend",
       `<button id="rollBtn" class="btn">${players[currentPlayer].name}<br/>Roll The Dice</button>`
     );
 
   sendActivatePlayerBtn("getDiceRoll", true);
-  // document.getElementById("rollBtn").addEventListener("click", window.getDiceRoll);
 }
 
 function sendActivatePlayerBtn(listenerType, stayOnCurrentPlayer = false) {
+  document.onscroll = function() {
+    if (
+      window.innerHeight + window.scrollY >
+      document.body.clientHeight +
+        document.getElementById("header").clientHeight -
+        120
+    ) {
+      document.getElementById("header").style.opacity = 0.2;
+    } else {
+      document.getElementById("header").style.opacity = 0.6;
+    }
+  };
+
   document
     .getElementById("rollBtn")
     .removeEventListener("click", window.getDiceRoll);
@@ -978,6 +1020,7 @@ function getPlayerNames(playersArr) {
       this.name = name;
       this.isFinished = false;
       this.isDisconnected = false;
+      this.clientId = i;
       players.push(this);
     }
   }
@@ -1047,6 +1090,8 @@ function applyPenalty(furthestMarker, winningDieColor) {
     let markerToMoveList = sortPlayerMarkers().filter(marker => {
       return marker[3] < currentPosition;
     });
+
+    console.log(markerToMoveList);
 
     if (markerToMoveList.length > 0 && markerToMoveList[0][3] !== -1) {
       markerToMove = markerToMoveList[0][2];
@@ -1233,17 +1278,6 @@ window.getDiceRoll = function() {
 };
 
 function renderDiceRoll(dice1, dice2) {
-  // document.querySelector(".show-header").addEventListener("mouseenter", () => {
-  //   document
-  //     .querySelector(".show-header")
-  //     .removeAttribute("style", "opacity: 1");
-  // });
-  // document.querySelector(".show-header").addEventListener("mouseleave", () => {
-  //   document
-  //     .querySelector(".show-header")
-  //     .removeAttribute("style", "opacity: .7");
-  // });
-
   for (let i = 0; i < players.length; i++) {
     document.querySelectorAll(`.player${i}`).forEach(player => {
       player.classList.remove("highlight");
