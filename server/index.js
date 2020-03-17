@@ -12,23 +12,22 @@ let gameHand = [];
 let length = [];
 ss.on("connection", ws => {
   ss.clients.forEach(client => {
-    console.log(gameLength[0], "gameLength");
-    if (gameLength && ss._server._connections > gameLength[0]) {
+    if (length && ss.clients.size > length[0]) {
       ws.close();
     }
-    ws.clientId = ss._server._connections - 1;
+    ws.clientId = ss.clients.size - 1;
     client.send(
       JSON.stringify({
-        type: "clientCount",
+        type: "clientOpen",
         data: {
-          clientCount: ss._server._connections,
-          clientId: ss._server._connections - 1
+          clientCount: ss.clients.size,
+          clientId: ws.clientId
         }
       })
     );
   });
   console.log("New Connection");
-  console.log(ss._server._connections);
+  console.log(ss.clients.size);
 
   ws.on("message", message => {
     let obj = JSON.parse(message);
@@ -58,7 +57,10 @@ ss.on("connection", ws => {
       });
     } else if (obj.type === "activatePlayerBtn") {
       ss.clients.forEach(client => {
-        if (client.clientId === obj.data.activePlayer) {
+        if (
+          client.clientId === obj.data.activePlayer ||
+          ss.clients.size === 1
+        ) {
           client.send(
             JSON.stringify({
               type: "activatePlayerBtn",
@@ -133,30 +135,28 @@ ss.on("connection", ws => {
   });
 
   ws.on("close", ws => {
-    newPlayerList = [];
+    clientIdList = [];
     gameLength = [];
     gamehand = [];
+    newPlayerList = [];
     ss.clients.forEach(client => {
       newPlayerList.push(client.playerName);
+      clientIdList.push(client.clientId);
     });
     playerList = newPlayerList;
     ss.clients.forEach(client => {
       client.send(
         JSON.stringify({
-          type: "clientCount",
-          data: { clientCount: ss._server._connections }
-        })
-      );
-      client.send(
-        JSON.stringify({
-          type: "playerListChange",
+          type: "clientClose",
           data: {
+            clientIdList: clientIdList,
+            clientCount: ss.clients.size,
             playerList: playerList
           }
         })
       );
     });
     console.log("Connection CLOSED");
-    console.log(ss._server._connections);
+    console.log(ss.clients.size);
   });
 });

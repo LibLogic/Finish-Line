@@ -1,5 +1,9 @@
 let cs = new WebSocket("ws://localhost:5500");
 
+cs.onclose = e => {
+  window.close();
+};
+
 cs.onmessage = e => {
   let obj = JSON.parse(e.data);
   switch (obj.type) {
@@ -14,19 +18,16 @@ cs.onmessage = e => {
       hand = obj.data.gameHand[0];
       cardFontHand = obj.data.gameHand[1];
       break;
-    case "clientCount":
+    case "clientOpen":
       clientCount = obj.data.clientCount;
       break;
-    case "playerListChange":
+    case "clientClose":
+      clientCount = obj.data.clientCount;
       playerList = obj.data.playerList;
-      droppedClient();
+      droppedClient(obj.data.clientIdList);
       break;
     case "gameLength":
       gameLength = obj.data.gameLength;
-      if (clientCount > gameLength) {
-        // this is too many clients
-        renderBoard();
-      }
       if (playerList.length == gameLength) {
         document.getElementById("player-names").classList.add("hidden");
         renderBoard();
@@ -118,16 +119,41 @@ function sendGameLength() {
   );
 }
 
-function droppedClient() {
-  let activePlayers = players.filter(player => {
+function droppedClient(clientIdList) {
+  let connectedPlayers = players.filter(player => {
     return player.isDisconnected === false;
   });
-  activePlayers.forEach(player => {
+
+  let droppedClient = connectedPlayers.filter(player => {
+    return clientIdList.indexOf(player.clientId) === -1;
+  });
+
+  if (droppedClient[0].clientId === currentPlayer) {
+    sendActivatePlayerBtn("getDiceRoll");
+    switchPlayer();
+  }
+
+  connectedPlayers.forEach(player => {
     if (playerList.indexOf(player.name) === -1) {
       player.isDisconnected = true;
+      let playerStr = playerList.join(" & ");
+      alert(
+        `${player.name} has disconnected. \r\nContinuing game with player(s) \r\n${playerStr}`
+      );
     }
   });
 }
+
+let namesInput = document.getElementById("players");
+namesInput.addEventListener("keyup", function(event) {
+  if (event.keyCode === 13) {
+    document.querySelector(".submit-btn").click();
+  }
+});
+
+// document.getElementById("header").onmouseover = () => {
+//   document.getElementById("header").style.opacity = 1;
+// };
 
 let currentPlayer = 0,
   deck = [],
@@ -143,24 +169,20 @@ let currentPlayer = 0,
   jokerCount = 0,
   jokerOnePosition = 0,
   jokerTwoPosition = 0,
+  serverBusy = false,
   wingCardPositions = [-1, 8, 17, 26, 35, 44, 53],
   specialCards = [14, 13, 12, 11, 1, 2];
 
-safetyCardPositions = [
-  ...wingCardPositions,
-  jokerOnePosition,
-  jokerTwoPosition
-];
-
 let prompts = [
-  `Enter a Comma Separated List of Players' Names`,
+  `Enter Players' Name`,
   `Marker to Move?`,
   `Select a Die`,
   `Which Marker Now?`,
   `WAITING FOR OPPONENT(S)`,
   `How Many Players?`,
   `Your Marker has Finished`,
-  `Move Not Allowed`
+  `Move Not Allowed`,
+  `Server Is Busy`
 ];
 
 // Array for six sided die
@@ -192,6 +214,12 @@ function createDeck(deckSize) {
 
 function getHand() {
   hand = generateHand();
+
+  safetyCardPositions = [
+    ...wingCardPositions,
+    jokerOnePosition,
+    jokerTwoPosition
+  ];
 
   cardFontHand = hand.map(card => {
     let suit = Math.floor(card / 100);
@@ -369,6 +397,7 @@ function renderCards() {
 
   const elem = document.getElementById("scrollToBottom");
   elem.scroll(0, elem.scrollHeight);
+
   renderInitialPlayerGrid();
 }
 
@@ -431,9 +460,6 @@ function showRollView() {
 }
 
 function switchPlayer() {
-  // document.querySelector(".show-header").addEventListener("mouseleave", () => {
-  //   document.querySelector(".show-header").setAttribute("style", "opacity: 0");
-  // });
   document.getElementById("rollBtn").classList.remove("active-btn");
   userSpecialCards = [];
   console.log("running switchPlayer");
@@ -443,6 +469,13 @@ function switchPlayer() {
 
   rollBtn.classList.remove("ok-btn");
   rollBtn.innerHTML = `${players[currentPlayer].name}<br/>Roll The Dice`;
+
+  if (players[currentPlayer].isDisconnected) {
+    rollBtn.classList.remove("ok-btn");
+    rollBtn.innerHTML = `${players[currentPlayer].name}<br/>Roll The Dice`;
+    sendActivatePlayerBtn("getDiceRoll");
+    switchPlayer();
+  }
 
   if (players[currentPlayer].isFinished && players.length > 1) {
     switchPlayer();
@@ -510,6 +543,7 @@ function updateMarkerPositions() {
         break;
     }
     document.querySelectorAll(`.p${playerIndex + 1}`).forEach(li => {
+      //placeholder
       li.innerHTML = "";
     });
 
@@ -626,7 +660,6 @@ function processSpecialCards() {
   rollBtn.innerHTML = `${players[currentPlayer].name} Has Special Card(s)<br/>Roll For Activation`;
 
   sendActivatePlayerBtn("specialBtnClick", true);
-  // rollBtn.addEventListener("click", window.specialBtnClick, { once: true });
 
   window.specialBtnClick = function() {
     specialCardRoll();
@@ -658,7 +691,6 @@ function processSpecialCards() {
 
     if (userSpecialCards.length === 0) {
       sendActivatePlayerBtn("getDiceRoll");
-      // rollBtn.addEventListener("click", window.getDiceRoll);
       // checkForAttack();
       showRollView();
       switchPlayer();
@@ -787,6 +819,25 @@ function processSpecialCards() {
         ? "red"
         : "black";
 
+    activeCard = furthestSpecialCard % 100;
+    switch (activeCard) {
+      case 01:
+        activeCardStr = "Ace";
+        break;
+      case 02:
+        activeCardStr = "Two";
+        break;
+      case 11:
+        activeCardStr = "Jack";
+        break;
+      case 12:
+        activeCardStr = "Queen";
+        break;
+      case 13:
+        activeCardStr = "King";
+        break;
+    }
+
     console.log("running decideActivation");
     let winningDieColor = "neither";
     if (blackDieValue + 1 > redDieValue + 1) {
@@ -806,7 +857,7 @@ function processSpecialCards() {
         alert(players[currentPlayer].name + " wins!");
       }
     } else {
-      sentence.innerHTML = `Card not activated<br>${furthestCardColor.toUpperCase()} die didn't win.`;
+      sentence.innerHTML = `${activeCardStr} not activated<br>${furthestCardColor.toUpperCase()} die didn't win.`;
       sentence.classList.remove("hidden");
     }
     rollBtn.removeEventListener("click", window.specialBtnClick, {
@@ -816,7 +867,6 @@ function processSpecialCards() {
     rollBtn.innerHTML = `Ok`;
 
     sendActivatePlayerBtn("sendOkBtnClick", true);
-    // rollBtn.addEventListener("click", window.sendOkBtnClick);
   };
 
   function getFurthestSpecialCard() {
@@ -886,13 +936,7 @@ function renderBoard() {
 
 function renderInitialHeader() {
   document.getElementById("player-names").classList.add("hidden");
-  // document.querySelector(".show-header").addEventListener("mouseenter", () => {
-  //   document.querySelector(".show-header").setAttribute("style", "opacity: 1");
-  // });
 
-  // document.querySelector(".show-header").addEventListener("mouseleave", () => {
-  //   document.querySelector(".show-header").setAttribute("style", "opacity: .7");
-  // });
   document
     .getElementById("bg-image")
     .setAttribute("style", "background-image: url(images/dice2.jpg)");
@@ -920,17 +964,17 @@ function renderInitialHeader() {
   document.getElementById("markers").innerHTML = headerMarkers;
 
   document
-    .getElementById("elements-container")
+    .getElementById("prompts")
     .insertAdjacentHTML(
       "afterend",
       `<button id="rollBtn" class="btn">${players[currentPlayer].name}<br/>Roll The Dice</button>`
     );
 
   sendActivatePlayerBtn("getDiceRoll", true);
-  // document.getElementById("rollBtn").addEventListener("click", window.getDiceRoll);
 }
 
 function sendActivatePlayerBtn(listenerType, stayOnCurrentPlayer = false) {
+  console.log(listenerType, "inside sendActivatePlayerBtn");
   document
     .getElementById("rollBtn")
     .removeEventListener("click", window.getDiceRoll);
@@ -971,11 +1015,12 @@ function renderInitialPlayerGrid() {
 
 function getPlayerNames(playersArr) {
   class Player {
-    constructor(name) {
+    constructor(name, i) {
       this.markerA = -1;
       this.markerB = -1;
       this.markerC = -1;
       this.name = name;
+      this.clientId = i;
       this.isFinished = false;
       this.isDisconnected = false;
       players.push(this);
@@ -984,7 +1029,7 @@ function getPlayerNames(playersArr) {
 
   (function() {
     for (let i = 0; i < playersArr.length; i++) {
-      new Player(playersArr[i]);
+      new Player(playersArr[i], i);
     }
   })();
 }
@@ -1040,6 +1085,7 @@ function applyPenalty(furthestMarker, winningDieColor) {
   }
 
   function pullForwards() {
+    rollBtn.classList.add("hidden");
     sentence.innerHTML = `${winningDieColor.toUpperCase()} die wins.<br>— Queen is activated —<br>
     — pulling your nearest marker forward —`;
     sentence.classList.remove("hidden");
@@ -1062,6 +1108,7 @@ function applyPenalty(furthestMarker, winningDieColor) {
       But you have no marker to pull forward.`;
       sentence.classList.remove("hidden");
     }
+    rollBtn.classList.remove("hidden");
   }
 
   function pushBackwards() {
@@ -1233,17 +1280,6 @@ window.getDiceRoll = function() {
 };
 
 function renderDiceRoll(dice1, dice2) {
-  // document.querySelector(".show-header").addEventListener("mouseenter", () => {
-  //   document
-  //     .querySelector(".show-header")
-  //     .removeAttribute("style", "opacity: 1");
-  // });
-  // document.querySelector(".show-header").addEventListener("mouseleave", () => {
-  //   document
-  //     .querySelector(".show-header")
-  //     .removeAttribute("style", "opacity: .7");
-  // });
-
   for (let i = 0; i < players.length; i++) {
     document.querySelectorAll(`.player${i}`).forEach(player => {
       player.classList.remove("highlight");
@@ -1387,9 +1423,9 @@ function sortOpponentMarkers(players) {
 
 function sortPlayerMarkers() {
   updateMarkerPositions();
-  let markers = [];
+  markers = [];
   for (let key in players[currentPlayer]) {
-    if (key !== "name" && key !== "isFinished") {
+    if (key === "markerA" || key === "markerB" || key === "markerC") {
       markers.push([
         players[currentPlayer].index,
         players[currentPlayer].name,
