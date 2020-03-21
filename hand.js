@@ -175,7 +175,7 @@ let currentPlayer = 0,
 
 let prompts = [
   `Enter Players' Name`,
-  `Marker to Move?`,
+  `Select A Marker to Move`,
   `Select a Die`,
   `Which Marker Now?`,
   `WAITING FOR OPPONENT(S)`,
@@ -429,6 +429,7 @@ let firstChosenDieValue = 0;
 let secondChosenDieValue = 0;
 function markerClick(target) {
   console.log("running markerClick");
+  document.querySelector(target).removeEventListener("click", getMarkerClick);
   let elem = document.querySelector(target);
   let markerChoice = target;
   sortOpponentMarkers(players);
@@ -462,10 +463,11 @@ function showRollView() {
 function switchPlayer() {
   document.getElementById("rollBtn").classList.remove("active-btn");
   userSpecialCards = [];
-  console.log("running switchPlayer");
+  console.log(currentPlayer, "currentPlayer running switchPlayer");
   ++currentPlayer;
   currentPlayer = currentPlayer % players.length;
   movesRemaining = 2;
+  console.log(currentPlayer, "currentPlayer running switchPlayer 2");
 
   rollBtn.classList.remove("ok-btn");
   rollBtn.innerHTML = `${players[currentPlayer].name}<br/>Roll The Dice`;
@@ -821,10 +823,10 @@ function processSpecialCards() {
 
     activeCard = furthestSpecialCard % 100;
     switch (activeCard) {
-      case 01:
+      case 1:
         activeCardStr = "Ace";
         break;
-      case 02:
+      case 2:
         activeCardStr = "Two";
         break;
       case 11:
@@ -974,7 +976,11 @@ function renderInitialHeader() {
 }
 
 function sendActivatePlayerBtn(listenerType, stayOnCurrentPlayer = false) {
-  console.log(listenerType, "inside sendActivatePlayerBtn");
+  console.log(
+    currentPlayer,
+    listenerType,
+    "currentPlayer inside sendActivatePlayerBtn"
+  );
   document
     .getElementById("rollBtn")
     .removeEventListener("click", window.getDiceRoll);
@@ -985,6 +991,7 @@ function sendActivatePlayerBtn(listenerType, stayOnCurrentPlayer = false) {
   if (!stayOnCurrentPlayer) {
     activePlayer = (currentPlayer + 1) % gameLength;
   }
+  console.log(activePlayer, "activePlayer");
   cs.send(
     JSON.stringify({
       type: "activatePlayerBtn",
@@ -1042,20 +1049,20 @@ function applyPenalty(furthestMarker, winningDieColor) {
   let backwardSpacesToMove = markerIndex * 2;
   let card = hand[players[currentPlayer][furthestMarker]] % 100;
   switch (card) {
-    case 13:
-      ladder();
-      break;
-    case 12:
-      pullForwards();
-      break;
-    case 11:
-      pushBackwards();
-      break;
     case 1:
       chute();
       break;
     case 2:
       swap();
+      break;
+    case 11:
+      pushBackwards();
+      break;
+    case 12:
+      pullForwards();
+      break;
+    case 13:
+      ladder();
       break;
     default:
       console.log("unknown penalty type");
@@ -1090,9 +1097,15 @@ function applyPenalty(furthestMarker, winningDieColor) {
     — pulling your nearest marker forward —`;
     sentence.classList.remove("hidden");
     currentPosition = players[currentPlayer][furthestMarker];
-    let markerToMoveList = sortPlayerMarkers().filter(marker => {
+    markerToMoveList = sortPlayerMarkers().filter(marker => {
       return marker[3] < currentPosition;
     });
+
+    console.log(
+      markerToMoveList,
+      userSpecialCards,
+      hand[players[currentPlayer][markerToMove]]
+    );
 
     if (markerToMoveList.length > 0 && markerToMoveList[0][3] !== -1) {
       markerToMove = markerToMoveList[0][2];
@@ -1320,13 +1333,13 @@ function showMarkerChoices() {
 
   document
     .getElementById("green-marker")
-    .removeEventListener("click", markerClick);
+    .removeEventListener("click", getMarkerClick);
   document
     .getElementById("red-marker")
-    .removeEventListener("click", markerClick);
+    .removeEventListener("click", getMarkerClick);
   document
     .getElementById("blue-marker")
-    .removeEventListener("click", markerClick);
+    .removeEventListener("click", getMarkerClick);
 
   visibleMarkerCount = 3;
   players[currentPlayer].markerA < hand.length - 1
@@ -1362,10 +1375,12 @@ function dieClick({ target }) {
   if (target.className === "bullet") {
     secondChosenDieValue = redDieValue + blackDieValue + 2;
     movesRemaining = 1;
-    target.classList.add("dim");
-    target.classList.add("dim");
+    document.querySelector(".red-die").classList.add("dim");
+    document.querySelector(".black-die").classList.add("dim");
+    document.querySelector(".bullet").classList.add("dim");
     document.querySelector(".red-die").removeEventListener("click", dieClick);
     document.querySelector(".black-die").removeEventListener("click", dieClick);
+    document.querySelector(".bullet").removeEventListener("click", dieClick);
   }
   if (target.className === "red-die") {
     firstChosenDieValue = redDieValue + 1;
@@ -1374,6 +1389,7 @@ function dieClick({ target }) {
     document.querySelector(".bullet").classList.add("dim");
     document.querySelector(".bullet").removeEventListener("click", dieClick);
     document.querySelector(".black-die").removeEventListener("click", dieClick);
+    target.removeEventListener("click", dieClick);
   }
   if (target.className === "black-die") {
     firstChosenDieValue = blackDieValue + 1;
@@ -1382,11 +1398,12 @@ function dieClick({ target }) {
     document.querySelector(".bullet").classList.add("dim");
     document.querySelector(".bullet").removeEventListener("click", dieClick);
     document.querySelector(".red-die").removeEventListener("click", dieClick);
+    target.removeEventListener("click", dieClick);
   }
-  sentence.innerHTML = prompts[1];
+  sentence.innerHTML = prompts[1]; // Marker To Move
   sentence.classList.remove("hidden");
-  target.removeEventListener("click", dieClick);
-  target.classList.add("dim");
+  // target.removeEventListener("click", dieClick);
+
   addMarkerEvents();
 
   cs.send(
@@ -1407,7 +1424,7 @@ function sortOpponentMarkers(players) {
   let markers = [];
   opponents.forEach(player => {
     for (let key in player) {
-      if (key !== "name" && key !== "isFinished") {
+      if (key === "markerA" || key === "markerB" || key === "markerC") {
         markers.push([player.name, key, player[key]]);
       }
     }

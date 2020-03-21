@@ -58,8 +58,8 @@ ss.on("connection", ws => {
     } else if (obj.type === "activatePlayerBtn") {
       ss.clients.forEach(client => {
         if (
-          client.clientId === obj.data.activePlayer ||
-          ss.clients.size === 1
+          client.clientId === obj.data.activePlayer
+          //           || ss.clients.size === 1
         ) {
           client.send(
             JSON.stringify({
