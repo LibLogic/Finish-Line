@@ -1,18 +1,24 @@
 {
-  "name": "server",
+  "name": "finish-line",
   "version": "1.0.0",
-  "description": "",
+  "description": "HTML/Javascript Dice/Card Game",
   "main": "index.js",
   "scripts": {
+    "start": "node index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "dependencies": {
-    "ws": "^7.2.1"
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/LibLogic/Finish-Line.git"
   },
-  "devDependencies": {
-    "nodemon": "^2.0.2"
+  "author": "Tom Hodgkinson",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/LibLogic/Finish-Line/issues"
+  },
+  "homepage": "https://github.com/LibLogic/Finish-Line#readme",
+  "dependencies": {
+    "express": "^4.17.1",
+    "ws": "^7.2.3"
   }
 }

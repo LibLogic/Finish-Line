@@ -1,9 +1,17 @@
-const server = require("ws").Server;
+const express = require("express");
+const app = express();
 
 const port = process.env.PORT || 5500;
 
-const ss = new server({
-  port: port
+const server = app.listen(port);
+app.use(express.static("public"));
+
+const socket = require("ws").Server;
+
+const port = process.env.PORT || 5500;
+
+const ss = new socket({
+  server: server
 });
 
 let gameLength = [];
