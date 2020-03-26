@@ -1,0 +1,12 @@
+After the player has completed stage one and two of his turn, the following steps are performed for each marker that moved by this point during the turn and which now occupy the same non-safety card with one or more opposing markers. Basically, each such marker gets a chance to boot the opposing markers off the card it shares.
+
+To boot opposing markers off a shared card, both dice are rolled.
+
+If the two dice match, the opposing markers get to stay.
+If the die corresponding to the color of the card's suit is lower than the other die, then the opposing marker(s) move backwards that number of squares. For example, if the shared card is a five of diamonds, the red die shows a two, and the black die shows a six, then the opposing marker(s) move backwards two squares.
+If the die corresponding to the color of the card's suit is higher than the other die, then the opposing marker(s) move down to the card below it, as if those marker(s) had fallen through a chute (ace). If the shared card is on the bottom row, then the opposing marker(s) move back to the starting square.
+Note that if two of the same player's markers wind up on the same card with opposing markers, each gets a chance to boot the opposing markers off, so if the first attack results in doubles, a second attack is attempted. This frequently happens when a marker lands on a queen also occupied by opposing marker(s): if the queen activation works out, there are two markers that can try to boot the opposing markers off.
+
+Also note that attacks frequently occur on jacks: if a jack is activated successfully and an opposing marker is yanked back to the jack, it is subsequently attacked and possibly sent back even further.
+
+Finally, if an opponent's marker is attacked and moved backward onto a square occupied by another of that opponent's markers, it is not attacked again. Attacks only occur to opposing markers that occupy the same square immediately after stage 2 ends.

@@ -92,6 +92,9 @@ cs.onmessage = e => {
     case "markerClick":
       markerClick(obj.data.eventTarget);
       break;
+    case "random":
+      renderSwap(obj.data.filteredMarkers, obj.data.random);
+      break;
   }
 };
 
@@ -169,7 +172,6 @@ let currentPlayer = 0,
   jokerCount = 0,
   jokerOnePosition = 0,
   jokerTwoPosition = 0,
-  serverBusy = false,
   wingCardPositions = [-1, 8, 17, 26, 35, 44, 53],
   specialCards = [14, 13, 12, 11, 1, 2];
 
@@ -463,11 +465,10 @@ function showRollView() {
 function switchPlayer() {
   document.getElementById("rollBtn").classList.remove("active-btn");
   userSpecialCards = [];
-  console.log(currentPlayer, "currentPlayer running switchPlayer");
+  console.log("running switchPlayer");
   ++currentPlayer;
   currentPlayer = currentPlayer % players.length;
   movesRemaining = 2;
-  console.log(currentPlayer, "currentPlayer running switchPlayer 2");
 
   rollBtn.classList.remove("ok-btn");
   rollBtn.innerHTML = `${players[currentPlayer].name}<br/>Roll The Dice`;
@@ -792,6 +793,9 @@ function processSpecialCards() {
         case "markerClick":
           markerClick(obj.data.eventTarget);
           break;
+        case "random":
+          renderSwap(obj.data.filteredMarkers, obj.data.random);
+          break;
       }
     };
   }
@@ -976,11 +980,7 @@ function renderInitialHeader() {
 }
 
 function sendActivatePlayerBtn(listenerType, stayOnCurrentPlayer = false) {
-  console.log(
-    currentPlayer,
-    listenerType,
-    "currentPlayer inside sendActivatePlayerBtn"
-  );
+  console.log("running sendActivatePlayerBtn");
   document
     .getElementById("rollBtn")
     .removeEventListener("click", window.getDiceRoll);
@@ -991,7 +991,7 @@ function sendActivatePlayerBtn(listenerType, stayOnCurrentPlayer = false) {
   if (!stayOnCurrentPlayer) {
     activePlayer = (currentPlayer + 1) % gameLength;
   }
-  console.log(activePlayer, "activePlayer");
+
   cs.send(
     JSON.stringify({
       type: "activatePlayerBtn",
@@ -1202,21 +1202,45 @@ function applyPenalty(furthestMarker, winningDieColor) {
 
   function swap() {
     currentPosition = players[currentPlayer][furthestMarker];
-    let opponentIndex = 0;
     let sortedMarkers = sortOpponentMarkers(players);
-    let filteredMarkers = sortedMarkers.filter(player => {
+    filteredMarkers = sortedMarkers.filter(player => {
       return player[2] !== currentPosition && player[2] !== -1;
     });
 
-    let randomIndex = Math.floor(Math.random() * filteredMarkers.length);
-    let randomPlayer = [];
-    randomPlayer = filteredMarkers[randomIndex];
-    if (filteredMarkers.length > 0) {
+    randomIndex = Math.floor(Math.random() * filteredMarkers.length);
+
+    cs.send(
+      JSON.stringify({
+        type: "random",
+        data: {
+          filteredMarkers: filteredMarkers,
+          random: randomIndex
+        }
+      })
+    );
+  }
+
+  window.renderSwap = function(sentMarkers, sentIndex) {
+    console.log(sentMarkers, sentIndex);
+    console.log(sentMarkers[sentIndex]);
+    randomPlayer = sentMarkers[sentIndex];
+    console.log(randomPlayer);
+    if (sentMarkers.length > 0) {
       players.forEach((player, i) => {
         if (player.name === randomPlayer[0]) {
           opponentIndex = i;
         }
       });
+
+      console.log(
+        players[currentPlayer][furthestMarker],
+        currentPosition,
+        players[opponentIndex][randomPlayer[1]],
+        "renderSwap"
+      );
+
+      // currentPlayerPosition = players[currentPlayer][furthestMarker];
+      // opponentPosition = players[opponentIndex][randomPlayer[1]];
 
       players[currentPlayer][furthestMarker] =
         players[opponentIndex][randomPlayer[1]];
@@ -1236,19 +1260,19 @@ function applyPenalty(furthestMarker, winningDieColor) {
       blinkMarker[0].classList.add("blinking");
 
       sentence.innerHTML = `${winningDieColor.toUpperCase()} die wins.<br>— Two is activated —<br>
-      Getting random swap 3`;
+        Getting random swap 3`;
 
       setTimeout(
         () =>
           (sentence.innerHTML = `${winningDieColor.toUpperCase()} die wins.<br>— Two is activated —<br>
-          Getting random swap 2`),
+            Getting random swap 2`),
         1200
       );
 
       setTimeout(
         () =>
           (sentence.innerHTML = `${winningDieColor.toUpperCase()} die wins.<br>— Two is activated —<br>
-          Getting random swap 1`),
+            Getting random swap 1`),
         2400
       );
 
@@ -1265,7 +1289,7 @@ function applyPenalty(furthestMarker, winningDieColor) {
       sentence.innerHTML = `${winningDieColor.toUpperCase()} die wins. <br>— Two is activated —<br>But nobody to swap with.`;
       sentence.classList.remove("hidden");
     }
-  }
+  };
 }
 
 window.getDiceRoll = function() {

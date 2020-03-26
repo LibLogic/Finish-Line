@@ -6,10 +6,12 @@ const ss = new server({
   port: port
 });
 
-let playerList = [];
 let gameLength = [];
 let gameHand = [];
 let length = [];
+let playerList = [];
+let random = [];
+filteredMarkers = [];
 ss.on("connection", ws => {
   ss.clients.forEach(client => {
     if (length && ss.clients.size > length[0]) {
@@ -130,6 +132,26 @@ ss.on("connection", ws => {
             }
           })
         );
+      });
+    } else if (obj.type === "random") {
+      if (random.length >= gameLength[0]) {
+        random = [];
+        filteredMarkers = [];
+      }
+      random.push(obj.data.random);
+      filteredMarkers.push(obj.data.filteredMarkers);
+      ss.clients.forEach(client => {
+        if (ws.clientId === client.clientId) {
+          client.send(
+            JSON.stringify({
+              type: "random",
+              data: {
+                filteredMarkers: filteredMarkers[0],
+                random: random[0]
+              }
+            })
+          );
+        }
       });
     }
   });
